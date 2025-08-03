@@ -1,10 +1,6 @@
 from sqlmodel import SQLModel, Field
 from datetime import datetime, timezone
-import enum
-
-class ProjectStatus(str, enum.Enum):
-    ongoing = "ongoing"
-    completed = "completed"
+from src.utils.enums import ProjectStatus
 
 class Project(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
