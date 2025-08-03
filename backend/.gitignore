@@ -3,3 +3,4 @@
 venv-sprint/
 .env
 src/db/schema.txt
+__pycache__/
