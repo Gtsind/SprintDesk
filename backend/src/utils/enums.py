@@ -14,7 +14,7 @@ class ProjectStatus(str, Enum):
 class IssueStatus(str, Enum):
     OPEN = "Open"
     IN_PROGRESS = "In Progress"
-    READY_FOR_REVIEW = "Ready For Review"
+    READY_FOR_REVIEW = "Review Ready"
     CLOSED = "Closed"
     BLOCKED = "Blocked"
 

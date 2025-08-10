@@ -36,7 +36,7 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    "Root endpoint"
+    """Root endpoint"""
     return {
         "message": "Welcome to SprintDesk!",
         "version": settings.app_version,
