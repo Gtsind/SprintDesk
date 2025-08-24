@@ -1,7 +1,6 @@
 from sqlmodel import Session, select
-from models.project import Project
-from models.intermediate_tables import ProjectMembership
-from dto.project import ProjectCreate, ProjectUpdate
+from src.models import Project, ProjectMembership
+from src.dto.project import ProjectCreate, ProjectUpdate
 from .base_repository import BaseRepository
 
 class ProjectRepository(BaseRepository[Project]):
@@ -53,13 +52,12 @@ class ProjectRepository(BaseRepository[Project]):
         )
         return list(self.session.exec(statement).all())
 
-    def add_member(self, project_id: int, user_id: int) -> ProjectMembership:
+    def add_member(self, project_id: int, user_id: int) -> bool:
         """Add a member to a project"""
         membership = ProjectMembership(project_id=project_id, user_id=user_id)
         self.session.add(membership)
         self.session.commit()
-        self.session.refresh(membership)
-        return membership
+        return True
 
     def remove_member(self, project_id: int, user_id: int) -> bool:
         """Remove a member from a project"""

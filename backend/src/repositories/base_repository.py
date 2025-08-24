@@ -3,7 +3,6 @@ from sqlmodel import SQLModel, Session, select
 
 T = TypeVar("T", bound=SQLModel)
 
-
 class BaseRepository(Generic[T]):
     """Base repository class with common CRUD operations"""
     

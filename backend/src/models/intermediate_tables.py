@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 class ProjectMembership(SQLModel, table=True):
     __tablename__: ClassVar[str] = "project_memberships"
 
-    project_id: int = Field(foreign_key="projects.id", primary_key=True)
-    user_id: int = Field(foreign_key="users.id", primary_key=True)
+    project_id: int | None = Field(default=None, foreign_key="projects.id", primary_key=True)
+    user_id: int | None = Field(default=None, foreign_key="users.id", primary_key=True)
     joined_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     # Relationships
     project: "Project" = Relationship(back_populates="memberships")
@@ -18,8 +18,8 @@ class ProjectMembership(SQLModel, table=True):
 class IssueLabel(SQLModel, table=True):
     __tablename__: ClassVar[str] = "issue_labels"
 
-    issue_id: int = Field(foreign_key="issues.id", primary_key=True)
-    label_id: int = Field(foreign_key="labels.id", primary_key=True)
+    issue_id: int | None = Field(default=None, foreign_key="issues.id", primary_key=True)
+    label_id: int | None = Field(default=None, foreign_key="labels.id", primary_key=True)
     # Relationships
     issue: "Issue" = Relationship(back_populates="issue_labels")
     label: "Label" = Relationship(back_populates="issue_labels")

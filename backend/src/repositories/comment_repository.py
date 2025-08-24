@@ -1,8 +1,7 @@
 from sqlmodel import Session, select
-from models.comment import Comment
-from dto.comment import CommentCreate, CommentUpdate
+from src.models.comment import Comment
+from src.dto.comment import CommentCreate, CommentUpdate
 from .base_repository import BaseRepository
-
 
 class CommentRepository(BaseRepository[Comment]):
     """Repository for Comment operations"""
@@ -18,6 +17,7 @@ class CommentRepository(BaseRepository[Comment]):
         self.session.add(db_comment)
         self.session.commit()
         self.session.refresh(db_comment)
+        
         return db_comment
 
     def update(self, comment_id: int, comment_update: CommentUpdate) -> Comment | None:

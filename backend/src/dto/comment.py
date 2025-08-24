@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel
 from src.models.base import CommentBase
 from src.dto.user import UserSummary
 from datetime import datetime

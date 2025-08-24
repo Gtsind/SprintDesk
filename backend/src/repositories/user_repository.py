@@ -1,6 +1,6 @@
 from sqlmodel import Session
-from models.user import User
-from dto.user import UserCreate, UserUpdate
+from src.models.user import User
+from src.dto.user import UserCreate, UserUpdate
 from .base_repository import BaseRepository
 
 class UserRepository(BaseRepository[User]):

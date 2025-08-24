@@ -1,9 +1,7 @@
 from sqlmodel import Session, select
-from models.label import Label
-from models.intermediate_tables import IssueLabel
-from dto.label import LabelCreate, LabelUpdate
+from src.models import Label, IssueLabel
+from src.dto.label import LabelCreate, LabelUpdate
 from .base_repository import BaseRepository
-
 
 class LabelRepository(BaseRepository[Label]):
     """Repository for Label operations"""

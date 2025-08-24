@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel
 from src.models.base import IssueBase
 from src.utils.enums import IssueStatus, IssuePriority
 from src.dto.user import UserSummary

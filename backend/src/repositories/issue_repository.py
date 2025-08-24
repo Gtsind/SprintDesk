@@ -1,11 +1,9 @@
 from datetime import datetime, timezone
 from sqlmodel import Session, select
-from utils.enums import IssueStatus
-from models.issue import Issue
-from models.intermediate_tables import IssueLabel
-from dto.issue import IssueCreate, IssueUpdate
+from src.utils.enums import IssueStatus
+from src.models import Issue, IssueLabel
+from src.dto.issue import IssueCreate, IssueUpdate
 from .base_repository import BaseRepository
-
 
 class IssueRepository(BaseRepository[Issue]):
     """Repository for Issue operations"""
