@@ -2,7 +2,7 @@ from sqlmodel import Session, select
 from models.project import Project
 from models.intermediate_tables import ProjectMembership
 from dto.project import ProjectCreate, ProjectUpdate
-from .base import BaseRepository
+from .base_repository import BaseRepository
 
 class ProjectRepository(BaseRepository[Project]):
     """Repository for Project operations"""

@@ -4,7 +4,7 @@ from utils.enums import IssueStatus
 from models.issue import Issue
 from models.intermediate_tables import IssueLabel
 from dto.issue import IssueCreate, IssueUpdate
-from .base import BaseRepository
+from .base_repository import BaseRepository
 
 
 class IssueRepository(BaseRepository[Issue]):

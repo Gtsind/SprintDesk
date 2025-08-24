@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 from models.comment import Comment
 from dto.comment import CommentCreate, CommentUpdate
-from .base import BaseRepository
+from .base_repository import BaseRepository
 
 
 class CommentRepository(BaseRepository[Comment]):

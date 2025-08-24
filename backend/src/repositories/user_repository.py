@@ -1,7 +1,7 @@
 from sqlmodel import Session
 from models.user import User
 from dto.user import UserCreate, UserUpdate
-from .base import BaseRepository
+from .base_repository import BaseRepository
 
 class UserRepository(BaseRepository[User]):
     """Repository for User operations"""

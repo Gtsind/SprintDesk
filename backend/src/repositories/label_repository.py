@@ -2,7 +2,7 @@ from sqlmodel import Session, select
 from models.label import Label
 from models.intermediate_tables import IssueLabel
 from dto.label import LabelCreate, LabelUpdate
-from .base import BaseRepository
+from .base_repository import BaseRepository
 
 
 class LabelRepository(BaseRepository[Label]):
