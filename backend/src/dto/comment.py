@@ -9,7 +9,7 @@ class CommentCreate(CommentBase):
 
 class CommentUpdate(SQLModel):
     """DTO for comment updates"""
-    content: str | None = Field(None, min_length=1, max_length=2000)
+    content: str | None = None
 
 class CommentPublic(CommentBase):
     """DTO for comment responses"""

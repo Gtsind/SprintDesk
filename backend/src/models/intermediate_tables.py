@@ -13,7 +13,7 @@ class ProjectMembership(SQLModel, table=True):
     joined_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     # Relationships
     project: "Project" = Relationship(back_populates="memberships")
-    user: "User" = Relationship(back_populates="project_memberships")    
+    user: "User" = Relationship(back_populates="project_memberships")
 
 class IssueLabel(SQLModel, table=True):
     __tablename__: ClassVar[str] = "issue_labels"
@@ -23,6 +23,3 @@ class IssueLabel(SQLModel, table=True):
     # Relationships
     issue: "Issue" = Relationship(back_populates="issue_labels")
     label: "Label" = Relationship(back_populates="issue_labels")
-
-    def __str__(self) -> str:
-        return f"Issue #{self.issue_id} - {self.label.name}"

@@ -13,8 +13,6 @@ class ProjectUpdate(SQLModel):
     name: str | None = None
     description: str | None = None
     status: ProjectStatus | None = None
-    start_date: datetime | None = None
-    due_date: datetime | None = None
 
 class ProjectPublic(ProjectBase):
     """DTO for project responses"""
