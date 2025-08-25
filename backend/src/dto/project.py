@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel
 from src.models.base import ProjectBase
-from src.utils.enums import ProjectStatus
+from src.models.enums import ProjectStatus
 from src.dto.user import UserSummary
 from datetime import datetime
 

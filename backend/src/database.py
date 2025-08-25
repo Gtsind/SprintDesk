@@ -1,5 +1,4 @@
 from sqlmodel import SQLModel, create_engine, Session
-from functools import lru_cache
 from src.config import settings
 
 class DatabaseConfig:
@@ -24,7 +23,6 @@ class DatabaseConfig:
         """Get database session"""
         return Session(self.engine)
     
-@lru_cache
 def get_database() -> DatabaseConfig:
     return DatabaseConfig()
 

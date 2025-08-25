@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field
-from src.utils.enums import UserRole, ProjectStatus, IssuePriority, IssueStatus
+from src.models.enums import UserRole, ProjectStatus, IssuePriority, IssueStatus
 
 class UserBase(SQLModel):
     """Base user fields"""

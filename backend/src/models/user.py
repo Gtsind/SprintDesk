@@ -1,7 +1,6 @@
 from sqlmodel import Field, Relationship
 from src.models.base import UserBase
 from datetime import datetime, timezone
-from src.utils.enums import UserRole
 from typing import ClassVar, TYPE_CHECKING
 
 if TYPE_CHECKING:

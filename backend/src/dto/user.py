@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field
 from src.models.base import UserBase
-from src.utils.enums import UserRole
+from src.models.enums import UserRole
 from datetime import datetime
 
 class UserCreate(UserBase):

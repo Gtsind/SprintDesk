@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status
+from src.models import User, UserRole
 from src.dto.user import UserCreate, UserUpdate, UserPublic
-from src.repositories.user_repository import UserRepository
-from src.utils.security import get_password_hash
-from src.utils.enums import UserRole
+from src.repositories import UserRepository
+from src.security.security import get_password_hash
 
 class UserService:
     """Service for user operations"""
@@ -32,13 +32,11 @@ class UserService:
                 detail="Email already exists."
             )
         
-        hashed_password = get_password_hash(user_create.password)
-        db_user = self.user_repository.create(UserCreate(
-            **user_create.model_dump(exclude={"password"}),
-            password=hashed_password
-        ))
+        # Hash password
+        extra_data = {"password_hash": get_password_hash(user_create.password)}
+        db_user = User.model_validate(user_create, update=extra_data)
 
-        return UserPublic.model_validate(db_user)
+        return self.user_repository.create(db_user)
 
     def get_user_by_id(self, user_id: int, current_user_role: UserRole, current_user_id: int) -> UserPublic:
         """Get user by ID"""

@@ -1,9 +1,7 @@
 from fastapi import HTTPException, status
 from src.dto.comment import CommentCreate, CommentUpdate, CommentPublic
-from src.repositories.comment_repository import CommentRepository
-from src.repositories.issue_repository import IssueRepository
-from src.repositories.project_repository import ProjectRepository
-from src.utils.enums import UserRole
+from src.repositories import CommentRepository, IssueRepository, ProjectRepository
+from src.models.enums import UserRole
 
 class CommentService:
     """Service for comment operations"""

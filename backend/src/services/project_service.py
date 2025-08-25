@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from src.dto.project import ProjectCreate, ProjectUpdate, ProjectPublic
-from src.repositories.project_repository import ProjectRepository
-from src.utils.enums import UserRole
+from src.repositories import ProjectRepository
+from src.models.enums import UserRole
 
 class ProjectService:
     """Service for project operations"""

@@ -4,6 +4,7 @@ from .issue import Issue
 from .comment import Comment
 from .label import Label
 from .intermediate_tables import ProjectMembership, IssueLabel
+from .enums import UserRole, ProjectStatus, IssueStatus, IssuePriority
 
 __all__ = [
     "User",
@@ -12,5 +13,9 @@ __all__ = [
     "Comment",
     "Label",
     "ProjectMembership",
-    "IssueLabel"
+    "IssueLabel",
+    "UserRole",
+    "ProjectStatus",
+    "IssueStatus",
+    "IssuePriority"
 ]

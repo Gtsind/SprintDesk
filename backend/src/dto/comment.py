@@ -18,6 +18,3 @@ class CommentPublic(CommentBase):
     author_id: int
     created_at: datetime
     author: "UserSummary"
-    
-    class Config:
-        from_attributes = True

@@ -1,6 +1,6 @@
 from sqlmodel import Session
 from src.models.user import User
-from src.dto.user import UserCreate, UserUpdate
+from src.dto.user import UserPublic, UserUpdate
 from .base_repository import BaseRepository
 
 class UserRepository(BaseRepository[User]):
@@ -9,14 +9,15 @@ class UserRepository(BaseRepository[User]):
     def __init__(self, session: Session):
         super().__init__(User, session)
 
-    def create(self, user_create: UserCreate) -> User:
+    def create(self, db_user: User) -> UserPublic:
         """Create a new user"""
-        user_data = user_create.model_dump()
-        db_user = User(**user_data)
+        # user_data = user_create.model_dump()
+        # db_user = User(**user_data)
         self.session.add(db_user)
         self.session.commit()
         self.session.refresh(db_user)
-        return db_user
+
+        return UserPublic.model_validate(db_user)
 
     def update(self, user_id: int, user_update: UserUpdate) -> User | None:
         """Update existing user"""

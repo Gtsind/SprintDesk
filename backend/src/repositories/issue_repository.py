@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from sqlmodel import Session, select
-from src.utils.enums import IssueStatus
-from src.models import Issue, IssueLabel
+from src.models import Issue, IssueLabel, IssueStatus
 from src.dto.issue import IssueCreate, IssueUpdate
 from .base_repository import BaseRepository
 

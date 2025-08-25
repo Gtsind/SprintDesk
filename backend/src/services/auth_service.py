@@ -1,10 +1,10 @@
 from fastapi import HTTPException, status
 from datetime import timedelta
 from src.dto.auth import LoginRequest, TokenResponse, TokenData
-from src.dto.user import UserCreate
+from src.dto.user import UserCreate, UserPublic
+from src.models import User, UserRole
 from src.repositories.user_repository import UserRepository
-from src.utils.security import verify_password, get_password_hash, create_access_token, decode_token
-from src.utils.enums import UserRole
+from src.security.security import verify_password, get_password_hash, create_access_token, decode_token
 from src.config import settings
 
 class AuthService:
@@ -13,7 +13,7 @@ class AuthService:
     def __init__(self, user_repository: UserRepository):
         self.user_repository = user_repository
 
-    def register_user(self, user_create: UserCreate) -> dict:
+    def register_user(self, user_create: UserCreate) -> UserPublic:
         """Register a new user"""
         # Check if username already exists
         if self.user_repository.get_by_username(user_create.username):
@@ -30,16 +30,10 @@ class AuthService:
             )
         
         # Hash password
-        user_data = user_create.model_dump()
-        user_data["password_hash"] = get_password_hash(user_data.pop("password"))
+        extra_data = {"password_hash": get_password_hash(user_create.password)}
+        db_user = User.model_validate(user_create, update=extra_data)
         
-        # Create user
-        db_user = self.user_repository.create(UserCreate(**user_data))
-        
-        return {
-            "message": "User registered successfully",
-            "user_id": db_user.id
-        }
+        return self.user_repository.create(db_user)
 
     def authenticate_user(self, login_request: LoginRequest) -> TokenResponse:
         """Authenticate user and return access token"""

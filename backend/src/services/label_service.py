@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from src.dto.label import LabelCreate, LabelUpdate, LabelPublic
-from src.repositories.label_repository import LabelRepository
-from src.utils.enums import UserRole
+from src.repositories import LabelRepository
+from src.models.enums import UserRole
 
 class LabelService:
     """Service for label operations"""

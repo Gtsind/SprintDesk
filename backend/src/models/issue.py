@@ -1,7 +1,7 @@
 from sqlmodel import Relationship, Field
 from src.models.base import IssueBase
 from datetime import datetime, timezone
-from typing import ClassVar, TYPE_CHECKING
+from typing import ClassVar, TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from src.models import User, Project, Comment, IssueLabel
@@ -23,11 +23,11 @@ class Issue(IssueBase, table=True):
         back_populates="authored_issues",
         sa_relationship_kwargs={"foreign_keys": "Issue.author_id"}
         )
-    assignee: "User | None" = Relationship(
+    assignee: Optional["User"] = Relationship(
         back_populates="assigned_issues",
         sa_relationship_kwargs={"foreign_keys": "Issue.assignee_id"}
     )
-    closed_by_user: "User | None" = Relationship(
+    closed_by_user: Optional["User"] = Relationship(
         back_populates="closed_issues",
         sa_relationship_kwargs={"foreign_keys": "Issue.closed_by"}
     )

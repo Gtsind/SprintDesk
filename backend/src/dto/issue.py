@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel
 from src.models.base import IssueBase
-from src.utils.enums import IssueStatus, IssuePriority
+from src.models import IssueStatus, IssuePriority
 from src.dto.user import UserSummary
 from src.dto.project import ProjectSummary
 from datetime import datetime
@@ -32,6 +32,3 @@ class IssuePublic(IssueBase):
     author: "UserSummary"
     assignee: "UserSummary | None"
     project: "ProjectSummary"
-    
-    class Config:
-        from_attributes = True

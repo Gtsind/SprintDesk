@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from src.config import settings
 from src.database import init_db
 from src.models import *
+from src.api.routes import api_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,6 +35,9 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+# Include API routes
+app.include_router(api_router)
+
 @app.get("/")
 async def root():
     """Root endpoint"""
@@ -49,4 +53,5 @@ if __name__ == "__main__":
         "src.main:app",
         host="localhost", # "0.0.0.0"
         port=8000,
+        reload=True
     )

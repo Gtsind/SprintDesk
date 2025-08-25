@@ -1,7 +1,6 @@
 from sqlmodel import Relationship, Field
 from datetime import datetime, timezone
 from src.models.base import ProjectBase
-from src.utils.enums import ProjectStatus
 from typing import ClassVar, TYPE_CHECKING
 
 if TYPE_CHECKING:

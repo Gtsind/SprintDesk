@@ -1,9 +1,7 @@
 from fastapi import HTTPException, status
 from src.dto.issue import IssueCreate, IssueUpdate, IssuePublic
-from src.repositories.issue_repository import IssueRepository
-from src.repositories.project_repository import ProjectRepository
-from src.repositories.user_repository import UserRepository
-from src.utils.enums import UserRole
+from src.repositories import IssueRepository, ProjectRepository, UserRepository
+from src.models.enums import UserRole
 
 class IssueService:
     """Service for issue operations"""
