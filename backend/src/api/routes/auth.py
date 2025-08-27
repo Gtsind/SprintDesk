@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlmodel import Session
 from src.database import get_db_session
 from src.repositories import UserRepository
 from src.services.auth_service import AuthService
 from src.dto.auth import LoginRequest, TokenResponse
 from src.dto.user import UserCreate, UserPublic
+from src.exceptions.user_exceptions import UsernameAlreadyExistsError, EmailAlreadyExistsError, InvalidUsernameError, InactiveUserAccountError, IncorrectPasswordError
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -16,10 +17,14 @@ def register(
     """Register a new user"""
     user_repository = UserRepository(session)
     auth_service = AuthService(user_repository)
-    
-    return auth_service.register_user(user_create)
 
-@router.post("/login", response_model=TokenResponse)
+    try:
+        return auth_service.register_user(user_create)
+    
+    except (UsernameAlreadyExistsError, EmailAlreadyExistsError) as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+@router.post("/login", response_model=TokenResponse, status_code=status.HTTP_200_OK)
 def login(
     login_request: LoginRequest,
     session: Session = Depends(get_db_session)
@@ -27,5 +32,9 @@ def login(
     """Login and get access token"""
     user_repository = UserRepository(session)
     auth_service = AuthService(user_repository)
+
+    try:
+        return auth_service.authenticate_user(login_request)
     
-    return auth_service.authenticate_user(login_request)
+    except (InvalidUsernameError, IncorrectPasswordError, InactiveUserAccountError) as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)

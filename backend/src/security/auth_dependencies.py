@@ -5,6 +5,8 @@ from src.database import get_db_session
 from src.repositories.user_repository import UserRepository
 from src.services.auth_service import AuthService
 from src.models.user import User
+from src.exceptions.user_exceptions import InactiveUserAccountError, InvalidUsernameError
+from src.exceptions.auth_exceptions import InvalidTokenError, InvalidTokenPayloadError
 
 security = HTTPBearer()
 
@@ -13,25 +15,30 @@ def get_current_user(
     session: Session = Depends(get_db_session)
 ) -> User:
     """
-    Dependency to get current user from JWT token
+    Dependency to get current user from JWT token.
+    Raises HTTP 401 if:
+        - Token is invalid or expired
+        - Token payload is invalid
+        - User does not exist or is inactive
     """
     user_repository = UserRepository(session)
     auth_service = AuthService(user_repository)
     
     try:
         token_data = auth_service.get_current_user_data(credentials.credentials)
-        user = user_repository.get_by_id(token_data.user_id) # type: ignore
-        if not user or not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found or inactive",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+        if not token_data.user_id:
+            raise InvalidTokenPayloadError()
+        
+        user = user_repository.get_by_id(token_data.user_id)
+        if not user:
+            raise InvalidUsernameError()
+        
         return user
-    except Exception:
+    
+    except (InactiveUserAccountError, InvalidUsernameError, InvalidTokenError, InvalidTokenPayloadError) as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail=e.message,
             headers={"WWW-Authenticate": "Bearer"},
         )
 

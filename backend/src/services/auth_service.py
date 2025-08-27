@@ -1,10 +1,11 @@
-from fastapi import HTTPException, status
 from datetime import timedelta
 from src.dto.auth import LoginRequest, TokenResponse, TokenData
-from src.dto.user import UserCreate, UserPublic
+from src.dto.user import UserCreate
 from src.models import User, UserRole
 from src.repositories.user_repository import UserRepository
 from src.security.security import verify_password, get_password_hash, create_access_token, decode_token
+from src.exceptions.user_exceptions import EmailAlreadyExistsError, UsernameAlreadyExistsError, InactiveUserAccountError, IncorrectPasswordError, InvalidUsernameError
+from src.exceptions.auth_exceptions import InvalidTokenPayloadError, InvalidTokenError
 from src.config import settings
 
 class AuthService:
@@ -13,25 +14,19 @@ class AuthService:
     def __init__(self, user_repository: UserRepository):
         self.user_repository = user_repository
 
-    def register_user(self, user_create: UserCreate) -> UserPublic:
+    def register_user(self, user_create: UserCreate) -> User:
         """Register a new user"""
         # Check if username already exists
         if self.user_repository.get_by_username(user_create.username):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username already exists."
-            )
+            raise UsernameAlreadyExistsError()
         
         # Check if email already exists
         if self.user_repository.get_by_email(user_create.email):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already exists."
-            )
+            raise EmailAlreadyExistsError()
         
         # Hash password
-        extra_data = {"password_hash": get_password_hash(user_create.password)}
-        db_user = User.model_validate(user_create, update=extra_data)
+        hashed_password = get_password_hash(user_create.password)
+        db_user = User.model_validate(user_create, update={"password_hash": hashed_password})
         
         return self.user_repository.create(db_user)
 
@@ -40,18 +35,15 @@ class AuthService:
         # Get user by username
         user = self.user_repository.get_by_username(login_request.username)
         
-        if not user or not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid username or inactive account"
-            )
+        if not user:
+            raise InvalidUsernameError()
+        
+        if not user.is_active:
+            raise InactiveUserAccountError()
         
         # Verify password
         if not verify_password(login_request.password, user.password_hash):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect password"
-            )
+            raise IncorrectPasswordError()
         
         # Create access token
         access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
@@ -69,25 +61,19 @@ class AuthService:
         """Get current user data from token"""
         payload = decode_token(token)
         if not payload:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired token"
-            )
+            raise InvalidTokenError()
         
         user_id = payload.get("sub")
         if not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token payload"
-            )
+            raise InvalidTokenPayloadError()
         
         # Get user from database
         user = self.user_repository.get_by_id(int(user_id))
-        if not user or not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found or inactive"
-            )
+        if not user:
+            raise InvalidUsernameError()
+        
+        if not user.is_active:
+            raise InactiveUserAccountError()
         
         return TokenData(
             user_id=user.id,
