@@ -1,6 +1,7 @@
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
-from src.models import Project, ProjectMembership
-from src.dto.project import ProjectCreate, ProjectUpdate
+from src.models import Project, ProjectMembership, User
+from src.dto.project import ProjectUpdate
 from .base_repository import BaseRepository
 
 class ProjectRepository(BaseRepository[Project]):
@@ -9,15 +10,16 @@ class ProjectRepository(BaseRepository[Project]):
     def __init__(self, session: Session):
         super().__init__(Project, session)
 
-    def create(self, project_create: ProjectCreate, created_by: int) -> Project:
+    def create(self, project: Project) -> Project:
         """Create a new project"""
-        project_data = project_create.model_dump()
-        project_data["created_by"] = created_by
-        db_project = Project(**project_data)
-        self.session.add(db_project)
-        self.session.commit()
-        self.session.refresh(db_project)
-        return db_project
+        try:
+            self.session.add(project)
+            self.session.commit()
+            self.session.refresh(project)
+            return project
+        except IntegrityError:
+            self.session.rollback()
+            raise
 
     def update(self, project_id: int, project_update: ProjectUpdate) -> Project | None:
         """Update existing project"""
@@ -27,13 +29,15 @@ class ProjectRepository(BaseRepository[Project]):
         
         update_data = project_update.model_dump(exclude_unset=True)
         
-        for field, value in update_data.items():
-            setattr(db_project, field, value)
-        
-        self.session.add(db_project)
-        self.session.commit()
-        self.session.refresh(db_project)
-        return db_project
+        try:
+            db_project.sqlmodel_update(update_data)
+            self.session.add(db_project)
+            self.session.commit()
+            self.session.refresh(db_project)
+            return db_project
+        except (ValueError, IntegrityError):
+            self.session.rollback()
+            raise
 
     def get_projects_by_creator(self, creator_id: int) -> list[Project]:
         """Get projects created by a specific user"""
@@ -52,25 +56,30 @@ class ProjectRepository(BaseRepository[Project]):
         )
         return list(self.session.exec(statement).all())
 
-    def add_member(self, project_id: int, user_id: int) -> bool:
+    def add_member(self, project_id: int, user_id: int) -> None:
         """Add a member to a project"""
         membership = ProjectMembership(project_id=project_id, user_id=user_id)
-        self.session.add(membership)
-        self.session.commit()
-        return True
-
-    def remove_member(self, project_id: int, user_id: int) -> bool:
-        """Remove a member from a project"""
-        statement = select(ProjectMembership).where(
-            ProjectMembership.project_id == project_id,
-            ProjectMembership.user_id == user_id
-        )
-        membership = self.session.exec(statement).first()
-        if membership:
-            self.session.delete(membership)
+        try:
+            self.session.add(membership)
             self.session.commit()
-            return True
-        return False
+        except IntegrityError:
+            self.session.rollback()
+            raise
+
+    def remove_member(self, project_id: int, user_id: int) -> None:
+        """Remove a member from a project"""
+        try:
+            statement = select(ProjectMembership).where(
+                ProjectMembership.project_id == project_id,
+                ProjectMembership.user_id == user_id
+            )
+            membership = self.session.exec(statement).first()
+            if membership:
+                self.session.delete(membership)
+                self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            raise
 
     def is_member(self, project_id: int, user_id: int) -> bool:
         """Check if user is a member of the project"""
@@ -80,9 +89,11 @@ class ProjectRepository(BaseRepository[Project]):
         )
         return self.session.exec(statement).first() is not None
 
-    def get_project_members(self, project_id: int) -> list[ProjectMembership]:
+    def get_project_members(self, project_id: int) -> list[User]:
         """Get all members of a project"""
-        statement = select(ProjectMembership).where(
-            ProjectMembership.project_id == project_id
+        statement = (
+            select(User)
+            .join(ProjectMembership)
+            .where(ProjectMembership.project_id == project_id)
         )
         return list(self.session.exec(statement).all())

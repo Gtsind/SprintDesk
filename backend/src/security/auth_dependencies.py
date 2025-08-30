@@ -3,7 +3,10 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel import Session
 from src.database import get_db_session
 from src.repositories.user_repository import UserRepository
+from src.repositories.project_repository import ProjectRepository
 from src.services.auth_service import AuthService
+from src.services.user_service import UserService
+from src.services.project_service import ProjectService
 from src.models.user import User
 from src.exceptions.user_exceptions import InvalidUsernameError, UserNotFoundError
 from src.exceptions.auth_exceptions import InvalidTokenError, InvalidTokenPayloadError
@@ -48,3 +51,13 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> U
             detail="Inactive user"
             )
     return current_user
+
+def get_project_service(session: Session = Depends(get_db_session)) -> ProjectService:
+    project_repository = ProjectRepository(session)
+    user_repository = UserRepository(session)
+    return ProjectService(project_repository, AuthService(user_repository))
+
+def get_user_service(session: Session = Depends(get_db_session)) -> UserService:
+    user_repository = UserRepository(session)
+    auth_service = AuthService(user_repository)
+    return UserService(user_repository, auth_service)
