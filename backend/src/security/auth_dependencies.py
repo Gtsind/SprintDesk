@@ -5,7 +5,7 @@ from src.database import get_db_session
 from src.repositories.user_repository import UserRepository
 from src.services.auth_service import AuthService
 from src.models.user import User
-from src.exceptions.user_exceptions import InactiveUserAccountError, InvalidUsernameError
+from src.exceptions.user_exceptions import InvalidUsernameError, UserNotFoundError
 from src.exceptions.auth_exceptions import InvalidTokenError, InvalidTokenPayloadError
 
 security = HTTPBearer()
@@ -15,11 +15,7 @@ def get_current_user(
     session: Session = Depends(get_db_session)
 ) -> User:
     """
-    Dependency to get current user from JWT token.
-    Raises HTTP 401 if:
-        - Token is invalid or expired
-        - Token payload is invalid
-        - User does not exist or is inactive
+    Get current user from JWT token
     """
     user_repository = UserRepository(session)
     auth_service = AuthService(user_repository)
@@ -35,7 +31,7 @@ def get_current_user(
         
         return user
     
-    except (InactiveUserAccountError, InvalidUsernameError, InvalidTokenError, InvalidTokenPayloadError) as e:
+    except (InvalidUsernameError, InvalidTokenError, InvalidTokenPayloadError, UserNotFoundError) as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=e.message,

@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session
 from src.models.user import User
 from src.dto.user import UserUpdate
@@ -11,11 +12,14 @@ class UserRepository(BaseRepository[User]):
 
     def create(self, db_user: User) -> User:
         """Create a new user"""
-        self.session.add(db_user)
-        self.session.commit()
-        self.session.refresh(db_user)
-
-        return db_user
+        try:
+            self.session.add(db_user)
+            self.session.commit()
+            self.session.refresh(db_user)
+            return db_user
+        except IntegrityError:
+            self.session.rollback()
+            raise
 
     def update(self, user_id: int, user_update: UserUpdate | None = None , extra_data: dict | None = None) -> User | None:
         """Update existing user"""
@@ -28,12 +32,15 @@ class UserRepository(BaseRepository[User]):
         if user_update:
             update_data = user_update.model_dump(exclude_unset=True)
         
-        db_user.sqlmodel_update(update_data, update=extra_data)
-        
-        self.session.add(db_user)
-        self.session.commit()
-        self.session.refresh(db_user)
-        return db_user
+        try:
+            db_user.sqlmodel_update(update_data, update=extra_data)
+            self.session.add(db_user)
+            self.session.commit()
+            self.session.refresh(db_user)
+            return db_user
+        except (ValueError, IntegrityError):
+            self.session.rollback()
+            raise
 
     def get_by_username(self, username: str) -> User | None:
         """Get user by username"""

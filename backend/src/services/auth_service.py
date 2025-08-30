@@ -4,7 +4,7 @@ from src.dto.user import UserCreate
 from src.models import User, UserRole
 from src.repositories.user_repository import UserRepository
 from src.security.security import verify_password, get_password_hash, create_access_token, decode_token
-from src.exceptions.user_exceptions import EmailAlreadyExistsError, UsernameAlreadyExistsError, InactiveUserAccountError, IncorrectPasswordError, InvalidUsernameError
+from src.exceptions.user_exceptions import EmailAlreadyExistsError, UsernameAlreadyExistsError, InactiveUserAccountError, IncorrectPasswordError, InvalidUsernameError, UserNotFoundError
 from src.exceptions.auth_exceptions import InvalidTokenPayloadError, InvalidTokenError
 from src.config import settings
 
@@ -48,9 +48,9 @@ class AuthService:
         # Create access token
         access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
         access_token = create_access_token(
-            subject=user.id, 
-            expires_delta=access_token_expires
-        )
+                subject=user.id, 
+                expires_delta=access_token_expires
+            )
         
         return TokenResponse(
             access_token=access_token,
@@ -70,10 +70,7 @@ class AuthService:
         # Get user from database
         user = self.user_repository.get_by_id(int(user_id))
         if not user:
-            raise InvalidUsernameError()
-        
-        if not user.is_active:
-            raise InactiveUserAccountError()
+            raise UserNotFoundError()
         
         return TokenData(
             user_id=user.id,
@@ -94,10 +91,6 @@ class AuthService:
         """Check if user is contributor"""
         return user_role == UserRole.CONTRIBUTOR
 
-    def can_manage_users(self, user_role: UserRole) -> bool:
-        """Check if user can manage other users"""
-        return user_role == UserRole.ADMIN
-
     def can_create_projects(self, user_role: UserRole) -> bool:
         """Check if user can create projects"""
         return user_role in [UserRole.ADMIN, UserRole.PROJECT_MANAGER]
@@ -109,8 +102,8 @@ class AuthService:
         Admins can manage everything.
         Contributors cannot manage projects.
         """
-        if user_role == UserRole.ADMIN:
+        if self.is_admin(user_role):
             return True
-        if user_role == UserRole.PROJECT_MANAGER:
+        if self.is_project_manager(user_role):
             return user_id == project_creator_id
         return False
