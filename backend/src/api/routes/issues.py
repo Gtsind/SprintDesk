@@ -26,8 +26,10 @@ def create_issue(
         return issue_service.create_issue(issue_create, current_user_id, current_user.role)
     except (UserNotFoundError, ProjectNotFoundError) as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
-    except (IssueAssigneeError, InactiveUserAccountError) as e:
+    except IssueAssigneeError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+    except InactiveUserAccountError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)
     except NotAuthorizedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
 
@@ -156,10 +158,10 @@ def assign_issue(
         return issue_service.assign_issue(issue_id, actual_assignee_id, current_user_id, current_user.role)
     except (ProjectNotFoundError, UserNotFoundError, IssueNotFoundError) as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
-    except InactiveUserAccountError as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)
     except IssueAssigneeError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+    except InactiveUserAccountError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)
     except NotAuthorizedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
 

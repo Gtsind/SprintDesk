@@ -1,13 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import cast
 from src.services.project_service import ProjectService
-from src.services.user_service import UserService
 from src.dto.project import ProjectCreate, ProjectUpdate, ProjectPublic
 from src.dto.user import UserPublic
 from src.models.user import User
-from src.security.auth_dependencies import get_current_active_user, get_project_service, get_user_service
+from src.security.auth_dependencies import get_current_active_user, get_project_service
 from src.exceptions.auth_exceptions import NotAuthorizedError
-from src.exceptions.user_exceptions import UserNotFoundError
+from src.exceptions.user_exceptions import UserNotFoundError, InactiveUserAccountError
 from src.exceptions.project_exceptions import ProjectNotFoundError, AlreadyProjectMemberError, ProjectCreatorRemoveError, NotProjectMemberError, InvalidProjectStatusError
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
@@ -92,13 +91,11 @@ def add_project_member(
     user_id: int,
     current_user: User = Depends(get_current_active_user),
     project_service: ProjectService = Depends(get_project_service),
-    user_service: UserService = Depends(get_user_service)
 ):
     """Add member to project"""
     current_user_id = cast(int, current_user.id)
 
     try:
-        user_service.get_user_by_id(user_id, current_user.role, current_user_id)
         project_service.add_member(project_id, user_id, current_user_id, current_user.role)
     except (ProjectNotFoundError, UserNotFoundError) as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
@@ -106,6 +103,8 @@ def add_project_member(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
     except AlreadyProjectMemberError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+    except InactiveUserAccountError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)
 
 @router.delete("/{project_id}/members/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_project_member(

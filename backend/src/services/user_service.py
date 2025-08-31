@@ -2,20 +2,18 @@ from src.models import User, UserRole
 from src.dto.user import UserCreate, UserUpdate
 from src.repositories import UserRepository
 from src.security.security import get_password_hash
-from src.services.auth_service import AuthService
 from src.exceptions.user_exceptions import EmailAlreadyExistsError, UsernameAlreadyExistsError, UserNotFoundError
 from src.exceptions.auth_exceptions import NotAuthorizedError
 
 class UserService:
     """Service for user operations"""
     
-    def __init__(self, user_repository: UserRepository, auth_service: AuthService):
+    def __init__(self, user_repository: UserRepository):
         self.user_repository = user_repository
-        self.auth_service = auth_service
 
     def create_user(self, user_create: UserCreate, current_user_role: UserRole) -> User:
         """Create a new user (Admin only)"""
-        if not self.auth_service.is_admin(current_user_role):
+        if current_user_role == UserRole.ADMIN:
             raise NotAuthorizedError("Only admins can create new users.")
         
         # Check if username already exists
@@ -35,7 +33,7 @@ class UserService:
     def get_user_by_id(self, user_id: int, current_user_role: UserRole, current_user_id: int) -> User:
         """Get user by ID"""
         # Admin can see anyone, others can only see themselves
-        if not self.auth_service.is_admin(current_user_role) and current_user_id != user_id:
+        if not current_user_role == UserRole.ADMIN and current_user_id != user_id:
             raise NotAuthorizedError("You can only view your own profile.")
         
         user = self.user_repository.get_by_id(user_id)
@@ -46,14 +44,14 @@ class UserService:
 
     def get_all_users(self, current_user_role: UserRole) -> list[User]:
         """Get all users (Admin only)"""
-        if not self.auth_service.is_admin(current_user_role):
+        if not current_user_role == UserRole.ADMIN:
             raise NotAuthorizedError("You can only view your own profile.")
         
         return self.user_repository.get_all()
 
     def get_active_users(self, current_user_role: UserRole) -> list[User]:
         """Get all active users (Admin only)"""
-        if not self.auth_service.is_admin(current_user_role):
+        if not current_user_role == UserRole.ADMIN:
             raise NotAuthorizedError("You can only view your own profile.")
             
         return self.user_repository.get_active_users()
@@ -61,7 +59,7 @@ class UserService:
     def update_user(self, user_id: int, user_update: UserUpdate, current_user_role: UserRole, current_user_id: int) -> User:
         """Update user with proper authorization and uniqueness checks."""
         # Admin can update anyone, others can only update themselves
-        if not self.auth_service.is_admin(current_user_role) and current_user_id != user_id:
+        if not current_user_role == UserRole.ADMIN and current_user_id != user_id:
             raise NotAuthorizedError("You can only update your own profile.")
         
         update_data = user_update.model_dump(exclude_unset=True)
@@ -84,7 +82,7 @@ class UserService:
             extra_data["password_hash"] = hashed_password
         
         # Non-admins cannot change their role
-        if not self.auth_service.is_admin(current_user_role) and "role" in update_data:
+        if not current_user_role == UserRole.ADMIN and "role" in update_data:
             update_data.pop("role")
 
         # If there are other fields to update besides password
@@ -110,7 +108,7 @@ class UserService:
 
     def delete_user(self, user_id: int, current_user_role: UserRole) -> None:
         """Delete user (Admin only)"""
-        if not self.auth_service.is_admin(current_user_role):
+        if not current_user_role == UserRole.ADMIN:
             raise NotAuthorizedError("Only admins can delete users.")
         
         if not self.user_repository.delete(user_id):
@@ -118,7 +116,7 @@ class UserService:
 
     def deactivate_user(self, user_id: int, current_user_role: UserRole) -> User:
         """Deactivate user (Admin only)"""
-        if not self.auth_service.is_admin(current_user_role):
+        if not current_user_role == UserRole.ADMIN:
             raise NotAuthorizedError("Only admins can deactivate users.")
         
         user = self.user_repository.deactivate_user(user_id)
@@ -129,7 +127,7 @@ class UserService:
         
     def activate_user(self, user_id: int, current_user_role: UserRole) -> User:
         """Activate user (Admin only)"""
-        if not self.auth_service.is_admin(current_user_role):
+        if not current_user_role == UserRole.ADMIN:
             raise NotAuthorizedError("Only admins can activate users.")
         
         user = self.user_repository.activate_user(user_id)
@@ -140,7 +138,7 @@ class UserService:
 
     def get_users_by_role(self, role: str, current_user_role: UserRole) -> list[User]:
         """Get users by role (Admin only)"""
-        if not self.auth_service.is_admin(current_user_role):
+        if not current_user_role == UserRole.ADMIN:
             raise NotAuthorizedError("Only admins can view users by role.")
         
         return self.user_repository.get_users_by_role(role)

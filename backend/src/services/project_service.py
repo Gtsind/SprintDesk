@@ -1,20 +1,20 @@
 from src.dto.project import ProjectCreate, ProjectUpdate
-from src.services.auth_service import AuthService
-from src.repositories import ProjectRepository
+from src.repositories import ProjectRepository, UserRepository
 from src.models import Project, UserRole, User, ProjectStatus
 from src.exceptions.auth_exceptions import NotAuthorizedError
 from src.exceptions.project_exceptions import ProjectNotFoundError, AlreadyProjectMemberError, ProjectCreatorRemoveError, NotProjectMemberError, InvalidProjectStatusError
+from src.exceptions.user_exceptions import UserNotFoundError, InactiveUserAccountError
 
 class ProjectService:
     """Service for project operations"""
     
-    def __init__(self, project_repository: ProjectRepository, auth_service: AuthService):
+    def __init__(self, project_repository: ProjectRepository, user_repository: UserRepository):
         self.project_repository = project_repository
-        self.auth_service = auth_service
+        self.user_repository = user_repository
 
     def create_project(self, project_create: ProjectCreate, current_user_id: int, current_user_role: UserRole) -> Project:
         """Create a new project (Admin and Project Manager only)"""
-        if not self.auth_service.can_create_projects(current_user_role):
+        if not current_user_role in [UserRole.ADMIN, UserRole.PROJECT_MANAGER]:
             raise NotAuthorizedError("Not authorized to create projects.")
         
         db_project = project_create.model_dump()
@@ -30,11 +30,11 @@ class ProjectService:
             raise ProjectNotFoundError()
         
         # Admin can see any project
-        if self.auth_service.is_admin(current_user_role):
+        if current_user_role == UserRole.ADMIN:
             return project
         
         # Project Manager can see projects they created
-        if self.auth_service.is_project_manager(current_user_role) and project.created_by == current_user_id:
+        if current_user_role == UserRole.PROJECT_MANAGER and project.created_by == current_user_id:
             return project
         
         # Contributors can only see projects they are members of
@@ -45,11 +45,12 @@ class ProjectService:
 
     def get_all_projects(self, current_user_id: int, current_user_role: UserRole) -> list[Project]:
         """Get all projects based on user role"""
-        if self.auth_service.is_admin(current_user_role):
-            # Admin can see all projects
+        # Admin can see all projects
+        if current_user_role == UserRole.ADMIN:
             projects = self.project_repository.get_all()
-        elif self.auth_service.is_project_manager(current_user_role):
-            # Project Manager can see projects they created
+
+        # Project Manager can see projects they created
+        elif current_user_role == UserRole.PROJECT_MANAGER:
             projects = self.project_repository.get_projects_by_creator(current_user_id)
         else:
             # Contributors can only see projects they are members of
@@ -65,9 +66,9 @@ class ProjectService:
         
         if not (
             # Admin can update any project
-            self.auth_service.is_admin(current_user_role)
+            current_user_role == UserRole.ADMIN
             # Project Manager can update projects they created
-            or (self.auth_service.is_project_manager(current_user_role) and project.created_by == current_user_id)
+            or (current_user_role == UserRole.PROJECT_MANAGER and project.created_by == current_user_id)
         ):
             raise NotAuthorizedError("Not authorized to update this project.")
         
@@ -86,9 +87,9 @@ class ProjectService:
         
         if not (
             # Admin can delete any project
-            self.auth_service.is_admin(current_user_role)
+            current_user_role == UserRole.ADMIN
             # Project Manager can delete projects they created
-            or (self.auth_service.is_project_manager(current_user_role) and project.created_by == current_user_id)
+            or (current_user_role == UserRole.PROJECT_MANAGER and project.created_by == current_user_id)
         ):
             raise NotAuthorizedError("Not authorized to delete this project.")
 
@@ -96,15 +97,23 @@ class ProjectService:
 
     def add_member(self, project_id: int, user_id: int, current_user_id: int, current_user_role: UserRole) -> None:
         """Add member to project"""
+        # Check if the member we are trying to add to the project exists and is active
+        member = self.user_repository.get_by_id(user_id)
+        if not member:
+            raise UserNotFoundError()
+        
+        if not member.is_active:
+            raise InactiveUserAccountError("Cannot add inactive users to projects.")
+
         project = self.project_repository.get_by_id(project_id)
         if not project:
             raise ProjectNotFoundError()
         
         if not (
             # Admin can add members to any project
-            self.auth_service.is_admin(current_user_role)
+            current_user_role == UserRole.ADMIN
             # Project Manager can add members to projects they created
-            or (self.auth_service.is_project_manager(current_user_role) and project.created_by == current_user_id)
+            or (current_user_role == UserRole.PROJECT_MANAGER and project.created_by == current_user_id)
         ):
             raise NotAuthorizedError("Not authorized to add members to this project.")
 
@@ -124,9 +133,9 @@ class ProjectService:
         
         if not (
             # Admin can remove members from any project
-            self.auth_service.is_admin(current_user_role)
+            current_user_role == UserRole.ADMIN
             # Project Manager can remove members from projects they created
-            or (self.auth_service.is_project_manager(current_user_role) and project.created_by == current_user_id)
+            or (current_user_role == UserRole.PROJECT_MANAGER and project.created_by == current_user_id)
         ):
             raise NotAuthorizedError("Not authorized to remove members from this project.")
 
@@ -142,10 +151,10 @@ class ProjectService:
             raise ProjectNotFoundError()
         
         # Admin can see members of any project
-        if self.auth_service.is_admin(current_user_role):
+        if current_user_role == UserRole.ADMIN:
             return self.project_repository.get_project_members(project_id)
         # Project Manager can see members of projects they created
-        if self.auth_service.is_project_manager(current_user_role) and project.created_by == current_user_id:
+        if current_user_role == UserRole.PROJECT_MANAGER and project.created_by == current_user_id:
             return self.project_repository.get_project_members(project_id)
         # Contributors can see members of projects they are part of
         if self.project_repository.is_member(project_id, current_user_id):
@@ -165,11 +174,12 @@ class ProjectService:
         except ValueError:
             raise InvalidProjectStatusError()
 
-        if self.auth_service.is_admin(current_user_role):
-            # Admin can see all projects with this status
+        # Admin can see all projects with this status
+        if current_user_role == UserRole.ADMIN:
             projects = self.project_repository.get_projects_by_status(status)
-        elif self.auth_service.is_project_manager(current_user_role):
-            # Project Manager can see their projects with this status
+
+        # Project Manager can see their projects with this status
+        elif current_user_role == UserRole.PROJECT_MANAGER:
             all_projects = self.project_repository.get_projects_by_creator(current_user_id)
             projects = [project for project in all_projects if project.status == status]
         else:

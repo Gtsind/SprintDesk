@@ -55,12 +55,11 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> U
 def get_project_service(session: Session = Depends(get_db_session)) -> ProjectService:
     project_repository = ProjectRepository(session)
     user_repository = UserRepository(session)
-    return ProjectService(project_repository, AuthService(user_repository))
+    return ProjectService(project_repository, user_repository)
 
 def get_user_service(session: Session = Depends(get_db_session)) -> UserService:
     user_repository = UserRepository(session)
-    auth_service = AuthService(user_repository)
-    return UserService(user_repository, auth_service)
+    return UserService(user_repository)
 
 def get_issue_service(session: Session = Depends(get_db_session)) -> IssueService:
     issue_repository = IssueRepository(session)

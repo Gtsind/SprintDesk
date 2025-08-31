@@ -77,33 +77,3 @@ class AuthService:
             username=user.username,
             role=user.role
         )
-
-    # Role & Permission checks
-    def is_admin(self, user_role: UserRole) -> bool:
-        """Check if user is admin"""
-        return user_role == UserRole.ADMIN
-
-    def is_project_manager(self, user_role: UserRole) -> bool:
-        """Check if user is project manager"""
-        return user_role == UserRole.PROJECT_MANAGER
-
-    def is_contributor(self, user_role: UserRole) -> bool:
-        """Check if user is contributor"""
-        return user_role == UserRole.CONTRIBUTOR
-
-    def can_create_projects(self, user_role: UserRole) -> bool:
-        """Check if user can create projects"""
-        return user_role in [UserRole.ADMIN, UserRole.PROJECT_MANAGER]
-
-    def can_manage_project(self, user_role: UserRole, user_id: int, project_creator_id: int) -> bool:
-        """
-        Check if user can manage a specific project.
-        Project Managers can manage only their own projects.
-        Admins can manage everything.
-        Contributors cannot manage projects.
-        """
-        if self.is_admin(user_role):
-            return True
-        if self.is_project_manager(user_role):
-            return user_id == project_creator_id
-        return False
