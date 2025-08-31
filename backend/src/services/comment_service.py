@@ -1,5 +1,10 @@
-from fastapi import HTTPException, status
-from src.dto.comment import CommentCreate, CommentUpdate, CommentPublic
+from typing import cast
+from src.dto.comment import CommentCreate, CommentUpdate
+from src.models import Comment, Issue, Project
+from src.exceptions.issue_exceptions import IssueNotFoundError
+from src.exceptions.project_exceptions import ProjectNotFoundError
+from src.exceptions.comment_exceptions import CommentNotFoundError
+from src.exceptions.auth_exceptions import NotAuthorizedError
 from src.repositories import CommentRepository, IssueRepository, ProjectRepository
 from src.models.enums import UserRole
 
@@ -11,169 +16,140 @@ class CommentService:
         self.issue_repository = issue_repository
         self.project_repository = project_repository
 
-    def create_comment(self, comment_create: CommentCreate, current_user_id: int, current_user_role: UserRole) -> CommentPublic:
+    def create_comment(self, comment_create: CommentCreate, current_user_id: int, current_user_role: UserRole) -> Comment:
         """Create a new comment"""
         # Check if issue exists
         issue = self.issue_repository.get_by_id(comment_create.issue_id)
         if not issue:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Issue not found.")
+            raise IssueNotFoundError()
+        
+        # Check if project exists
+        project = self.project_repository.get_by_id(issue.project_id)
+        if not project:
+            raise ProjectNotFoundError()
         
         # Check if user can comment on this issue
-        if not self._can_comment_on_issue(issue.project_id, current_user_id, current_user_role):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed to comment on this issue.")
+        if not self._can_access_project(issue.project_id, project.created_by, current_user_id,current_user_role):
+            raise NotAuthorizedError("Not allowed to comment on this issue.")
         
-        db_comment = self.comment_repository.create(comment_create, current_user_id)
+        db_comment = Comment.model_validate(comment_create, update={"author_id": current_user_id})
         
-        return CommentPublic.model_validate(db_comment)
+        return self.comment_repository.create(db_comment)
 
-    def get_comment_by_id(self, comment_id: int, current_user_id: int, current_user_role: UserRole) -> CommentPublic:
+    def get_comment_by_id(self, comment_id: int, current_user_id: int, current_user_role: UserRole) -> Comment:
         """Get comment by ID"""
-        comment = self.comment_repository.get_by_id(comment_id)
-        if not comment:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found.")
+        comment, issue, project = self._validate_comment_and_get_context(comment_id)
         
-        # Check if user can view this comment
-        issue = self.issue_repository.get_by_id(comment.issue_id)
-        if not issue:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Issue not found.")
+        if not self._can_access_project(issue.project_id, project.created_by, current_user_id, current_user_role):
+            raise NotAuthorizedError("Not allowed to view this comment.")
         
-        if not self._can_view_comment(issue.project_id, current_user_id, current_user_role):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed to view this comment.")
-        
-        return CommentPublic.model_validate(comment)
+        return comment
 
-    def get_comments_by_issue(self, issue_id: int, current_user_id: int, current_user_role: UserRole) -> list[CommentPublic]:
+    def get_comments_by_issue(self, issue_id: int, current_user_id: int, current_user_role: UserRole) -> list[Comment]:
         """Get all comments for an issue"""
         # Check if issue exists
         issue = self.issue_repository.get_by_id(issue_id)
         if not issue:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Issue not found.")
+            raise IssueNotFoundError()
         
-        # Check if user can view comments on this issue
-        if not self._can_view_comment(issue.project_id, current_user_id, current_user_role):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed to view comments.")
+        project = self.project_repository.get_by_id(issue.project_id)
+        if not project:
+            raise ProjectNotFoundError()
         
-        comments = self.comment_repository.get_comments_by_issue(issue_id)
-        return [CommentPublic.model_validate(comment) for comment in comments]
+        # Check if user can accesss this project's issues
+        if not self._can_access_project(issue.project_id, project.created_by, current_user_id, current_user_role):
+            raise NotAuthorizedError("Not allowed to view comments for this issue.")
+        
+        return self.comment_repository.get_comments_by_issue(issue_id)
 
-    def get_comments_by_author(self, author_id: int, current_user_id: int, current_user_role: UserRole) -> list[CommentPublic]:
+    def get_comments_by_author(self, author_id: int, current_user_id: int, current_user_role: UserRole) -> list[Comment]:
         """Get all comments by a specific author"""
         # Admin can see any user's comments
         if current_user_role == UserRole.ADMIN:
-            comments = self.comment_repository.get_comments_by_author(author_id)
-            return [CommentPublic.model_validate(comment) for comment in comments]
+            return self.comment_repository.get_comments_by_author(author_id)
         
-        # Users can only see their own comments
-        if author_id != current_user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed to view these comments.")
+        # Contributors can only see their own comments
+        if current_user_role == UserRole.CONTRIBUTOR and author_id != current_user_id:
+            raise NotAuthorizedError("Not allowed to view these comments.")
         
-        comments = self.comment_repository.get_comments_by_author(author_id)
-        # Filter comments from issues in projects user has access to
+        # Get all comments by author
+        comments: list[Comment] = self.comment_repository.get_comments_by_author(author_id)
+
+        # Filter by projects the user can access
         accessible_comments = []
         for comment in comments:
-            issue = self.issue_repository.get_by_id(comment.issue_id)
-            if issue and self._can_view_comment(issue.project_id, current_user_id, current_user_role):
-                accessible_comments.append(comment)
+            try:
+                comment_id = cast(int, comment.id)
+                _, issue, project = self._validate_comment_and_get_context(comment_id)
+                if self._can_access_project(issue.project_id, project.created_by, current_user_id, current_user_role):
+                    accessible_comments.append(comment)
+            except (CommentNotFoundError, IssueNotFoundError, ProjectNotFoundError):
+                # Skip comments with broken references (e.g., a deleted issue)
+                continue
         
-        return [CommentPublic.model_validate(comment) for comment in accessible_comments]
+        return accessible_comments
 
-    def update_comment(self, comment_id: int, comment_update: CommentUpdate, current_user_id: int, current_user_role: UserRole) -> CommentPublic:
+    def update_comment(self, comment_id: int, comment_update: CommentUpdate, current_user_id: int, current_user_role: UserRole) -> Comment:
         """Update comment"""
-        comment = self.comment_repository.get_by_id(comment_id)
-        if not comment:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found.")
+        comment, _, project = self._validate_comment_and_get_context(comment_id)
         
         # Check if user can update this comment
-        if not self._can_update_comment(comment, current_user_id, current_user_role):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed to update this comment.")
+        if not self._can_modify_comment(comment, project.created_by, current_user_id, current_user_role):
+            raise NotAuthorizedError("Not allowed to update this comment.")
         
         updated_comment = self.comment_repository.update(comment_id, comment_update)
-        return CommentPublic.model_validate(updated_comment)
+        if not updated_comment:
+            raise CommentNotFoundError("Comment no longer exists.")
+        
+        return updated_comment
 
-    def delete_comment(self, comment_id: int, current_user_id: int, current_user_role: UserRole) -> bool:
+    def delete_comment(self, comment_id: int, current_user_id: int, current_user_role: UserRole) -> None:
         """Delete comment"""
-        comment = self.comment_repository.get_by_id(comment_id)
-        if not comment:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found.")
+        comment, _, project = self._validate_comment_and_get_context(comment_id)
         
         # Check if user can delete this comment
-        if not self._can_delete_comment(comment, current_user_id, current_user_role):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed to delete this comment.")
+        if not self._can_modify_comment(comment, project.created_by, current_user_id, current_user_role):
+            raise NotAuthorizedError("Not allowed to delete this comment.")
         
-        return self.comment_repository.delete(comment_id)
+        self.comment_repository.delete(comment_id)
 
-    def _can_comment_on_issue(self, project_id: int, user_id: int, user_role: str) -> bool:
-        """Check if user can comment on issues in project"""
+    def _can_access_project(self, project_id: int, project_creator: int, user_id: int, user_role: UserRole) -> bool:
+        """Check if user can access project (view/comment on issues)"""
+        # Admin -> can access everything
         if user_role == UserRole.ADMIN:
             return True
         
-        project = self.project_repository.get_by_id(project_id)
-        if not project:
-            return False
-        
-        # Project Manager can comment on issues in their projects
-        if user_role == UserRole.PROJECT_MANAGER and project.created_by == user_id:
+        # Project Manager -> Only projects they created
+        if user_role == UserRole.PROJECT_MANAGER and project_creator == user_id:
             return True
         
-        # Contributors can comment on issues in projects they are members of
+        # Contributors -> Only projects they are members of
         return self.project_repository.is_member(project_id, user_id)
-
-    def _can_view_comment(self, project_id: int, user_id: int, user_role: str) -> bool:
-        """Check if user can view comments in project"""
+    
+    def _can_modify_comment(self, comment: Comment, project_creator: int, user_id: int, user_role: UserRole) -> bool:
+        """Check if user can update/delete comment"""
         if user_role == UserRole.ADMIN:
             return True
         
-        project = self.project_repository.get_by_id(project_id)
-        if not project:
-            return False
-        
-        # Project Manager can view comments in their projects
-        if user_role == UserRole.PROJECT_MANAGER and project.created_by == user_id:
+        # Project Manager can modify comments in their projects
+        if user_role == UserRole.PROJECT_MANAGER and project_creator == user_id:
             return True
         
-        # Contributors can view comments in projects they are members of
-        return self.project_repository.is_member(project_id, user_id)
-
-    def _can_update_comment(self, comment, user_id: int, user_role: str) -> bool:
-        """Check if user can update comment"""
-        # Admin can update any comment
-        if user_role == UserRole.ADMIN:
-            return True
+        # Contributors can only modify their own comments
+        return comment.author_id == user_id
+    
+    def _validate_comment_and_get_context(self, comment_id: int) -> tuple[Comment, Issue, Project]:
+        """Validate comment exists and get related context (issue, project)"""
+        comment = self.comment_repository.get_by_id(comment_id)
+        if not comment:
+            raise CommentNotFoundError()
         
-        # Get the issue to check project permissions
         issue = self.issue_repository.get_by_id(comment.issue_id)
         if not issue:
-            return False
+            raise IssueNotFoundError()
         
         project = self.project_repository.get_by_id(issue.project_id)
         if not project:
-            return False
+            raise ProjectNotFoundError()
         
-        # Project Manager can update comments in their projects
-        if user_role == UserRole.PROJECT_MANAGER and project.created_by == user_id:
-            return True
-        
-        # Users can only update their own comments
-        return comment.author_id == user_id
-
-    def _can_delete_comment(self, comment, user_id: int, user_role: str) -> bool:
-        """Check if user can delete comment"""
-        # Admin can delete any comment
-        if user_role == UserRole.ADMIN:
-            return True
-        
-        # Get the issue to check project permissions
-        issue = self.issue_repository.get_by_id(comment.issue_id)
-        if not issue:
-            return False
-        
-        project = self.project_repository.get_by_id(issue.project_id)
-        if not project:
-            return False
-        
-        # Project Manager can delete comments in their projects
-        if user_role == UserRole.PROJECT_MANAGER and project.created_by == user_id:
-            return True
-        
-        # Users can only delete their own comments
-        return comment.author_id == user_id
+        return comment, issue, project

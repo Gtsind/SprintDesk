@@ -25,12 +25,12 @@ class IssueService:
             raise ProjectNotFoundError()
         
         # Check if user can create issues in this project
-        if not self.can_create_issue_in_project(project, current_user_id, current_user_role):
+        if not self._can_create_issue_in_project(project, current_user_id, current_user_role):
             raise NotAuthorizedError("Cannot create issue in this project.")
         
         # Validate assignee if provided
         if issue_create.assignee_id:
-            self.validate_assignee(project, issue_create.assignee_id, current_user_id, current_user_role)
+            self._validate_assignee(project, issue_create.assignee_id, current_user_id, current_user_role)
             
         db_issue = issue_create.model_dump()
         db_issue["author_id"] = current_user_id
@@ -45,7 +45,7 @@ class IssueService:
             raise IssueNotFoundError()
         
         # Check if user can view this issue
-        if not self.can_view_issue(issue.project_id, current_user_id, current_user_role):
+        if not self._can_view_issue(issue.project_id, current_user_id, current_user_role):
             raise NotAuthorizedError("Not authorized to view this issue.")
         
         return issue
@@ -78,7 +78,7 @@ class IssueService:
         if not project:
             raise ProjectNotFoundError()
         
-        if not self.can_view_issue(project_id, current_user_id, current_user_role):
+        if not self._can_view_issue(project_id, current_user_id, current_user_role):
             raise NotAuthorizedError("You are not authorized to view the issues of this project.")
         
         issues = self.issue_repository.get_issues_by_project(project_id)
@@ -91,7 +91,7 @@ class IssueService:
         if not issue:
             raise IssueNotFoundError("No issue was found to update.")
 
-        can_update, project = self.can_update_issue(issue, current_user_id, current_user_role)
+        can_update, project = self._can_update_issue(issue, current_user_id, current_user_role)
 
         if not can_update:
             raise NotAuthorizedError("Not authorized to update this issue.")
@@ -101,7 +101,7 @@ class IssueService:
         
         # Validate assignee if being updated
         if issue_update.assignee_id:
-            self.validate_assignee(project, issue_update.assignee_id, current_user_id, current_user_role)
+            self._validate_assignee(project, issue_update.assignee_id, current_user_id, current_user_role)
         
         updated_issue = self.issue_repository.update(issue_id, issue_update)
 
@@ -143,7 +143,7 @@ class IssueService:
         # For unassignment (assignee_id is None)
         if assignee_id is None:
             # Only validate that user can update the issue
-            can_update, project = self.can_update_issue(issue, current_user_id, current_user_role)
+            can_update, project = self._can_update_issue(issue, current_user_id, current_user_role)
             if not can_update:
                 raise NotAuthorizedError("Not authorized to unassign this issue.")
             
@@ -157,7 +157,7 @@ class IssueService:
             return updated_issue
         
         # For assignment -> (assignee_id is not None) Validate if user has permission to assign the issue    
-        can_update, project = self.can_update_issue(issue, current_user_id, current_user_role)
+        can_update, project = self._can_update_issue(issue, current_user_id, current_user_role)
 
         if not can_update:
             raise NotAuthorizedError("Not authorized to assign this issue.")
@@ -166,7 +166,7 @@ class IssueService:
             raise ProjectNotFoundError("Project no longer exists.")
         
         # Validate if assignee is valid to be assigned the issue
-        self.validate_assignee(project, assignee_id, current_user_id, current_user_role)
+        self._validate_assignee(project, assignee_id, current_user_id, current_user_role)
         
         updated_issue = self.issue_repository.assign_issue(issue_id, assignee_id)
 
@@ -181,7 +181,7 @@ class IssueService:
         if not issue:
             raise IssueNotFoundError()
         
-        if not self.can_update_issue(issue, current_user_id, current_user_role):
+        if not self._can_update_issue(issue, current_user_id, current_user_role):
             raise NotAuthorizedError("You are not authorized to close this issue.")
         
         updated_issue = self.issue_repository.close_issue(issue_id, current_user_id)
@@ -197,7 +197,7 @@ class IssueService:
         if not issue:
             raise IssueNotFoundError()
         
-        if not self.can_update_issue(issue, current_user_id, current_user_role):
+        if not self._can_update_issue(issue, current_user_id, current_user_role):
             raise NotAuthorizedError("You are not authorized to reopen this issue.")
         
         updated_issue = self.issue_repository.reopen_issue(issue_id)
@@ -222,7 +222,7 @@ class IssueService:
             issues = self.issue_repository.get_issues_by_assignee(assignee_id)
             accessible_issues = []
             for issue in issues:
-                if self.can_view_issue(issue.project_id, current_user_id, current_user_role):
+                if self._can_view_issue(issue.project_id, current_user_id, current_user_role):
                     accessible_issues.append(issue)
                     return accessible_issues
 
@@ -234,7 +234,7 @@ class IssueService:
         # Filter issues from projects user has access to
         accessible_issues = []
         for issue in issues:
-            if self.can_view_issue(issue.project_id, current_user_id, current_user_role):
+            if self._can_view_issue(issue.project_id, current_user_id, current_user_role):
                 accessible_issues.append(issue)
         
         return accessible_issues
@@ -260,7 +260,7 @@ class IssueService:
         issues = self.issue_repository.get_issues_by_author(author_id)
         accessible_issues = []
         for issue in issues:
-            if self.can_view_issue(issue.project_id, current_user_id, current_user_role):
+            if self._can_view_issue(issue.project_id, current_user_id, current_user_role):
                 accessible_issues.append(issue)
         
         return accessible_issues
@@ -278,7 +278,7 @@ class IssueService:
             raise LabelNotFoundError()
         
         # Check if user is authorized to modify this issue
-        can_update, _ = self.can_update_issue(issue,current_user_id,current_user_role)
+        can_update, _ = self._can_update_issue(issue,current_user_id,current_user_role)
         if not can_update:
             raise NotAuthorizedError("You cannot add labels to this issue.")
         
@@ -303,13 +303,13 @@ class IssueService:
             raise LabelNotFoundError()
         
         # Check if user is authorized to modify this issue
-        can_update, _ = self.can_update_issue(issue,current_user_id,current_user_role)
+        can_update, _ = self._can_update_issue(issue,current_user_id,current_user_role)
         if not can_update:
             raise NotAuthorizedError("You cannot remove labels from this issue.")
         
         self.issue_repository.remove_label_from_issue(issue_id, label_id)
 
-    def can_create_issue_in_project(self, project: Project, user_id: int, user_role: UserRole) -> bool:
+    def _can_create_issue_in_project(self, project: Project, user_id: int, user_role: UserRole) -> bool:
         """Check if user can create issues in project"""
         if user_role == UserRole.ADMIN:
             return True
@@ -320,7 +320,7 @@ class IssueService:
         # Contributors can create issues in projects they are members of
         return self.project_repository.is_member(project.id, user_id)
 
-    def can_view_issue(self, project_id: int, user_id: int, user_role: UserRole) -> bool:
+    def _can_view_issue(self, project_id: int, user_id: int, user_role: UserRole) -> bool:
         """Check if user can view issues in project"""
         project = self.project_repository.get_by_id(project_id)
         if not project:
@@ -334,7 +334,7 @@ class IssueService:
         
         return self.project_repository.is_member(project_id, user_id)
 
-    def can_update_issue(self, issue: Issue, user_id: int, user_role: UserRole) -> tuple[bool, Project | None]:
+    def _can_update_issue(self, issue: Issue, user_id: int, user_role: UserRole) -> tuple[bool, Project | None]:
         """Check if user can update issue"""
         project = self.project_repository.get_by_id(issue.project_id)
         if not project:
@@ -350,7 +350,7 @@ class IssueService:
         # Contributors can update issues assigned to them or issues they created
         return issue.assignee_id == user_id or issue.author_id == user_id, project
 
-    def validate_assignee(self, project: Project, assignee_id: int, current_user_id: int, current_user_role: UserRole) -> None:
+    def _validate_assignee(self, project: Project, assignee_id: int, current_user_id: int, current_user_role: UserRole) -> None:
         """Validate if user can be assigned to project issues"""
         # Check if assignee exists and is active
         assignee = self.user_repository.get_by_id(assignee_id)

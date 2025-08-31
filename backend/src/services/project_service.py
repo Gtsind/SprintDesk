@@ -17,9 +17,7 @@ class ProjectService:
         if not current_user_role in [UserRole.ADMIN, UserRole.PROJECT_MANAGER]:
             raise NotAuthorizedError("Not authorized to create projects.")
         
-        db_project = project_create.model_dump()
-        db_project["created_by"] = current_user_id
-        db_project = Project.model_validate(db_project)
+        db_project = Project.model_validate(project_create, update={"created_by": current_user_id})
 
         return self.project_repository.create(db_project)
 

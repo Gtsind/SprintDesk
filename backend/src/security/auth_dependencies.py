@@ -2,11 +2,12 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel import Session
 from src.database import get_db_session
-from src.repositories import UserRepository, ProjectRepository, IssueRepository, LabelRepository
+from src.repositories import UserRepository, ProjectRepository, IssueRepository, LabelRepository, CommentRepository
 from src.services.auth_service import AuthService
 from src.services.user_service import UserService
 from src.services.issue_service import IssueService
 from src.services.project_service import ProjectService
+from src.services.comment_service import CommentService
 from src.models.user import User
 from src.exceptions.user_exceptions import InvalidUsernameError, UserNotFoundError
 from src.exceptions.auth_exceptions import InvalidTokenError, InvalidTokenPayloadError
@@ -67,3 +68,10 @@ def get_issue_service(session: Session = Depends(get_db_session)) -> IssueServic
     user_repository = UserRepository(session)
     label_repository = LabelRepository(session)
     return IssueService(issue_repository, project_repository, user_repository, label_repository)
+
+def get_comment_service(session: Session = Depends(get_db_session)) -> CommentService:
+    comment_repository = CommentRepository(session)
+    issue_repository = IssueRepository(session)
+    project_repository = ProjectRepository(session)
+    return CommentService(comment_repository, issue_repository, project_repository)
+
