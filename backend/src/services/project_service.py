@@ -1,7 +1,7 @@
 from src.dto.project import ProjectCreate, ProjectUpdate
 from src.services.auth_service import AuthService
 from src.repositories import ProjectRepository
-from src.models import Project, UserRole, User
+from src.models import Project, UserRole, User, ProjectStatus
 from src.exceptions.auth_exceptions import NotAuthorizedError
 from src.exceptions.project_exceptions import ProjectNotFoundError, AlreadyProjectMemberError, ProjectCreatorRemoveError, NotProjectMemberError, InvalidProjectStatusError
 
@@ -157,9 +157,12 @@ class ProjectService:
         """Check if user is member of project"""
         return self.project_repository.is_member(project_id, user_id)
 
-    def get_projects_by_status(self, status: str, current_user_id: int, current_user_role: UserRole) -> list[Project]:
+    def get_projects_by_status(self, status_name: str, current_user_id: int, current_user_role: UserRole) -> list[Project]:
         """Get projects by status based on user role"""
-        if status.strip().lower() not in ["active", "completed", "on hold", "cancelled"]:
+        try:
+            status = status_name.strip().replace("-","_").title()
+            status = ProjectStatus(status)
+        except ValueError:
             raise InvalidProjectStatusError()
 
         if self.auth_service.is_admin(current_user_role):

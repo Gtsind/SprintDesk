@@ -1,20 +1,21 @@
-from fastapi import HTTPException, status
-from src.dto.issue import IssueCreate, IssueUpdate, IssuePublic
-from src.repositories import IssueRepository, ProjectRepository, UserRepository
+from src.dto.issue import IssueCreate, IssueUpdate
+from src.repositories import IssueRepository, ProjectRepository, UserRepository, LabelRepository
 from src.exceptions.project_exceptions import ProjectNotFoundError
 from src.exceptions.auth_exceptions import NotAuthorizedError
 from src.exceptions.user_exceptions import UserNotFoundError, InactiveUserAccountError
 from src.exceptions.issue_exceptions import IssueAssigneeError, IssueNotFoundError
+from src.exceptions.label_exceptions import LabelNotFoundError, LabelAlreadyExistsError
 from src.models import Issue, Project
 from src.models.enums import UserRole
 
 class IssueService:
     """Service for issue operations"""
     
-    def __init__(self, issue_repository: IssueRepository, project_repository: ProjectRepository, user_repository: UserRepository):
+    def __init__(self, issue_repository: IssueRepository, project_repository: ProjectRepository, user_repository: UserRepository, label_repository: LabelRepository):
         self.issue_repository = issue_repository
         self.project_repository = project_repository
         self.user_repository = user_repository
+        self.label_repository = label_repository
 
     def create_issue(self, issue_create: IssueCreate, current_user_id: int, current_user_role: UserRole) -> Issue:
         """Create a new issue"""
@@ -73,6 +74,10 @@ class IssueService:
 
     def get_issues_by_project(self, project_id: int, current_user_id: int, current_user_role: UserRole) -> list[Issue]:
         """Get issues by project"""
+        project = self.project_repository.get_by_id(project_id)
+        if not project:
+            raise ProjectNotFoundError()
+        
         if not self.can_view_issue(project_id, current_user_id, current_user_role):
             raise NotAuthorizedError("You are not authorized to view the issues of this project.")
         
@@ -133,7 +138,7 @@ class IssueService:
         """Assign or unassign issue"""
         issue = self.issue_repository.get_by_id(issue_id)
         if not issue:
-                raise IssueNotFoundError()
+            raise IssueNotFoundError()
 
         # For unassignment (assignee_id is None)
         if assignee_id is None:
@@ -151,7 +156,7 @@ class IssueService:
         
             return updated_issue
         
-        # For assignment -> Validate if user has permission to assign the issue
+        # For assignment -> (assignee_id is not None) Validate if user has permission to assign the issue    
         can_update, project = self.can_update_issue(issue, current_user_id, current_user_role)
 
         if not can_update:
@@ -170,29 +175,37 @@ class IssueService:
         
         return updated_issue
 
-    def close_issue(self, issue_id: int, current_user_id: int, current_user_role: UserRole) -> IssuePublic:
+    def close_issue(self, issue_id: int, current_user_id: int, current_user_role: UserRole) -> Issue:
         """Close issue"""
         issue = self.issue_repository.get_by_id(issue_id)
         if not issue:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Issue not found.")
+            raise IssueNotFoundError()
         
         if not self.can_update_issue(issue, current_user_id, current_user_role):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot close this issue.")
+            raise NotAuthorizedError("You are not authorized to close this issue.")
         
         updated_issue = self.issue_repository.close_issue(issue_id, current_user_id)
-        return IssuePublic.model_validate(updated_issue)
 
-    def reopen_issue(self, issue_id: int, current_user_id: int, current_user_role: UserRole) -> IssuePublic:
+        if not updated_issue:
+            raise IssueNotFoundError("Issue no longer exists.")
+
+        return updated_issue
+
+    def reopen_issue(self, issue_id: int, current_user_id: int, current_user_role: UserRole) -> Issue:
         """Reopen issue"""
         issue = self.issue_repository.get_by_id(issue_id)
         if not issue:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Issue not found.")
+            raise IssueNotFoundError()
         
         if not self.can_update_issue(issue, current_user_id, current_user_role):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot reopen this issue.")
+            raise NotAuthorizedError("You are not authorized to reopen this issue.")
         
         updated_issue = self.issue_repository.reopen_issue(issue_id)
-        return IssuePublic.model_validate(updated_issue)
+
+        if not updated_issue:
+            raise IssueNotFoundError("Issue no longer exists.")
+
+        return updated_issue
 
     def get_issues_by_assignee(self, assignee_id: int, current_user_id: int, current_user_role: UserRole) -> list[Issue]:
         """Get issues assigned to user"""
@@ -211,6 +224,7 @@ class IssueService:
             for issue in issues:
                 if self.can_view_issue(issue.project_id, current_user_id, current_user_role):
                     accessible_issues.append(issue)
+                    return accessible_issues
 
         # Contributors can only see their own assigned issues
         if assignee_id != current_user_id:
@@ -225,48 +239,75 @@ class IssueService:
         
         return accessible_issues
 
-    def get_issues_by_author(self, author_id: int, current_user_id: int, current_user_role: UserRole) -> list[IssuePublic]:
+    def get_issues_by_author(self, author_id: int, current_user_id: int, current_user_role: UserRole) -> list[Issue]:
         """Get issues created by user"""
-        # Admin can see any user's authored issues
+        # Check that author exists
+        author = self.user_repository.get_by_id(author_id)
+        if not author:
+            raise UserNotFoundError(f"User with id:{author_id} was not found.")
+        
+        # Admin can view any user's authored issues
         if current_user_role == UserRole.ADMIN:
-            issues = self.issue_repository.get_issues_by_author(author_id)
-            return [IssuePublic.model_validate(issue) for issue in issues]
+            return self.issue_repository.get_issues_by_author(author_id)
         
-        # Users can only see their own authored issues
-        if author_id != current_user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can only view issues authored by yourself.")
+        # Contributors can only view their own authored issues
+        if current_user_role == UserRole.CONTRIBUTOR:
+            if author_id != current_user_id:
+                raise NotAuthorizedError("You can only view issues created by yourself.")
+            return self.issue_repository.get_issues_by_author(author_id)
         
+        # Project Managers can view issues authored by anyone in projects they own 
         issues = self.issue_repository.get_issues_by_author(author_id)
-        # Filter issues from projects user has access to
         accessible_issues = []
         for issue in issues:
             if self.can_view_issue(issue.project_id, current_user_id, current_user_role):
                 accessible_issues.append(issue)
         
-        return [IssuePublic.model_validate(issue) for issue in accessible_issues]
+        return accessible_issues
 
-    def add_label_to_issue(self, issue_id: int, label_id: int, current_user_id: int, current_user_role: UserRole) -> bool:
+    def add_label_to_issue(self, issue_id: int, label_id: int, current_user_id: int, current_user_role: UserRole) -> None:
         """Add label to issue"""
+        # Check issue exists
         issue = self.issue_repository.get_by_id(issue_id)
         if not issue:
-            return False
+            raise IssueNotFoundError("Couldn't add label to issue: Issue does not exist.")
         
-        if not self.can_view_issue(issue.project_id, current_user_id, current_user_role):
-            return False
+        # Check label exists
+        label = self.label_repository.get_by_id(label_id)
+        if not label:
+            raise LabelNotFoundError()
         
-        result = self.issue_repository.add_label_to_issue(issue_id, label_id)
-        return result is not None
+        # Check if user is authorized to modify this issue
+        can_update, _ = self.can_update_issue(issue,current_user_id,current_user_role)
+        if not can_update:
+            raise NotAuthorizedError("You cannot add labels to this issue.")
+        
+        # Check if issue already has this label
+        current_labels = self.label_repository.get_labels_by_issue(issue_id)
+        current_label_ids = [l.id for l in current_labels]
+        if label_id in current_label_ids:
+            raise LabelAlreadyExistsError()
+        
+        self.issue_repository.add_label_to_issue(issue_id, label_id)
 
-    def remove_label_from_issue(self, issue_id: int, label_id: int, current_user_id: int, current_user_role: UserRole) -> bool:
+    def remove_label_from_issue(self, issue_id: int, label_id: int, current_user_id: int, current_user_role: UserRole) -> None:
         """Remove label from issue"""
+        # Check issue exists
         issue = self.issue_repository.get_by_id(issue_id)
         if not issue:
-            return False
+            raise IssueNotFoundError("Couldn't remove label from issue: Issue does not exist.")
         
-        if not self.can_view_issue(issue.project_id, current_user_id, current_user_role):
-            return False
+        # Check label exists
+        label = self.label_repository.get_by_id(label_id)
+        if not label:
+            raise LabelNotFoundError()
         
-        return self.issue_repository.remove_label_from_issue(issue_id, label_id)
+        # Check if user is authorized to modify this issue
+        can_update, _ = self.can_update_issue(issue,current_user_id,current_user_role)
+        if not can_update:
+            raise NotAuthorizedError("You cannot remove labels from this issue.")
+        
+        self.issue_repository.remove_label_from_issue(issue_id, label_id)
 
     def can_create_issue_in_project(self, project: Project, user_id: int, user_role: UserRole) -> bool:
         """Check if user can create issues in project"""
@@ -281,12 +322,12 @@ class IssueService:
 
     def can_view_issue(self, project_id: int, user_id: int, user_role: UserRole) -> bool:
         """Check if user can view issues in project"""
-        if user_role == UserRole.ADMIN:
-            return True
-        
         project = self.project_repository.get_by_id(project_id)
         if not project:
-            raise ProjectNotFoundError()
+            return False
+        
+        if user_role == UserRole.ADMIN:
+            return True
         
         if user_role == UserRole.PROJECT_MANAGER and project.created_by == user_id:
             return True

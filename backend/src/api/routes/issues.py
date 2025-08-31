@@ -1,8 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
 from typing import cast
-from src.database import get_db_session
-from src.repositories import IssueRepository, ProjectRepository, UserRepository
 from src.services.issue_service import IssueService
 from src.dto.issue import IssueCreate, IssueUpdate, IssuePublic
 from src.models.user import User
@@ -11,6 +8,7 @@ from src.exceptions.user_exceptions import UserNotFoundError, InactiveUserAccoun
 from src.exceptions.project_exceptions import ProjectNotFoundError
 from src.exceptions.issue_exceptions import IssueAssigneeError, IssueNotFoundError
 from src.exceptions.auth_exceptions import NotAuthorizedError
+from src.exceptions.label_exceptions import LabelAlreadyExistsError, LabelNotFoundError
 
 router = APIRouter(prefix="/issues", tags=["Issues"])
 
@@ -123,22 +121,24 @@ def get_issues_by_assignee(
         return issue_service.get_issues_by_assignee(assignee_id, current_user_id, current_user.role)
     except NotAuthorizedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
-    except (ProjectNotFoundError, UserNotFoundError) as e:
+    except UserNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
 
-@router.get("/author/{author_id}", response_model=list[IssuePublic])
+@router.get("/author/{author_id}", response_model=list[IssuePublic], status_code=status.HTTP_200_OK)
 def get_issues_by_author(
     author_id: int,
     current_user: User = Depends(get_current_active_user),
-    session: Session = Depends(get_db_session)
+    issue_service: IssueService = Depends(get_issue_service)
 ):
     """Get issues by author"""
-    issue_repository = IssueRepository(session)
-    project_repository = ProjectRepository(session)
-    user_repository = UserRepository(session)
-    issue_service = IssueService(issue_repository, project_repository, user_repository)
+    current_user_id = cast(int, current_user.id)
     
-    return issue_service.get_issues_by_author(author_id, current_user.id, current_user.role) # type: ignore
+    try:
+        return issue_service.get_issues_by_author(author_id, current_user_id, current_user.role)
+    except NotAuthorizedError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
 
 @router.patch("/{issue_id}/assign/{assignee_id}", response_model=IssuePublic, status_code=status.HTTP_200_OK)
 def assign_issue(
@@ -150,6 +150,7 @@ def assign_issue(
     """Assign or unassign issue"""
     current_user_id = cast(int, current_user.id)
     try:
+        # If assignee_id == 0 -> unassign
         actual_assignee_id = None if assignee_id == 0 else assignee_id
         
         return issue_service.assign_issue(issue_id, actual_assignee_id, current_user_id, current_user.role)
@@ -162,66 +163,72 @@ def assign_issue(
     except NotAuthorizedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
 
-@router.patch("/{issue_id}/close", response_model=IssuePublic)
+@router.patch("/{issue_id}/close", response_model=IssuePublic, status_code=status.HTTP_200_OK)
 def close_issue(
     issue_id: int,
     current_user: User = Depends(get_current_active_user),
-    session: Session = Depends(get_db_session)
+    issue_service: IssueService = Depends(get_issue_service)
 ):
     """Close issue"""
-    issue_repository = IssueRepository(session)
-    project_repository = ProjectRepository(session)
-    user_repository = UserRepository(session)
-    issue_service = IssueService(issue_repository, project_repository, user_repository)
-    
-    return issue_service.close_issue(issue_id, current_user.id, current_user.role) # type: ignore
+    current_user_id = cast(int, current_user.id)
 
-@router.patch("/{issue_id}/reopen", response_model=IssuePublic)
+    try:
+        return issue_service.close_issue(issue_id, current_user_id, current_user.role)
+    except IssueNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    except NotAuthorizedError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
+
+@router.patch("/{issue_id}/reopen", response_model=IssuePublic, status_code=status.HTTP_200_OK)
 def reopen_issue(
     issue_id: int,
     current_user: User = Depends(get_current_active_user),
-    session: Session = Depends(get_db_session)
+    issue_service: IssueService = Depends(get_issue_service)
 ):
     """Reopen issue"""
-    issue_repository = IssueRepository(session)
-    project_repository = ProjectRepository(session)
-    user_repository = UserRepository(session)
-    issue_service = IssueService(issue_repository, project_repository, user_repository)
+    current_user_id = cast(int, current_user.id)
     
-    return issue_service.reopen_issue(issue_id, current_user.id, current_user.role) # type: ignore
+    try:
+        return issue_service.reopen_issue(issue_id, current_user_id, current_user.role)
+    except IssueNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    except NotAuthorizedError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
 
 @router.post("/{issue_id}/labels/{label_id}", status_code=status.HTTP_201_CREATED)
 def add_label_to_issue(
     issue_id: int,
     label_id: int,
     current_user: User = Depends(get_current_active_user),
-    session: Session = Depends(get_db_session)
+    issue_service: IssueService = Depends(get_issue_service)
 ):
     """Add label to issue"""
-    issue_repository = IssueRepository(session)
-    project_repository = ProjectRepository(session)
-    user_repository = UserRepository(session)
-    issue_service = IssueService(issue_repository, project_repository, user_repository)
+    current_user_id = cast(int, current_user.id)
     
-    success = issue_service.add_label_to_issue(issue_id, label_id, current_user.id, current_user.role) # type: ignore
-    if not success:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not add label")
-    
-    return {"message": "Label added successfully"}
+    try:
+        issue_service.add_label_to_issue(issue_id, label_id, current_user_id, current_user.role)
+        return {"message": "Label added successfully."}
+    except (IssueNotFoundError, LabelNotFoundError) as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    except NotAuthorizedError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
+    except LabelAlreadyExistsError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
 
 @router.delete("/{issue_id}/labels/{label_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_label_from_issue(
     issue_id: int,
     label_id: int,
     current_user: User = Depends(get_current_active_user),
-    session: Session = Depends(get_db_session)
+    issue_service: IssueService = Depends(get_issue_service)
 ):
     """Remove label from issue"""
-    issue_repository = IssueRepository(session)
-    project_repository = ProjectRepository(session)
-    user_repository = UserRepository(session)
-    issue_service = IssueService(issue_repository, project_repository, user_repository)
+    current_user_id = cast(int, current_user.id)
+
+    try:
+        issue_service.remove_label_from_issue(issue_id, label_id, current_user_id, current_user.role)
+    except (IssueNotFoundError, LabelNotFoundError) as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    except NotAuthorizedError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
     
-    success = issue_service.remove_label_from_issue(issue_id, label_id, current_user.id, current_user.role) # type: ignore
-    if not success:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Label not found on issue")

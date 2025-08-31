@@ -21,9 +21,6 @@ class ProjectPublic(ProjectBase):
     created_at: datetime
     creator: "UserSummary"
 
-    class Config:
-        from_attributes = True
-
 class ProjectSummary(SQLModel):
     """DTO for minimal project info"""
     id: int

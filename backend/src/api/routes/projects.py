@@ -142,7 +142,7 @@ def get_project_members(
     except NotAuthorizedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
 
-@router.get("/status/{status}", response_model=list[ProjectPublic], status_code=status.HTTP_200_OK)
+@router.get("/status/{status_name}", response_model=list[ProjectPublic], status_code=status.HTTP_200_OK)
 def get_projects_by_status(
     status_name: str,
     current_user: User = Depends(get_current_active_user),

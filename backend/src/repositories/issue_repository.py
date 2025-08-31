@@ -83,11 +83,15 @@ class IssueRepository(BaseRepository[Issue]):
         db_issue.closed_at = datetime.now(timezone.utc)
         db_issue.closed_by = closed_by_user_id
         db_issue.updated_at = datetime.now(timezone.utc)
-        
-        self.session.add(db_issue)
-        self.session.commit()
-        self.session.refresh(db_issue)
-        return db_issue
+
+        try:
+            self.session.add(db_issue)
+            self.session.commit()
+            self.session.refresh(db_issue)
+            return db_issue
+        except IntegrityError:
+            self.session.rollback()
+            raise
 
     def reopen_issue(self, issue_id: int) -> Issue | None:
         """Reopen a closed issue"""
@@ -99,19 +103,27 @@ class IssueRepository(BaseRepository[Issue]):
         db_issue.closed_at = None
         db_issue.closed_by = None
         db_issue.updated_at = datetime.now(timezone.utc)
-        
-        self.session.add(db_issue)
-        self.session.commit()
-        self.session.refresh(db_issue)
-        return db_issue
+
+        try:
+            self.session.add(db_issue)
+            self.session.commit()
+            self.session.refresh(db_issue)
+            return db_issue
+        except IntegrityError:
+            self.session.rollback()
+            raise
 
     def add_label_to_issue(self, issue_id: int, label_id: int) -> IssueLabel:
         """Add a label to an issue"""
         issue_label = IssueLabel(issue_id=issue_id, label_id=label_id)
-        self.session.add(issue_label)
-        self.session.commit()
-        self.session.refresh(issue_label)
-        return issue_label
+        try:
+            self.session.add(issue_label)
+            self.session.commit()
+            self.session.refresh(issue_label)
+            return issue_label
+        except IntegrityError:
+            self.session.rollback()
+            raise
 
     def remove_label_from_issue(self, issue_id: int, label_id: int) -> bool:
         """Remove a label from an issue"""
@@ -121,12 +133,11 @@ class IssueRepository(BaseRepository[Issue]):
         )
         issue_label = self.session.exec(statement).first()
         if issue_label:
-            self.session.delete(issue_label)
-            self.session.commit()
-            return True
+            try:
+                self.session.delete(issue_label)
+                self.session.commit()
+                return True
+            except IntegrityError:
+                self.session.rollback()
+                raise
         return False
-
-    def get_issue_labels(self, issue_id: int) -> list[IssueLabel]:
-        """Get all labels for an issue"""
-        statement = select(IssueLabel).where(IssueLabel.issue_id == issue_id)
-        return list(self.session.exec(statement).all())
