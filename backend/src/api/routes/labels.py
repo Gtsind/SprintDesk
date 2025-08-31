@@ -90,7 +90,7 @@ def get_labels_by_issue(
     
     return label_service.get_labels_by_issue(issue_id)
 
-@router.put("/{label_id}", response_model=LabelPublic)
+@router.patch("/{label_id}", response_model=LabelPublic)
 def update_label(
     label_id: int,
     label_update: LabelUpdate,

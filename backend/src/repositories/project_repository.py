@@ -81,8 +81,11 @@ class ProjectRepository(BaseRepository[Project]):
             self.session.rollback()
             raise
 
-    def is_member(self, project_id: int, user_id: int) -> bool:
+    def is_member(self, project_id: int | None, user_id: int) -> bool:
         """Check if user is a member of the project"""
+        if project_id is None:
+            return False
+        
         statement = select(ProjectMembership).where(
             ProjectMembership.project_id == project_id,
             ProjectMembership.user_id == user_id

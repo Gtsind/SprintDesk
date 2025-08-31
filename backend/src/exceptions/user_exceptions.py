@@ -21,8 +21,8 @@ class InvalidUsernameError(AppException):
         super().__init__(message)
 
 class InactiveUserAccountError(AppException):
-    """Raised when a user is trying to login with an inactive account's credentials."""
-    def __init__(self, message: str = "Cannot login. Your account is inactive."):
+    """Raised when the user is inactive."""
+    def __init__(self, message: str = "User account is inactive."):
         super().__init__(message)
 
 class UserNotFoundError(AppException):

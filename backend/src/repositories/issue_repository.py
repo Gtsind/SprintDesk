@@ -1,7 +1,8 @@
+from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
-from sqlmodel import Session, select
+from sqlmodel import Session, select, col
 from src.models import Issue, IssueLabel, IssueStatus
-from src.dto.issue import IssueCreate, IssueUpdate
+from src.dto.issue import IssueUpdate
 from .base_repository import BaseRepository
 
 class IssueRepository(BaseRepository[Issue]):
@@ -10,15 +11,16 @@ class IssueRepository(BaseRepository[Issue]):
     def __init__(self, session: Session):
         super().__init__(Issue, session)
 
-    def create(self, issue_create: IssueCreate, author_id: int) -> Issue:
+    def create(self, issue: Issue) -> Issue:
         """Create a new issue"""
-        issue_data = issue_create.model_dump()
-        issue_data["author_id"] = author_id
-        db_issue = Issue(**issue_data)
-        self.session.add(db_issue)
-        self.session.commit()
-        self.session.refresh(db_issue)
-        return db_issue
+        try:
+            self.session.add(issue)
+            self.session.commit()
+            self.session.refresh(issue)
+            return issue
+        except IntegrityError:
+            self.session.rollback()
+            raise
 
     def update(self, issue_id: int, issue_update: IssueUpdate) -> Issue | None:
         """Update existing issue"""
@@ -29,17 +31,26 @@ class IssueRepository(BaseRepository[Issue]):
         update_data = issue_update.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.now(timezone.utc)
         
-        for field, value in update_data.items():
-            setattr(db_issue, field, value)
-        
-        self.session.add(db_issue)
-        self.session.commit()
-        self.session.refresh(db_issue)
-        return db_issue
+        try:
+            db_issue.sqlmodel_update(update_data)
+            self.session.add(db_issue)
+            self.session.commit()
+            self.session.refresh(db_issue)
+            return db_issue
+        except (ValueError, IntegrityError):
+            self.session.rollback()
+            raise
 
     def get_issues_by_project(self, project_id: int) -> list[Issue]:
         """Get issues by project"""
         return self.get_all_by_field("project_id", project_id)
+    
+    def get_issues_by_project_ids(self, project_ids: list[int]) -> list[Issue]:
+        """Get issues by multiple project IDs"""
+        if not project_ids:
+            return []
+        statement = select(Issue).where(col(Issue.project_id).in_(project_ids))
+        return list(self.session.exec(statement).all())
 
     def get_issues_by_author(self, author_id: int) -> list[Issue]:
         """Get issues created by a specific user"""

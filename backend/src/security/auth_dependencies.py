@@ -4,8 +4,10 @@ from sqlmodel import Session
 from src.database import get_db_session
 from src.repositories.user_repository import UserRepository
 from src.repositories.project_repository import ProjectRepository
+from src.repositories.issue_repository import IssueRepository
 from src.services.auth_service import AuthService
 from src.services.user_service import UserService
+from src.services.issue_service import IssueService
 from src.services.project_service import ProjectService
 from src.models.user import User
 from src.exceptions.user_exceptions import InvalidUsernameError, UserNotFoundError
@@ -61,3 +63,9 @@ def get_user_service(session: Session = Depends(get_db_session)) -> UserService:
     user_repository = UserRepository(session)
     auth_service = AuthService(user_repository)
     return UserService(user_repository, auth_service)
+
+def get_issue_service(session: Session = Depends(get_db_session)) -> IssueService:
+    issue_repository = IssueRepository(session)
+    project_repository = ProjectRepository(session)
+    user_repository = UserRepository(session)
+    return IssueService(issue_repository, project_repository, user_repository)

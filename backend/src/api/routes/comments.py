@@ -37,7 +37,7 @@ def get_comment_by_id(
     
     return comment_service.get_comment_by_id(comment_id, current_user.id, current_user.role) # type: ignore
 
-@router.put("/{comment_id}", response_model=CommentPublic)
+@router.patch("/{comment_id}", response_model=CommentPublic)
 def update_comment(
     comment_id: int,
     comment_update: CommentUpdate,
