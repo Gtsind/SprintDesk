@@ -1,35 +1,75 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, type ReactNode } from "react";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import {
+  NavigationProvider,
+  useNavigation,
+} from "./contexts/NavigationContext";
+import { LoginPage } from "./pages/LoginPage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { ProjectIssuesPage } from "./pages/ProjectIssuesPage";
+import { IssueDetailPage } from "./pages/IssueDetailPage";
 
-function App() {
-  const [count, setCount] = useState(0)
+function ProtectedPage({ children }: { children: ReactNode }) {
+  const { state } = useAuth();
+  const { navigateTo } = useNavigation();
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+  useEffect(() => {
+    if (!state.token) {
+      navigateTo("login");
+    }
+  }, [state.token, navigateTo]);
+
+  if (!state.token) return null;
+
+  return <>{children}</>;
 }
 
-export default App
+function AppRouter() {
+  const { state } = useAuth();
+  const { navigation, navigateTo } = useNavigation();
+
+  useEffect(() => {
+    if (state.token && navigation.currentPage === "login") {
+      navigateTo("dashboard");
+    }
+  }, [state.token, navigation.currentPage, navigateTo]);
+
+  const renderCurrentPage = () => {
+    switch (navigation.currentPage) {
+      case "login":
+        return <LoginPage />;
+      case "dashboard":
+        return (
+          <ProtectedPage>
+            <DashboardPage />
+          </ProtectedPage>
+        );
+      case "project-issues":
+        return (
+          <ProtectedPage>
+            <ProjectIssuesPage />
+          </ProtectedPage>
+        );
+      case "issue-detail":
+        return (
+          <ProtectedPage>
+            <IssueDetailPage />
+          </ProtectedPage>
+        );
+      default:
+        return <LoginPage />;
+    }
+  };
+
+  return renderCurrentPage();
+}
+
+export default function App() {
+  return (
+    <NavigationProvider>
+      <AuthProvider>
+        <AppRouter />
+      </AuthProvider>
+    </NavigationProvider>
+  );
+}

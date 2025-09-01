@@ -91,10 +91,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
       const response = await apiLogin(username, password);
-      const user = await getCurrentUser();
 
       localStorage.setItem("token", response.access_token);
       setAuthToken(response.access_token);
+
+      const user = await getCurrentUser();
 
       dispatch({
         type: "LOGIN_SUCCESS",

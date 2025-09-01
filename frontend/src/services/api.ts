@@ -2,7 +2,6 @@ import type { User, Project, Issue, Comment } from "../types";
 
 const BASE_URL = "http://localhost:8000/api/v1";
 
-// Token state - using module-level variable for simplicity
 let authToken: string | null = null;
 
 export const setAuthToken = (token: string | null) => {
