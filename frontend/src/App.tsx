@@ -1,63 +1,44 @@
-import { useEffect, type ReactNode } from "react";
+import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import {
-  NavigationProvider,
-  useNavigation,
-} from "./contexts/NavigationContext";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ProjectIssuesPage } from "./pages/ProjectIssuesPage";
 import { IssueDetailPage } from "./pages/IssueDetailPage";
 
-function ProtectedPage({ children }: { children: ReactNode }) {
-  const { state } = useAuth();
-  const { navigateTo } = useNavigation();
-
-  useEffect(() => {
-    if (!state.token) {
-      navigateTo("login");
-    }
-  }, [state.token, navigateTo]);
-
-  if (!state.token) return null;
-
-  return <>{children}</>;
-}
-
 function AppRouter() {
-  const { state } = useAuth();
-  const { navigation, navigateTo } = useNavigation();
+  const [currentPage, setCurrentPage] = useState("login");
+  const [pageData, setPageData] = useState({});
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (state.token && navigation.currentPage === "login") {
-      navigateTo("dashboard");
+    if (user && currentPage === "login") {
+      setCurrentPage("dashboard");
+    } else if (!user && currentPage !== "login") {
+      setCurrentPage("login");
     }
-  }, [state.token, navigation.currentPage, navigateTo]);
+  }, [user, currentPage]);
+
+  const navigate = (page: string, data = {}) => {
+    setCurrentPage(page);
+    setPageData(data);
+  };
 
   const renderCurrentPage = () => {
-    switch (navigation.currentPage) {
+    if (!user && currentPage !== "login") {
+      return <LoginPage navigate={navigate} />;
+    }
+
+    switch (currentPage) {
       case "login":
-        return <LoginPage />;
+        return <LoginPage navigate={navigate} />;
       case "dashboard":
-        return (
-          <ProtectedPage>
-            <DashboardPage />
-          </ProtectedPage>
-        );
+        return <DashboardPage navigate={navigate} />;
       case "project-issues":
-        return (
-          <ProtectedPage>
-            <ProjectIssuesPage />
-          </ProtectedPage>
-        );
+        return <ProjectIssuesPage navigate={navigate} pageData={pageData} />;
       case "issue-detail":
-        return (
-          <ProtectedPage>
-            <IssueDetailPage />
-          </ProtectedPage>
-        );
+        return <IssueDetailPage navigate={navigate} pageData={pageData} />;
       default:
-        return <LoginPage />;
+        return <LoginPage navigate={navigate} />;
     }
   };
 
@@ -66,10 +47,8 @@ function AppRouter() {
 
 export default function App() {
   return (
-    <NavigationProvider>
-      <AuthProvider>
-        <AppRouter />
-      </AuthProvider>
-    </NavigationProvider>
+    <AuthProvider>
+      <AppRouter />
+    </AuthProvider>
   );
 }

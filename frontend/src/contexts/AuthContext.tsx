@@ -1,7 +1,7 @@
 import {
   createContext,
   useContext,
-  useReducer,
+  useState,
   useEffect,
   type ReactNode,
 } from "react";
@@ -12,110 +12,60 @@ import {
   getCurrentUser,
 } from "../services/api";
 
-interface AuthState {
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
-}
-
-type AuthAction =
-  | { type: "LOGIN_SUCCESS"; payload: { user: User; token: string } }
-  | { type: "LOGOUT" }
-  | { type: "SET_LOADING"; payload: boolean };
-
 interface AuthContextType {
-  state: AuthState;
+  user: User | null;
+  isLoading: boolean;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-function authReducer(state: AuthState, action: AuthAction): AuthState {
-  switch (action.type) {
-    case "LOGIN_SUCCESS":
-      return {
-        ...state,
-        user: action.payload.user,
-        token: action.payload.token,
-        isLoading: false,
-      };
-
-    case "LOGOUT":
-      return {
-        ...state,
-        user: null,
-        token: null,
-        isLoading: false,
-      };
-
-    case "SET_LOADING":
-      return {
-        ...state,
-        isLoading: action.payload,
-      };
-
-    default:
-      return state;
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(authReducer, {
-    user: null,
-    token: localStorage.getItem("token"),
-    isLoading: false,
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (state.token) {
-      setAuthToken(state.token);
+    const token = localStorage.getItem("token");
+    if (token) {
+      setAuthToken(token);
       getCurrentUser()
-        .then((user) => {
-          dispatch({
-            type: "LOGIN_SUCCESS",
-            payload: { user, token: state.token! },
-          });
-        })
+        .then(setUser)
         .catch(() => {
           localStorage.removeItem("token");
-          dispatch({ type: "LOGOUT" });
+          setAuthToken(null);
         });
     }
-  }, [state.token]);
+  }, []);
 
   const login = async (
     username: string,
     password: string
   ): Promise<boolean> => {
-    dispatch({ type: "SET_LOADING", payload: true });
+    setIsLoading(true);
     try {
       const response = await apiLogin(username, password);
-
       localStorage.setItem("token", response.access_token);
       setAuthToken(response.access_token);
 
-      const user = await getCurrentUser();
-
-      dispatch({
-        type: "LOGIN_SUCCESS",
-        payload: { user, token: response.access_token },
-      });
+      const userData = await getCurrentUser();
+      setUser(userData);
       return true;
     } catch (error) {
-      dispatch({ type: "SET_LOADING", payload: false });
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     setAuthToken(null);
-    dispatch({ type: "LOGOUT" });
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ state, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

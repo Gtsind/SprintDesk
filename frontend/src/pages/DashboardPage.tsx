@@ -1,53 +1,35 @@
-import { useEffect, useState } from "react";
 import { Layout } from "../components/Layout";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { StatusBadge } from "../components/StatusBadge";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigation } from "../contexts/NavigationContext";
+import { useApi } from "../hooks/useApi";
 import { getProjects, getUserIssues } from "../services/api";
-import {
-  getPriorityColor,
-  getStatusColor,
-  getProjectStatusColor,
-} from "../utils/colors";
 import type { Project, Issue } from "../types";
 
-export function DashboardPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [userIssues, setUserIssues] = useState<Issue[]>([]);
-  const [isloading, setIsLoading] = useState(true);
-  const { state } = useAuth();
-  const { navigateTo } = useNavigation();
+interface DashboardPageProps {
+  navigate: (page: string, data?: any) => void;
+}
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [projectsData, issuesData] = await Promise.all([
-          getProjects(),
-          state.user ? getUserIssues(state.user.id) : [],
-        ]);
-        setProjects(projectsData);
-        setUserIssues(issuesData);
-      } catch (error) {
-        console.error("Failed to load dashboard data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+export function DashboardPage({ navigate }: DashboardPageProps) {
+  const { user } = useAuth();
+  const { data: projects, loading: projectsLoading } = useApi<Project[]>(getProjects);
+  const { data: userIssues, loading: issuesLoading } = useApi<Issue[]>(
+    () => user ? getUserIssues(user.id) : Promise.resolve([]),
+    [user]
+  );
 
-    loadData();
-  }, [state.user]);
+  const isLoading = projectsLoading || issuesLoading;
 
-  if (isloading) {
+  if (isLoading) {
     return (
       <Layout>
-        <div className="flex justify-center items-center h-64">
-          <div className="text-lg text-gray-600">Loading dashboard...</div>
-        </div>
+        <LoadingSpinner message="Loading dashboard..." />
       </Layout>
     );
   }
 
   return (
-    <Layout>
+    <Layout navigate={navigate}>
       <div className="px-4 py-6 sm:px-0">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
 
@@ -58,17 +40,13 @@ export function DashboardPage() {
               Your Projects
             </h2>
             <div className="space-y-3">
-              {projects.length === 0 ? (
+              {!projects || projects.length === 0 ? (
                 <p className="text-gray-500">No projects found.</p>
               ) : (
                 projects.map((project) => (
                   <button
                     key={project.id}
-                    onClick={() =>
-                      navigateTo("project-issues", {
-                        projectId: project.id.toString(),
-                      })
-                    }
+                    onClick={() => navigate("project-issues", { projectId: project.id })}
                     className="block w-full text-left border rounded-lg p-4 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex justify-between items-start">
@@ -82,13 +60,10 @@ export function DashboardPage() {
                           </p>
                         )}
                       </div>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getProjectStatusColor(
-                          project.status
-                        )}`}
-                      >
-                        {project.status}
-                      </span>
+                      <StatusBadge
+                        status={project.status}
+                        type="project-status"
+                      />
                     </div>
                   </button>
                 ))
@@ -102,17 +77,13 @@ export function DashboardPage() {
               Your Assigned Issues
             </h2>
             <div className="space-y-3">
-              {userIssues.length === 0 ? (
+              {!userIssues || userIssues.length === 0 ? (
                 <p className="text-gray-500">No assigned issues found.</p>
               ) : (
                 userIssues.slice(0, 5).map((issue) => (
                   <button
                     key={issue.id}
-                    onClick={() =>
-                      navigateTo("issue-detail", {
-                        issueId: issue.id.toString(),
-                      })
-                    }
+                    onClick={() => navigate("issue-detail", { issueId: issue.id })}
                     className="block w-full text-left border rounded-lg p-4 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex justify-between items-start">
@@ -125,30 +96,18 @@ export function DashboardPage() {
                         </p>
                       </div>
                       <div className="flex space-x-2 ml-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(
-                            issue.priority
-                          )}`}
-                        >
-                          {issue.priority}
-                        </span>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                            issue.status
-                          )}`}
-                        >
-                          {issue.status}
-                        </span>
+                        <StatusBadge status={issue.priority} type="priority" />
+                        <StatusBadge status={issue.status} type="status" />
                       </div>
                     </div>
                   </button>
                 ))
               )}
             </div>
-            {userIssues.length > 5 && (
+            {userIssues && userIssues.length > 5 && (
               <div className="mt-4 text-center">
                 <button
-                  onClick={() => navigateTo("dashboard")}
+                  onClick={() => navigate("dashboard")}
                   className="text-indigo-600 hover:text-indigo-500 text-sm"
                 >
                   View all assigned issues

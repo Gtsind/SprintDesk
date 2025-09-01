@@ -1,40 +1,39 @@
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { MessageSquare, AlertCircle } from "lucide-react";
 import { Layout } from "../components/Layout";
-import { useNavigation } from "../contexts/NavigationContext";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { useApi } from "../hooks/useApi";
 import { getIssue, getIssueComments, createComment } from "../services/api";
-import { getPriorityColor, getStatusColor } from "../utils/colors";
 import type { Issue, Comment } from "../types";
+import { StatusBadge } from "../components/StatusBadge";
 
-export function IssueDetailPage() {
-  const { navigation, navigateTo } = useNavigation();
-  const issueId = navigation.params.issueId;
-  const [issue, setIssue] = useState<Issue | null>(null);
+interface IssueDetailPageProps {
+  navigate: (page: string, data?: any) => void;
+  pageData: { issueId?: number };
+}
+
+export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
+  const issueId = pageData.issueId;
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [submittingComment, setSubmittingComment] = useState(false);
 
-  useEffect(() => {
-    const loadIssueData = async () => {
-      if (!issueId) return;
+  const { data: issue, loading: issueLoading } = useApi<Issue>(
+    () => issueId ? getIssue(issueId) : Promise.reject(new Error("No issue ID")),
+    [issueId]
+  );
 
-      try {
-        const [issueData, commentsData] = await Promise.all([
-          getIssue(parseInt(issueId)),
-          getIssueComments(parseInt(issueId)),
-        ]);
-        setIssue(issueData);
-        setComments(commentsData);
-      } catch (error) {
-        console.log("Failed to load issue data: ", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { data: commentsData, loading: commentsLoading } = useApi<Comment[]>(
+    () => issueId ? getIssueComments(issueId) : Promise.resolve([]),
+    [issueId]
+  );
 
-    loadIssueData();
-  }, [issueId]);
+  // Update comments when data loads
+  if (commentsData && comments.length === 0 && commentsData.length > 0) {
+    setComments(commentsData);
+  }
+
+  const isLoading = issueLoading || commentsLoading;
 
   const handleSubmitComment = async (e: FormEvent) => {
     e.preventDefault();
@@ -43,7 +42,7 @@ export function IssueDetailPage() {
     setSubmittingComment(true);
 
     try {
-      const comment = await createComment(parseInt(issueId), newComment);
+      const comment = await createComment(issueId, newComment);
       setComments((prev) => [...prev, comment]);
       setNewComment("");
     } catch (error) {
@@ -55,17 +54,15 @@ export function IssueDetailPage() {
 
   if (isLoading) {
     return (
-      <Layout>
-        <div className="flex justify-center items-center h-64">
-          <div className="text-lg text-gray-600">Loading issue...</div>
-        </div>
+      <Layout navigate={navigate}>
+        <LoadingSpinner message="Loading issue..." />
       </Layout>
     );
   }
 
   if (!issue) {
     return (
-      <Layout>
+      <Layout navigate={navigate}>
         <div className="text-center py-12">
           <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-4 text-lg font-medium text-gray-900">
@@ -75,7 +72,7 @@ export function IssueDetailPage() {
             The issue you're looking for doesn't exist.
           </p>
           <button
-            onClick={() => navigateTo("dashboard")}
+            onClick={() => navigate("dashboard")}
             className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
           >
             Back to Dashboard
@@ -86,17 +83,13 @@ export function IssueDetailPage() {
   }
 
   return (
-    <Layout>
+    <Layout navigate={navigate}>
       <div className="px-4 py-6 sm:px-0">
         <div className="flex justify-between items-start mb-6">
           <div className="flex-1">
             <div className="flex items-center space-x-3 mb-4">
               <button
-                onClick={() =>
-                  navigateTo("project-issues", {
-                    projectId: issue.project_id.toString(),
-                  })
-                }
+                onClick={() => navigate("project-issues", { projectId: issue.project_id })}
                 className="text-indigo-600 hover:text-indigo-500 text-sm"
               >
                 ← Back to {issue.project.name}
@@ -114,20 +107,8 @@ export function IssueDetailPage() {
             </div>
           </div>
           <div className="flex space-x-2">
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(
-                issue.priority
-              )}`}
-            >
-              {issue.priority}
-            </span>
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                issue.status
-              )}`}
-            >
-              {issue.status}
-            </span>
+            <StatusBadge status={issue.priority} type="priority" />
+            <StatusBadge status={issue.status} type="status" />
           </div>
         </div>
 
