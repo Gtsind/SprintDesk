@@ -8,7 +8,7 @@ from src.exceptions.user_exceptions import UserNotFoundError, InactiveUserAccoun
 from src.exceptions.project_exceptions import ProjectNotFoundError
 from src.exceptions.issue_exceptions import IssueAssigneeError, IssueNotFoundError
 from src.exceptions.auth_exceptions import NotAuthorizedError
-from src.exceptions.label_exceptions import LabelAlreadyExistsError, LabelNotFoundError
+from src.exceptions.label_exceptions import LabelAlreadyAddedError, LabelNotFoundError
 
 router = APIRouter(prefix="/issues", tags=["Issues"])
 
@@ -214,7 +214,7 @@ def add_label_to_issue(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
     except NotAuthorizedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
-    except LabelAlreadyExistsError as e:
+    except LabelAlreadyAddedError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
 
 @router.delete("/{issue_id}/labels/{label_id}", status_code=status.HTTP_204_NO_CONTENT)

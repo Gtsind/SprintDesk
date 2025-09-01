@@ -4,7 +4,7 @@ from src.exceptions.project_exceptions import ProjectNotFoundError
 from src.exceptions.auth_exceptions import NotAuthorizedError
 from src.exceptions.user_exceptions import UserNotFoundError, InactiveUserAccountError
 from src.exceptions.issue_exceptions import IssueAssigneeError, IssueNotFoundError
-from src.exceptions.label_exceptions import LabelNotFoundError, LabelAlreadyExistsError
+from src.exceptions.label_exceptions import LabelNotFoundError, LabelAlreadyAddedError
 from src.models import Issue, Project
 from src.models.enums import UserRole
 
@@ -284,9 +284,9 @@ class IssueService:
         
         # Check if issue already has this label
         current_labels = self.label_repository.get_labels_by_issue(issue_id)
-        current_label_ids = [l.id for l in current_labels]
+        current_label_ids = [label.id for label in current_labels]
         if label_id in current_label_ids:
-            raise LabelAlreadyExistsError()
+            raise LabelAlreadyAddedError()
         
         self.issue_repository.add_label_to_issue(issue_id, label_id)
 

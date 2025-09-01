@@ -8,6 +8,7 @@ from src.services.user_service import UserService
 from src.services.issue_service import IssueService
 from src.services.project_service import ProjectService
 from src.services.comment_service import CommentService
+from src.services.label_service import LabelService
 from src.models.user import User
 from src.exceptions.user_exceptions import InvalidUsernameError, UserNotFoundError
 from src.exceptions.auth_exceptions import InvalidTokenError, InvalidTokenPayloadError
@@ -74,4 +75,8 @@ def get_comment_service(session: Session = Depends(get_db_session)) -> CommentSe
     issue_repository = IssueRepository(session)
     project_repository = ProjectRepository(session)
     return CommentService(comment_repository, issue_repository, project_repository)
+
+def get_label_service(session: Session = Depends(get_db_session)) -> LabelService:
+    label_repository = LabelRepository(session)
+    return LabelService(label_repository)
 
