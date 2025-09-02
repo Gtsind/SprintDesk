@@ -2,6 +2,7 @@ import { User, Calendar, AlertCircle } from "lucide-react";
 import { Layout } from "../components/Layout";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { StatusBadge } from "../components/StatusBadge";
+import { Button } from "../components/Button";
 import { useApi } from "../hooks/useApi";
 import { getProjectIssues, getProjects } from "../services/api";
 import type { Issue, Project } from "../types";
@@ -42,12 +43,12 @@ export function ProjectIssuesPage({ navigate, pageData }: ProjectIssuesPageProps
             </h1>
             <p className="text-gray-600 mt-1">{issues?.length || 0} total issues</p>
           </div>
-          <button
+          <Button
             onClick={() => navigate("dashboard")}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            variant="secondary"
           >
             Back to Dashboard
-          </button>
+          </Button>
         </div>
 
         <div className="bg-white shadow rounded-lg overflow-hidden">

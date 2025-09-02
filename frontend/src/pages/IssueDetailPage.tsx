@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { MessageSquare, AlertCircle } from "lucide-react";
 import { Layout } from "../components/Layout";
 import { LoadingSpinner } from "../components/LoadingSpinner";
+import { Button } from "../components/Button";
 import { useApi } from "../hooks/useApi";
 import { getIssue, getIssueComments, createComment } from "../services/api";
 import type { Issue, Comment } from "../types";
@@ -19,12 +20,13 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
   const [submittingComment, setSubmittingComment] = useState(false);
 
   const { data: issue, loading: issueLoading } = useApi<Issue>(
-    () => issueId ? getIssue(issueId) : Promise.reject(new Error("No issue ID")),
+    () =>
+      issueId ? getIssue(issueId) : Promise.reject(new Error("No issue ID")),
     [issueId]
   );
 
   const { data: commentsData, loading: commentsLoading } = useApi<Comment[]>(
-    () => issueId ? getIssueComments(issueId) : Promise.resolve([]),
+    () => (issueId ? getIssueComments(issueId) : Promise.resolve([])),
     [issueId]
   );
 
@@ -71,12 +73,9 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
           <p className="mt-2 text-gray-600">
             The issue you're looking for doesn't exist.
           </p>
-          <button
-            onClick={() => navigate("dashboard")}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-          >
+          <Button onClick={() => navigate("dashboard")} className="mt-4">
             Back to Dashboard
-          </button>
+          </Button>
         </div>
       </Layout>
     );
@@ -89,7 +88,9 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
           <div className="flex-1">
             <div className="flex items-center space-x-3 mb-4">
               <button
-                onClick={() => navigate("project-issues", { projectId: issue.project_id })}
+                onClick={() =>
+                  navigate("project-issues", { projectId: issue.project_id })
+                }
                 className="text-indigo-600 hover:text-indigo-500 text-sm"
               >
                 ← Back to {issue.project.name}
@@ -150,13 +151,12 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
                     required
                   />
                 </div>
-                <button
+                <Button
                   type="submit"
                   disabled={submittingComment || !newComment.trim()}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
                   {submittingComment ? "Posting..." : "Post Comment"}
-                </button>
+                </Button>
               </form>
 
               {/* Comments List */}
