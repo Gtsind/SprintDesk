@@ -13,7 +13,7 @@ class UserService:
 
     def create_user(self, user_create: UserCreate, current_user_role: UserRole) -> User:
         """Create a new user (Admin only)"""
-        if current_user_role == UserRole.ADMIN:
+        if current_user_role != UserRole.ADMIN:
             raise NotAuthorizedError("Only admins can create new users.")
         
         # Check if username already exists
