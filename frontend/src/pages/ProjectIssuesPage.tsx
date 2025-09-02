@@ -1,8 +1,8 @@
-import { User, Calendar, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Layout } from "../components/Layout";
 import { LoadingSpinner } from "../components/LoadingSpinner";
-import { StatusBadge } from "../components/StatusBadge";
 import { Button } from "../components/Button";
+import { ListCard } from "../components/ListCard";
 import { useApi } from "../hooks/useApi";
 import { getProjectIssues, getProjects } from "../services/api";
 import type { Issue, Project } from "../types";
@@ -12,17 +12,21 @@ interface ProjectIssuesPageProps {
   pageData: { projectId?: number };
 }
 
-export function ProjectIssuesPage({ navigate, pageData }: ProjectIssuesPageProps) {
+export function ProjectIssuesPage({
+  navigate,
+  pageData,
+}: ProjectIssuesPageProps) {
   const projectId = pageData.projectId;
-  
+
   const { data: issues, loading: issuesLoading } = useApi<Issue[]>(
-    () => projectId ? getProjectIssues(projectId) : Promise.resolve([]),
+    () => (projectId ? getProjectIssues(projectId) : Promise.resolve([])),
     [projectId]
   );
-  
-  const { data: projects, loading: projectsLoading } = useApi<Project[]>(getProjects);
-  
-  const project = projects?.find(p => p.id === projectId) || null;
+
+  const { data: projects, loading: projectsLoading } =
+    useApi<Project[]>(getProjects);
+
+  const project = projects?.find((p) => p.id === projectId) || null;
   const isLoading = issuesLoading || projectsLoading;
 
   if (isLoading) {
@@ -41,12 +45,11 @@ export function ProjectIssuesPage({ navigate, pageData }: ProjectIssuesPageProps
             <h1 className="text-2xl font-bold text-gray-900">
               {project ? `${project.name} Issues` : "Project Issues"}
             </h1>
-            <p className="text-gray-600 mt-1">{issues?.length || 0} total issues</p>
+            <p className="text-gray-600 mt-1">
+              {issues?.length || 0} total issues
+            </p>
           </div>
-          <Button
-            onClick={() => navigate("dashboard")}
-            variant="secondary"
-          >
+          <Button onClick={() => navigate("dashboard")} variant="secondary">
             Back to Dashboard
           </Button>
         </div>
@@ -65,54 +68,14 @@ export function ProjectIssuesPage({ navigate, pageData }: ProjectIssuesPageProps
           ) : (
             <ul className="divide-y divide-gray-200">
               {issues.map((issue) => (
-                <li key={issue.id}>
-                  <button
-                    onClick={() => navigate("issue-detail", { issueId: issue.id })}
-                    className="block w-full text-left hover:bg-gray-50 px-6 py-4"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center">
-                          <h3 className="text-sm font-medium text-gray-900 truncate">
-                            {issue.title}
-                          </h3>
-                          <div className="ml-4 flex space-x-2">
-                            <StatusBadge
-                              status={issue.priority}
-                              type="priority"
-                            />
-                            <StatusBadge status={issue.status} type="status" />
-                          </div>
-                        </div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500">
-                          <User className="flex-shrink-0 mr-1.5 h-4 w-4" />
-                          <span className="truncate">
-                            Created by {issue.author.firstname}{" "}
-                            {issue.author.lastname}
-                          </span>
-                          {issue.assignee && (
-                            <>
-                              <span className="mx-2">•</span>
-                              <span className="truncate">
-                                Assigned to {issue.assignee.firstname}{" "}
-                                {issue.assignee.lastname}
-                              </span>
-                            </>
-                          )}
-                          <span className="mx-2">•</span>
-                          <Calendar className="flex-shrink-0 mr-1.5 h-4 w-4" />
-                          <span>
-                            {new Date(issue.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        {issue.description && (
-                          <p className="mt-2 text-sm text-gray-600 truncate">
-                            {issue.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </button>
+                <li>
+                  <ListCard
+                    key={issue.id}
+                    issue={issue}
+                    onClick={(issue) =>
+                      navigate("issue-detail", { issueId: issue.id })
+                    }
+                  />
                 </li>
               ))}
             </ul>
