@@ -68,6 +68,16 @@ export function LoginPage({ navigate }: LoginPageProps) {
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
+            <div className="mt-6 text-center text-sm text-gray-500">
+              Don't have an account?{" "}
+              <button
+                type="button"
+                onClick={() => navigate("register")}
+                className="text-indigo-600 hover:text-indigo-500 font-medium"
+              >
+                Sign up
+              </button>
+            </div>
           </div>
         </form>
       </div>

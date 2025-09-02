@@ -72,3 +72,16 @@ export interface NavigationState {
   currentPage: "login" | "dashboard" | "project-issues" | "issue-detail";
   params: { [key: string]: string };
 }
+
+export interface UserRegistration {
+  username: string;
+  password: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  title: string | null;
+}
+
+export interface ApiError {
+  detail: string;
+}

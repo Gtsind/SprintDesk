@@ -1,4 +1,4 @@
-import type { User, Project, Issue, Comment } from "../types";
+import type { User, Project, Issue, Comment, UserRegistration, ApiError } from "../types";
 
 const BASE_URL = "http://localhost:8000/api/v1";
 
@@ -24,12 +24,25 @@ const request = async <T>(
   try {
     const response = await fetch(url, config);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json();
+      
+      // Handle validation errors from FastAPI
+      if (errorData.detail && Array.isArray(errorData.detail)) {
+        const validationMessages = errorData.detail.map((error: any) => error.msg).join(", ");
+        throw { detail: validationMessages } as ApiError;
+      }
+      
+      // Handle regular API errors
+      throw errorData as ApiError;
     }
     return await response.json();
   } catch (error) {
-    console.error("API request failed:", error);
-    throw error;
+    // Re-throw if it's already our formatted error
+    if (error && typeof error === 'object' && 'detail' in error) {
+      throw error;
+    }
+    // Handle network errors or other unexpected errors
+    throw { detail: "Network error occurred" } as ApiError;
   }
 };
 
@@ -41,6 +54,13 @@ export const login = async (username: string, password: string) => {
   }>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ username, password }),
+  });
+};
+
+export const register = async (userData: UserRegistration): Promise<User> => {
+  return request<User>("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(userData),
   });
 };
 
