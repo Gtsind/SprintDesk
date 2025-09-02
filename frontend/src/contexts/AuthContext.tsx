@@ -8,6 +8,7 @@ import {
 import type { User } from "../types";
 import {
   setAuthToken,
+  setUnauthorizedHandler,
   login as apiLogin,
   getCurrentUser,
 } from "../services/api";
@@ -25,7 +26,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const logout = () => {
+    localStorage.removeItem("token");
+    setAuthToken(null);
+    setUser(null);
+  };
+
   useEffect(() => {
+    // Set up the unauthorized handler for expired tokens
+    setUnauthorizedHandler(logout);
+
     const token = localStorage.getItem("token");
     if (token) {
       setAuthToken(token);
@@ -56,12 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    setAuthToken(null);
-    setUser(null);
   };
 
   return (

@@ -3,9 +3,14 @@ import type { User, Project, Issue, Comment, UserRegistration, IssueUpdate, ApiE
 const BASE_URL = "http://localhost:8000/api/v1";
 
 let authToken: string | null = null;
+let onUnauthorized: (() => void) | null = null;
 
 export const setAuthToken = (token: string | null) => {
   authToken = token;
+};
+
+export const setUnauthorizedHandler = (handler: () => void) => {
+  onUnauthorized = handler;
 };
 
 const request = async <T>(
@@ -25,6 +30,12 @@ const request = async <T>(
     const response = await fetch(url, config);
     if (!response.ok) {
       const errorData = await response.json();
+      
+      // Handle expired/invalid token
+      if (response.status === 401 && errorData.detail === "Invalid or expired token" && onUnauthorized) {
+        onUnauthorized();
+        throw { detail: "Session expired. Please log in again." } as ApiError;
+      }
       
       // Handle validation errors from FastAPI
       if (errorData.detail && Array.isArray(errorData.detail)) {
