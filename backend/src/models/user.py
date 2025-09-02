@@ -28,5 +28,5 @@ class User(UserBase, table=True):
         sa_relationship_kwargs={"foreign_keys": "Issue.closed_by"}
     )
     comments: list["Comment"] = Relationship(back_populates="author")
-    project_memberships: list["ProjectMembership"] = Relationship(back_populates="user")
+    project_memberships: list["ProjectMembership"] = Relationship(back_populates="user", cascade_delete=True)
     

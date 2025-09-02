@@ -3,6 +3,7 @@ from src.models.base import IssueBase
 from src.models import IssueStatus, IssuePriority
 from src.dto.user import UserSummary
 from src.dto.project import ProjectSummary
+from src.dto.comment import CommentPublic
 from datetime import datetime
 
 class IssueCreate(IssueBase):
@@ -32,3 +33,4 @@ class IssuePublic(IssueBase):
     author: "UserSummary"
     assignee: "UserSummary | None"
     project: "ProjectSummary"
+    comments: list[CommentPublic] | None

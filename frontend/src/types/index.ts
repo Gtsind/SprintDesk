@@ -82,6 +82,15 @@ export interface UserRegistration {
   title: string | null;
 }
 
+export interface IssueUpdate {
+  title?: string;
+  description: string | null;
+  status?: "Open" | "In Progress" | "Review Ready" | "Closed" | "Blocked";
+  priority?: "Low" | "Medium" | "High" | "Critical";
+  assignee_id?: number | null;
+  time_estimate?: number | null;
+}
+
 export interface ApiError {
   detail: string;
 }

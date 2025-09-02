@@ -10,8 +10,8 @@ class Comment(CommentBase, table=True):
     __tablename__:ClassVar[str] = "comments"
 
     id: int | None = Field(default=None, primary_key=True)
-    issue_id: int = Field(foreign_key="issues.id", index=True)
-    author_id: int = Field(foreign_key="users.id", index=True)
+    issue_id: int = Field(foreign_key="issues.id", index=True, ondelete="CASCADE")
+    author_id: int | None = Field(foreign_key="users.id", index=True, ondelete="SET NULL")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     # Relationships
     issue: "Issue" = Relationship(back_populates="comments")

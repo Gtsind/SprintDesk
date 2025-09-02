@@ -5,7 +5,7 @@ export function useApi<T>(apiCall: () => Promise<T>, dependencies: any[] = []) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchData = () => {
     let cancelled = false;
     
     setLoading(true);
@@ -32,7 +32,15 @@ export function useApi<T>(apiCall: () => Promise<T>, dependencies: any[] = []) {
     return () => {
       cancelled = true;
     };
+  };
+
+  useEffect(() => {
+    return fetchData();
   }, dependencies);
 
-  return { data, loading, error };
+  const refetch = () => {
+    fetchData();
+  };
+
+  return { data, loading, error, refetch };
 }

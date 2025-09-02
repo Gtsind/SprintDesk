@@ -10,9 +10,9 @@ class Project(ProjectBase, table=True):
     __tablename__: ClassVar[str] = "projects"
 
     id: int | None = Field(default=None, primary_key=True)
-    created_by: int = Field(foreign_key="users.id", index=True)
+    created_by: int | None = Field(foreign_key="users.id", index=True, ondelete="SET NULL")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     # Relationships
     creator: "User" = Relationship(back_populates="created_projects")
-    issues: list["Issue"] = Relationship(back_populates="project")
-    memberships: list["ProjectMembership"] = Relationship(back_populates="project")
+    issues: list["Issue"] = Relationship(back_populates="project", cascade_delete=True)
+    memberships: list["ProjectMembership"] = Relationship(back_populates="project", cascade_delete=True)

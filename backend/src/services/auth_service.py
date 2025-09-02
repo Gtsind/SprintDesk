@@ -1,7 +1,7 @@
 from datetime import timedelta
 from src.dto.auth import LoginRequest, TokenResponse, TokenData
 from src.dto.user import UserCreate
-from src.models import User, UserRole
+from src.models import User
 from src.repositories.user_repository import UserRepository
 from src.security.security import verify_password, get_password_hash, create_access_token, decode_token
 from src.exceptions.user_exceptions import EmailAlreadyExistsError, UsernameAlreadyExistsError, InactiveUserAccountError, IncorrectPasswordError, InvalidUsernameError, UserNotFoundError

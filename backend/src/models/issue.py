@@ -10,13 +10,13 @@ class Issue(IssueBase, table=True):
     __tablename__: ClassVar[str] = "issues"
 
     id: int | None = Field(default=None, primary_key=True)
-    project_id: int = Field(foreign_key="projects.id", nullable=False, index=True)
-    author_id: int = Field(foreign_key="users.id", nullable=False, index=True)
-    assignee_id: int | None = Field(default=None, foreign_key="users.id", index=True)
+    project_id: int = Field(foreign_key="projects.id", nullable=False, index=True, ondelete="CASCADE")
+    author_id: int | None = Field(foreign_key="users.id", index=True, ondelete="SET NULL")
+    assignee_id: int | None = Field(default=None, foreign_key="users.id", index=True, ondelete="SET NULL")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime | None = Field(default_factory=lambda: datetime.now(timezone.utc))
     closed_at: datetime | None = Field(default=None)
-    closed_by: int | None = Field(default=None, foreign_key="users.id")
+    closed_by: int | None = Field(default=None, foreign_key="users.id", ondelete="SET NULL")
     # Relationships
     project: "Project" = Relationship(back_populates="issues")
     author: "User" = Relationship(
@@ -31,5 +31,5 @@ class Issue(IssueBase, table=True):
         back_populates="closed_issues",
         sa_relationship_kwargs={"foreign_keys": "Issue.closed_by"}
     )
-    comments: list["Comment"] = Relationship(back_populates="issue")
-    issue_labels: list["IssueLabel"] = Relationship(back_populates="issue")
+    comments: list["Comment"] = Relationship(back_populates="issue", cascade_delete=True)
+    issue_labels: list["IssueLabel"] = Relationship(back_populates="issue", cascade_delete=True)

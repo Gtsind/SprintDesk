@@ -1,4 +1,4 @@
-import type { User, Project, Issue, Comment, UserRegistration, ApiError } from "../types";
+import type { User, Project, Issue, Comment, UserRegistration, IssueUpdate, ApiError } from "../types";
 
 const BASE_URL = "http://localhost:8000/api/v1";
 
@@ -35,6 +35,12 @@ const request = async <T>(
       // Handle regular API errors
       throw errorData as ApiError;
     }
+    
+    // Handle 204 No Content responses
+    if (response.status === 204) {
+      return null as T;
+    }
+    
     return await response.json();
   } catch (error) {
     // Re-throw if it's already our formatted error
@@ -95,5 +101,21 @@ export const createComment = async (
   return request<Comment>("/comments/", {
     method: "POST",
     body: JSON.stringify({ issue_id: issueId, content }),
+  });
+};
+
+export const updateIssue = async (
+  issueId: number,
+  updateData: IssueUpdate
+): Promise<Issue> => {
+  return request<Issue>(`/issues/${issueId}`, {
+    method: "PATCH",
+    body: JSON.stringify(updateData),
+  });
+};
+
+export const deleteIssue = async (issueId: number): Promise<void> => {
+  return request<void>(`/issues/${issueId}`, {
+    method: "DELETE",
   });
 };
