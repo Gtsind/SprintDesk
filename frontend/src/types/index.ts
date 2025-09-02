@@ -11,7 +11,7 @@ export interface User {
 export interface Project {
   id: number;
   name: string;
-  description?: string;
+  description: string | null;
   status: "Active" | "Completed" | "On Hold" | "Cancelled";
   created_at: string;
   creator: {
@@ -25,15 +25,15 @@ export interface Project {
 export interface Issue {
   id: number;
   title: string;
-  description?: string;
+  description: string | null;
   status: "Open" | "In Progress" | "Review Ready" | "Closed" | "Blocked";
   priority: "Low" | "Medium" | "High" | "Critical";
-  time_estimate?: number;
+  time_estimate: number | null;
   project_id: number;
   author_id: number;
-  assignee_id?: number;
+  assignee_id: number | null;
   created_at: string;
-  updated_at?: string;
+  updated_at: string | null;
   closed_at?: string;
   author: {
     id: number;
@@ -41,12 +41,12 @@ export interface Issue {
     firstname: string;
     lastname: string;
   };
-  assignee?: {
+  assignee: {
     id: number;
     username: string;
     firstname: string;
     lastname: string;
-  };
+  } | null;
   project: {
     id: number;
     name: string;

@@ -68,15 +68,13 @@ export function ProjectIssuesPage({
           ) : (
             <ul className="divide-y divide-gray-200">
               {issues.map((issue) => (
-                <li>
-                  <ListCard
-                    key={issue.id}
-                    issue={issue}
-                    onClick={(issue) =>
-                      navigate("issue-detail", { issueId: issue.id })
-                    }
-                  />
-                </li>
+                <ListCard
+                  key={issue.id}
+                  issue={issue}
+                  onClick={(issue) =>
+                    navigate("issue-detail", { issueId: issue.id })
+                  }
+                />
               ))}
             </ul>
           )}
