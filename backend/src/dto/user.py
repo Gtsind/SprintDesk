@@ -2,6 +2,10 @@ from sqlmodel import SQLModel, Field
 from src.models.base import UserBase
 from src.models.enums import UserRole
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.dto.project import ProjectSummary
 
 class UserCreate(UserBase):
     """DTO for user creation"""
@@ -24,10 +28,12 @@ class UserPublic(UserBase):
     id: int
     is_active: bool
     created_at: datetime
+    projects: list["ProjectSummary"] = []
 
-class UserSummary(SQLModel):
+class UserSummary(UserBase):
     """DTO for minimal user info"""
     id: int
-    username: str
-    firstname: str
-    lastname: str
+
+# We need to import this to avoid "not fully defined" errors when using forward reference
+from src.dto.project import ProjectSummary
+UserPublic.model_rebuild()

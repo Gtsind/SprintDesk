@@ -20,6 +20,7 @@ class ProjectPublic(ProjectBase):
     created_by: int
     created_at: datetime
     creator: "UserSummary"
+    members: list["UserSummary"] = []
 
 class ProjectSummary(SQLModel):
     """DTO for minimal project info"""

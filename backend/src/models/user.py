@@ -2,10 +2,10 @@ from sqlmodel import Field, Relationship
 from src.models.base import UserBase
 from datetime import datetime, timezone
 from typing import ClassVar, TYPE_CHECKING
+from src.models.intermediate_tables import ProjectMembership
 
 if TYPE_CHECKING:
-    from src.models import Project, Issue, Comment, ProjectMembership
-
+    from src.models import Project, Issue, Comment
 class User(UserBase, table=True):
     __tablename__: ClassVar[str] = "users"
 
@@ -29,4 +29,5 @@ class User(UserBase, table=True):
     )
     comments: list["Comment"] = Relationship(back_populates="author")
     project_memberships: list["ProjectMembership"] = Relationship(back_populates="user", cascade_delete=True)
+    projects: list["Project"] = Relationship(back_populates="members", link_model=ProjectMembership)
     

@@ -1,6 +1,7 @@
 from sqlmodel import Relationship, Field
 from datetime import datetime, timezone
 from src.models.base import ProjectBase
+from src.models.intermediate_tables import ProjectMembership
 from typing import ClassVar, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -16,3 +17,4 @@ class Project(ProjectBase, table=True):
     creator: "User" = Relationship(back_populates="created_projects")
     issues: list["Issue"] = Relationship(back_populates="project", cascade_delete=True)
     memberships: list["ProjectMembership"] = Relationship(back_populates="project", cascade_delete=True)
+    members: list["User"] = Relationship(back_populates="projects", link_model=ProjectMembership)
