@@ -44,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .catch(() => {
           localStorage.removeItem("token");
           setAuthToken(null);
+          setUser(null);
         });
     }
   }, []);
@@ -62,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userData);
       return true;
     } catch (error) {
-      return false;
+      throw error;
     } finally {
       setIsLoading(false);
     }

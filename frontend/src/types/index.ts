@@ -20,6 +20,12 @@ export interface Project {
     firstname: string;
     lastname: string;
   };
+  members?: {
+    id: number;
+    username: string;
+    firstname: string;
+    lastname: string;
+  }[];
 }
 
 export interface Issue {

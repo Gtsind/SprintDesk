@@ -1,11 +1,11 @@
 import { Card } from "./Card";
-import type { Project, Issue } from "../types";
+import type { Project, Issue, User } from "../types";
 
 interface CardContainerProps {
   title: string;
-  items: Project[] | Issue[] | null;
+  items: Project[] | Issue[] | User[] | null;
   emptyMessage: string;
-  onItemClick: (item: Project | Issue) => void;
+  onItemClick: (item: Project | Issue | User) => void;
   showViewAll?: boolean;
   onViewAllClick?: () => void;
   limit?: number;

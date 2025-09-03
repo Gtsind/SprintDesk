@@ -3,12 +3,24 @@ import { useAuth } from "./contexts/AuthContext";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { ProjectDetailsPage } from "./pages/ProjectDetailsPage";
 import { ProjectIssuesPage } from "./pages/ProjectIssuesPage";
 import { IssueDetailPage } from "./pages/IssueDetailPage";
 
+type PageType = "login" | "register" | "dashboard" | "project-details" | "project-issues" | "issue-detail";
+
+type PageDataMap = {
+  "login": {};
+  "register": {};
+  "dashboard": {};
+  "project-details": { projectId: number };
+  "project-issues": { projectId: number };
+  "issue-detail": { issueId: number };
+};
+
 export function AppRouter() {
-  const [currentPage, setCurrentPage] = useState("login");
-  const [pageData, setPageData] = useState({});
+  const [currentPage, setCurrentPage] = useState<PageType>("login");
+  const [pageData, setPageData] = useState<PageDataMap[PageType]>({});
   const { user } = useAuth();
 
   useEffect(() => {
@@ -19,9 +31,9 @@ export function AppRouter() {
     }
   }, [user, currentPage]);
 
-  const navigate = (page: string, data = {}) => {
+  const navigate = (page: PageType, data?: any) => {
     setCurrentPage(page);
-    setPageData(data);
+    setPageData(data || {});
   };
 
   const renderCurrentPage = () => {
@@ -36,10 +48,12 @@ export function AppRouter() {
         return <RegisterPage navigate={navigate} />;
       case "dashboard":
         return <DashboardPage navigate={navigate} />;
+      case "project-details":
+        return <ProjectDetailsPage navigate={navigate} pageData={pageData as PageDataMap["project-details"]} />;
       case "project-issues":
-        return <ProjectIssuesPage navigate={navigate} pageData={pageData} />;
+        return <ProjectIssuesPage navigate={navigate} pageData={pageData as PageDataMap["project-issues"]} />;
       case "issue-detail":
-        return <IssueDetailPage navigate={navigate} pageData={pageData} />;
+        return <IssueDetailPage navigate={navigate} pageData={pageData as PageDataMap["issue-detail"]} />;
       default:
         return <LoginPage navigate={navigate} />;
     }

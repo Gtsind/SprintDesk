@@ -19,9 +19,7 @@ export function IssueHeader({ issue, navigate }: IssueHeaderProps) {
           ← Back to {issue.project.name}
         </button>
       </div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-3">
-        {issue.title}
-      </h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-3">{issue.title}</h1>
       <div className="flex space-x-2 mb-3">
         <StatusBadge status={issue.priority} type="priority" />
         <StatusBadge status={issue.status} type="status" />

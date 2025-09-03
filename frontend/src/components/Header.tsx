@@ -31,6 +31,18 @@ export function Header({ navigate }: HeaderProps) {
               >
                 Dashboard
               </button>
+              {/* <button
+                onClick={() => navigate && navigate("project-details")}
+                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Projects
+              </button>
+              <button
+                onClick={() => navigate && navigate("project-issues")}
+                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Issues
+              </button> */}
             </div>
           </div>
           <div className="flex items-center space-x-4">

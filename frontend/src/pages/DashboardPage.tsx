@@ -40,7 +40,7 @@ export function DashboardPage({ navigate }: DashboardPageProps) {
             emptyMessage="No projects found."
             onItemClick={(item) => {
               const project = item as Project;
-              navigate("project-issues", { projectId: project.id });
+              navigate("project-details", { projectId: project.id });
             }}
           />
 

@@ -89,6 +89,10 @@ export const getProjects = async (): Promise<Project[]> => {
   return request<Project[]>("/projects/");
 };
 
+export const getProject = async (projectId: number): Promise<Project> => {
+  return request<Project>(`/projects/${projectId}`);
+};
+
 export const getProjectIssues = async (projectId: number): Promise<Issue[]> => {
   return request<Issue[]>(`/issues/project/${projectId}`);
 };

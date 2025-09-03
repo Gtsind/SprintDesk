@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { FormInput } from "../components/FormInput";
 import { Button } from "../components/Button";
+import type { ApiError } from "../types";
 
 interface LoginPageProps {
   navigate: (page: string) => void;
@@ -17,11 +18,16 @@ export function LoginPage({ navigate }: LoginPageProps) {
     e.preventDefault();
     setError("");
 
-    const success = await login(username, password);
-    if (success) {
-      navigate("dashboard");
-    } else {
-      setError("Invalid username or password");
+    try {
+      const success = await login(username, password);
+      if (success) navigate("dashboard");
+    } catch (error: unknown) {
+      const apiError = error as ApiError | undefined;
+      if (apiError?.detail) {
+        setError(apiError.detail);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     }
   };
 

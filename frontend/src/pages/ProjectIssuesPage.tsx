@@ -49,8 +49,8 @@ export function ProjectIssuesPage({
               {issues?.length || 0} total issues
             </p>
           </div>
-          <Button onClick={() => navigate("dashboard")} variant="secondary">
-            Back to Dashboard
+          <Button onClick={() => navigate("project-details", { projectId })} variant="secondary">
+            ← Back to Project Details
           </Button>
         </div>
 

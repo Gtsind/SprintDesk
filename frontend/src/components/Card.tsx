@@ -1,17 +1,43 @@
 import { StatusBadge } from "./StatusBadge";
-import type { Project, Issue } from "../types";
+import type { Project, Issue, User } from "../types";
 
 interface CardProps {
-  item: Project | Issue;
-  onClick: (item: Project | Issue) => void;
+  item: Project | Issue | User;
+  onClick: (item: Project | Issue | User) => void;
 }
 
 export function Card({ item, onClick }: CardProps) {
-  const isProject = (item: Project | Issue): item is Project => {
-    return 'status' in item && !('priority' in item);
+  const isProject = (item: Project | Issue | User): item is Project => {
+    return 'name' in item && 'status' in item && !('priority' in item) && !('username' in item);
   };
 
-  if (isProject(item)) {
+  const isUser = (item: Project | Issue | User): item is User => {
+    return 'username' in item && 'firstname' in item;
+  };
+
+  if (isUser(item)) {
+    // Render user card
+    return (
+      <button
+        onClick={() => onClick(item)}
+        className="block w-full text-left border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-sm font-medium text-gray-900">
+              {item.firstname} {item.lastname}
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              @{item.username}
+            </p>
+          </div>
+          <span className="text-xs text-gray-500">
+            {item.role}
+          </span>
+        </div>
+      </button>
+    );
+  } else if (isProject(item)) {
     // Render project card
     return (
       <button
