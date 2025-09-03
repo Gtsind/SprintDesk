@@ -12,9 +12,10 @@ interface DashboardPageProps {
 
 export function DashboardPage({ navigate }: DashboardPageProps) {
   const { user } = useAuth();
-  const { data: projects, loading: projectsLoading } = useApi<Project[]>(getProjects);
+  const { data: projects, loading: projectsLoading } =
+    useApi<Project[]>(getProjects);
   const { data: userIssues, loading: issuesLoading } = useApi<Issue[]>(
-    () => user ? getUserIssues(user.id) : Promise.resolve([]),
+    () => (user ? getUserIssues(user.id) : Promise.resolve([])),
     [user]
   );
 
@@ -31,7 +32,9 @@ export function DashboardPage({ navigate }: DashboardPageProps) {
   return (
     <Layout navigate={navigate}>
       <div className="px-4 py-6 sm:px-0">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-center text-gray-900 mb-6">
+          Welcome, {user?.firstname}
+        </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <CardContainer
