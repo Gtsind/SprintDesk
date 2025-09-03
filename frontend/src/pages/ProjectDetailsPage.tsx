@@ -1,12 +1,13 @@
 import { Layout } from "../components/Layout";
 import { LoadingSpinner } from "../components/LoadingSpinner";
+import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { CardContainer } from "../components/CardContainer";
 import { useApi } from "../hooks/useApi";
 import { getProject, getProjectIssues } from "../services/api";
 import type { Project, Issue, User } from "../types";
 
 interface ProjectDetailsPageProps {
-  navigate: (page: string, data?: any) => void;
+  navigate: (page: string, data?: unknown) => void;
   pageData: { projectId: number };
 }
 
@@ -27,10 +28,11 @@ export function ProjectDetailsPage({
   );
 
   const isLoading = projectLoading || issuesLoading;
+  const breadcrumbs = generateBreadcrumbs("project-details", { projectId, project: project || undefined });
 
   if (isLoading) {
     return (
-      <Layout>
+      <Layout breadcrumbs={breadcrumbs}>
         <LoadingSpinner message="Loading project details..." />
       </Layout>
     );
@@ -38,7 +40,7 @@ export function ProjectDetailsPage({
 
   if (!project) {
     return (
-      <Layout navigate={navigate}>
+      <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
         <div className="px-4 py-6 sm:px-0">
           <div className="text-center">
             <h1 className="text-center text-2xl font-bold text-gray-900 mb-4">
@@ -57,7 +59,7 @@ export function ProjectDetailsPage({
   }
 
   return (
-    <Layout navigate={navigate}>
+    <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
       <div className="px-4 py-6 sm:px-0">
         <div className="mb-6">
           <h1 className="text-center text-2xl font-bold text-gray-900">
@@ -73,7 +75,7 @@ export function ProjectDetailsPage({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <CardContainer
             title="Project Members"
-            items={project.members || []}
+            items={project.members as User[] || []}
             emptyMessage="No members found."
             onItemClick={() => {}}
           />

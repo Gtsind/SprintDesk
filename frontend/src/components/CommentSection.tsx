@@ -75,6 +75,7 @@ export function CommentSection({ issueId }: CommentSectionProps) {
         <Button
           type="submit"
           disabled={submittingComment || !newComment.trim()}
+          className="p-3 text-base sm:text-sm"
         >
           {submittingComment ? "Posting..." : "Post Comment"}
         </Button>
@@ -83,9 +84,7 @@ export function CommentSection({ issueId }: CommentSectionProps) {
       {/* Comments List */}
       <div className="space-y-4">
         {comments.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">
-            No comments yet.
-          </p>
+          <p className="text-gray-500 text-center py-4">No comments yet.</p>
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className="border rounded-lg p-4">

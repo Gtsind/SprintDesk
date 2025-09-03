@@ -7,7 +7,7 @@ import { getProjects } from "../services/api";
 import type { Project } from "../types";
 
 interface DashboardPageProps {
-  navigate: (page: string, data?: any) => void;
+  navigate: (page: string, data?: unknown) => void;
 }
 
 export function DashboardPage({ navigate }: DashboardPageProps) {

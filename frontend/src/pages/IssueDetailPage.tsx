@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AlertCircle } from "lucide-react";
 import { Layout } from "../components/Layout";
+import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { Button } from "../components/Button";
 import { IssueHeader } from "../components/IssueHeader";
@@ -12,7 +13,7 @@ import { getIssue, updateIssue, deleteIssue } from "../services/api";
 import type { Issue, IssueUpdate, ApiError } from "../types";
 
 interface IssueDetailPageProps {
-  navigate: (page: string, data?: any) => void;
+  navigate: (page: string, data?: unknown) => void;
   pageData: { issueId?: number };
 }
 
@@ -30,6 +31,11 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
       issueId ? getIssue(issueId) : Promise.reject(new Error("No issue ID")),
     [issueId]
   );
+
+  const breadcrumbs = generateBreadcrumbs("issue-detail", {
+    issueId,
+    issue: issue || undefined,
+  });
 
   const handleDescriptionUpdate = async (newDescription: string) => {
     await handleUpdateIssue({ description: newDescription || null });
@@ -72,7 +78,7 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
 
   if (isLoading) {
     return (
-      <Layout navigate={navigate}>
+      <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
         <LoadingSpinner message="Loading issue..." />
       </Layout>
     );
@@ -80,7 +86,7 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
 
   if (!issue) {
     return (
-      <Layout navigate={navigate}>
+      <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
         <div className="text-center py-12">
           <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-4 text-lg font-medium text-gray-900">
@@ -98,27 +104,26 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
   }
 
   return (
-    <Layout navigate={navigate}>
+    <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
       <div className="px-4 py-6 sm:px-0">
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex-1">
-            <IssueHeader issue={issue} navigate={navigate} />
-          </div>
-          <div className="flex gap-2 ml-4">
-            <Button
-              onClick={() => setIsEditing((editing) => !editing)}
-              variant="secondary"
-            >
-              {isEditing ? "Cancel" : "Edit"}
-            </Button>
-            <Button
-              onClick={handleDeleteIssue}
-              disabled={isDeleting}
-              variant="danger"
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-          </div>
+        <IssueHeader issue={issue} />
+
+        <div className="flex gap-2 mb-2">
+          <Button
+            onClick={() => setIsEditing((editing) => !editing)}
+            variant="secondary"
+            className="px-2"
+          >
+            {isEditing ? "Cancel" : "Edit"}
+          </Button>
+          <Button
+            onClick={handleDeleteIssue}
+            disabled={isDeleting}
+            variant="danger"
+            className="px-2"
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
         </div>
 
         {error && (

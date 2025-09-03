@@ -19,7 +19,7 @@ export function SearchBar({
       <input
         type="text"
         placeholder={searchPlaceholder}
-        value={searchValue}
+        value={searchValue.trim()}
         onChange={(e) => onSearchChange?.(e.target.value)}
         className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
       />

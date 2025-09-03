@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Layout } from "../components/Layout";
+import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { ListCard } from "../components/ListCard";
 import { SearchBar } from "../components/SearchBar";
@@ -10,34 +11,40 @@ import type { Project } from "../types";
 import { Button } from "../components/Button";
 
 interface ProjectsListPageProps {
-  navigate: (page: string, data?: any) => void;
+  navigate: (page: string, data?: unknown) => void;
 }
 
 export function ProjectsListPage({ navigate }: ProjectsListPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const { data: projects, loading } = useApi<Project[]>(getProjects);
+  const breadcrumbs = generateBreadcrumbs("projects-list");
 
   const filteredProjects =
     projects?.filter(
       (project) =>
-        project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        project.name.toLowerCase().trim().includes(searchQuery.toLowerCase()) ||
+        project.description
+          ?.toLowerCase()
+          .trim()
+          .includes(searchQuery.toLowerCase())
     ) || [];
 
   if (loading) {
     return (
-      <Layout>
+      <Layout breadcrumbs={breadcrumbs}>
         <LoadingSpinner message="Loading projects..." />
       </Layout>
     );
   }
 
   return (
-    <Layout navigate={navigate}>
+    <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
       <div className="w-full">
         {/* Header */}
         <div className="mb-4 px-4 md:px-0">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Projects</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+            Projects
+          </h1>
         </div>
 
         {/* Toolbar */}
