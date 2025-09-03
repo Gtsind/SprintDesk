@@ -6,6 +6,19 @@ export interface User {
   email: string;
   role: "Admin" | "Project Manager" | "Contributor";
   is_active: boolean;
+  projects?: {
+    id: number;
+    name: string;
+    status: "Active" | "Completed" | "On Hold" | "Cancelled";
+  }[];
+  assigned_issues?: {
+    id: number;
+    title: string;
+    description: string | null;
+    status: "Open" | "In Progress" | "Review Ready" | "Closed" | "Blocked";
+    priority: "Low" | "Medium" | "High" | "Critical";
+    time_estimate: number | null;
+  }[];
 }
 
 export interface Project {
@@ -25,6 +38,13 @@ export interface Project {
     username: string;
     firstname: string;
     lastname: string;
+  }[];
+  issues?: {
+    id: number;
+    title: string;
+    description: string | null;
+    status: "Open" | "In Progress" | "Review Ready" | "Closed" | "Blocked";
+    priority: "Low" | "Medium" | "High" | "Critical";
   }[];
 }
 
@@ -58,6 +78,7 @@ export interface Issue {
     name: string;
     status: string;
   };
+  comments?: Comment[];
 }
 
 export interface Comment {

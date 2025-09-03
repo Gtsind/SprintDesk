@@ -88,7 +88,9 @@ export function ListCard({ type, item, onClick }: ListCardProps) {
               <div className="mt-2 flex items-center text-sm text-gray-500">
                 <AlertCircle className="flex-shrink-0 mr-1.5 h-4 w-4" />
                 <span>
-                  {project.openIssuesCount ?? 0} open issues
+                  {project.issues?.filter(issue => 
+                    issue.status === "Open" || issue.status === "In Progress" || issue.status === "Review Ready"
+                  ).length ?? 0} open issues
                 </span>
                 <span className="mx-2">•</span>
                 <Users className="flex-shrink-0 mr-1.5 h-4 w-4" />

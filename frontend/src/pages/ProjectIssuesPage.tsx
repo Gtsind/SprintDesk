@@ -40,18 +40,13 @@ export function ProjectIssuesPage({
   return (
     <Layout navigate={navigate}>
       <div className="px-4 py-6 sm:px-0">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {project ? `${project.name} Issues` : "Project Issues"}
-            </h1>
-            <p className="text-gray-600 mt-1">
-              {issues?.length || 0} total issues
-            </p>
-          </div>
-          <Button onClick={() => navigate("project-details", { projectId })} variant="secondary">
-            ← Back to Project Details
-          </Button>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {project ? `${project.name} Issues` : "Project Issues"}
+          </h1>
+          <p className="text-gray-600 mt-3">
+            {issues?.length || 0} total issues
+          </p>
         </div>
 
         <div className="bg-white shadow rounded-lg overflow-hidden">

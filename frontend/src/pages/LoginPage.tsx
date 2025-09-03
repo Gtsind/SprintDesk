@@ -70,7 +70,7 @@ export function LoginPage({ navigate }: LoginPageProps) {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full justify-center"
+              className="w-full justify-center h-9.5"
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>

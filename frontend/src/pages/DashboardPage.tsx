@@ -26,7 +26,7 @@ export function DashboardPage({ navigate }: DashboardPageProps) {
   return (
     <Layout navigate={navigate}>
       <div className="px-4 py-6 sm:px-0">
-        <h1 className="text-2xl font-bold text-center text-gray-900 mb-10">
+        <h1 className="text-2xl font-bold text-gray-900 mb-10">
           Welcome, {user?.firstname}
         </h1>
 

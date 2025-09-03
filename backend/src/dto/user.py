@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from src.dto.project import ProjectSummary
+    from src.dto.issue import IssueSummary
 
 class UserCreate(UserBase):
     """DTO for user creation"""
@@ -29,6 +30,7 @@ class UserPublic(UserBase):
     is_active: bool
     created_at: datetime
     projects: list["ProjectSummary"] = []
+    assigned_issues: list["IssueSummary"] = []
 
 class UserSummary(UserBase):
     """DTO for minimal user info"""
@@ -36,4 +38,5 @@ class UserSummary(UserBase):
 
 # We need to import this to avoid "not fully defined" errors when using forward reference
 from src.dto.project import ProjectSummary
+from src.dto.issue import IssueSummary
 UserPublic.model_rebuild()

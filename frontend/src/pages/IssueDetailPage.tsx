@@ -59,7 +59,7 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
       setError("");
       setIsDeleting(true);
       await deleteIssue(issueId);
-      navigate("dashboard");
+      navigate("project-issues");
     } catch (error: unknown) {
       if (error && typeof error === "object" && "detail" in error) {
         setError((error as ApiError).detail);

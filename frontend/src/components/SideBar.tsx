@@ -6,6 +6,7 @@ import {
   FolderOpen,
   Briefcase,
   Plus,
+  Settings,
 } from "lucide-react";
 
 interface SideBarProps {
@@ -50,7 +51,8 @@ export function SideBar({ navigate }: SideBarProps) {
     <div
       className={`${
         isCollapsed ? "w-20" : "w-64"
-      } bg-white shadow-sm border-r border-gray-200 transition-all duration-300 ease-in-out flex flex-col`}
+      } bg-blue-200 shadow-sm border-r border-gray-200 transition-all duration-300 ease-in-out flex flex-col`}
+      style={{ height: "calc(100vh - 4rem)" }}
     >
       {/* Toggle Button */}
       <div className="flex justify-end p-4">
@@ -67,7 +69,7 @@ export function SideBar({ navigate }: SideBarProps) {
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 px-4 pb-4 min-h-max">
+      <nav className="flex-1 px-4">
         <ul className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -93,6 +95,21 @@ export function SideBar({ navigate }: SideBarProps) {
           })}
         </ul>
       </nav>
+
+      {/* Settings Button at Bottom */}
+      <div className="p-4 border-t border-gray-200">
+        <button
+          onClick={() => {}} // Inactive for now
+          disabled={true}
+          className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-400 cursor-not-allowed ${
+            isCollapsed ? "justify-center" : "justify-start"
+          }`}
+          title={isCollapsed ? "Settings" : undefined}
+        >
+          <Settings className="h-5 w-5" />
+          {!isCollapsed && <span className="ml-3 truncate">Settings</span>}
+        </button>
+      </div>
     </div>
   );
 }
