@@ -5,7 +5,7 @@ from src.models.intermediate_tables import ProjectMembership
 from typing import ClassVar, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.models import User, Issue, ProjectMembership
+    from src.models import User, Issue
 
 class Project(ProjectBase, table=True):
     __tablename__: ClassVar[str] = "projects"

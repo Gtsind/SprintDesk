@@ -1,4 +1,12 @@
-import type { User, Project, Issue, Comment, UserRegistration, IssueUpdate, ApiError } from "../types";
+import type {
+  User,
+  Project,
+  Issue,
+  Comment,
+  UserRegistration,
+  IssueUpdate,
+  ApiError,
+} from "../types";
 
 const BASE_URL = "http://localhost:8000/api/v1";
 
@@ -30,32 +38,38 @@ const request = async <T>(
     const response = await fetch(url, config);
     if (!response.ok) {
       const errorData = await response.json();
-      
+
       // Handle expired/invalid token
-      if (response.status === 401 && errorData.detail === "Invalid or expired token" && onUnauthorized) {
+      if (
+        response.status === 401 &&
+        errorData.detail === "Invalid or expired token." &&
+        onUnauthorized
+      ) {
         onUnauthorized();
         throw { detail: "Session expired. Please log in again." } as ApiError;
       }
-      
+
       // Handle validation errors from FastAPI
       if (errorData.detail && Array.isArray(errorData.detail)) {
-        const validationMessages = errorData.detail.map((error: any) => error.msg).join(", ");
+        const validationMessages = errorData.detail
+          .map((error: any) => error.msg)
+          .join(", ");
         throw { detail: validationMessages } as ApiError;
       }
-      
+
       // Handle regular API errors
       throw errorData as ApiError;
     }
-    
+
     // Handle 204 No Content responses
     if (response.status === 204) {
       return null as T;
     }
-    
+
     return await response.json();
   } catch (error) {
     // Re-throw if it's already our formatted error
-    if (error && typeof error === 'object' && 'detail' in error) {
+    if (error && typeof error === "object" && "detail" in error) {
       throw error;
     }
     // Handle network errors or other unexpected errors

@@ -70,7 +70,8 @@ export function ProjectIssuesPage({
               {issues.map((issue) => (
                 <ListCard
                   key={issue.id}
-                  issue={issue}
+                  type="issue"
+                  item={issue}
                   onClick={(issue) =>
                     navigate("issue-detail", { issueId: issue.id })
                   }

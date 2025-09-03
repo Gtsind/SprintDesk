@@ -60,12 +60,6 @@ export function ProjectDetailsPage({
     <Layout navigate={navigate}>
       <div className="px-4 py-6 sm:px-0">
         <div className="mb-6">
-          <button
-            onClick={() => navigate("dashboard")}
-            className="text-indigo-600 hover:text-indigo-500 text-sm mb-4"
-          >
-            ← Back to Dashboard
-          </button>
           <h1 className="text-center text-2xl font-bold text-gray-900">
             {project.name}
           </h1>

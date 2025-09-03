@@ -27,8 +27,8 @@ export function SideBar({ navigate }: SideBarProps) {
       id: "projects",
       label: "Projects",
       icon: FolderOpen,
-      action: () => {},
-      active: false,
+      action: () => navigate?.("projects-list"),
+      active: true,
     },
     {
       id: "my-work",
@@ -67,7 +67,7 @@ export function SideBar({ navigate }: SideBarProps) {
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 px-4 pb-4">
+      <nav className="flex-1 px-4 pb-4 min-h-max">
         <ul className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;

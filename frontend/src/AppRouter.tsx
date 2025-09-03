@@ -3,16 +3,18 @@ import { useAuth } from "./contexts/AuthContext";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { ProjectsListPage } from "./pages/ProjectsListPage";
 import { ProjectDetailsPage } from "./pages/ProjectDetailsPage";
 import { ProjectIssuesPage } from "./pages/ProjectIssuesPage";
 import { IssueDetailPage } from "./pages/IssueDetailPage";
 
-type PageType = "login" | "register" | "dashboard" | "project-details" | "project-issues" | "issue-detail";
+type PageType = "login" | "register" | "dashboard" | "projects-list" | "project-details" | "project-issues" | "issue-detail";
 
 type PageDataMap = {
   "login": {};
   "register": {};
   "dashboard": {};
+  "projects-list": {};
   "project-details": { projectId: number };
   "project-issues": { projectId: number };
   "issue-detail": { issueId: number };
@@ -48,6 +50,8 @@ export function AppRouter() {
         return <RegisterPage navigate={navigate} />;
       case "dashboard":
         return <DashboardPage navigate={navigate} />;
+      case "projects-list":
+        return <ProjectsListPage navigate={navigate} />;
       case "project-details":
         return <ProjectDetailsPage navigate={navigate} pageData={pageData as PageDataMap["project-details"]} />;
       case "project-issues":

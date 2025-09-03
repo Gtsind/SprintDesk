@@ -1,7 +1,10 @@
 from sqlmodel import SQLModel
 from src.models.base import CommentBase
-from src.dto.user import UserSummary
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.dto.user import UserSummary
 
 class CommentCreate(CommentBase):
     """DTO for comment creation"""
@@ -18,3 +21,7 @@ class CommentPublic(CommentBase):
     author_id: int
     created_at: datetime
     author: "UserSummary"
+
+from src.dto.user import UserSummary
+
+CommentPublic.model_rebuild()
