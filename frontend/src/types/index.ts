@@ -109,6 +109,11 @@ export interface UserRegistration {
   title: string | null;
 }
 
+export interface ProjectCreate {
+  name: string;
+  description?: string | null;
+}
+
 export interface IssueUpdate {
   title?: string;
   description: string | null;

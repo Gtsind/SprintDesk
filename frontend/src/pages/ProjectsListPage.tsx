@@ -5,7 +5,9 @@ import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { ListCard } from "../components/ListCard";
 import { SearchBar } from "../components/SearchBar";
+import { ProjectCreateModal } from "../components/ProjectCreateModal";
 import { useApi } from "../hooks/useApi";
+import { useAuth } from "../contexts/AuthContext";
 import { getProjects } from "../services/api";
 import type { Project } from "../types";
 import { Button } from "../components/Button";
@@ -16,8 +18,17 @@ interface ProjectsListPageProps {
 
 export function ProjectsListPage({ navigate }: ProjectsListPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: projects, loading } = useApi<Project[]>(getProjects);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user } = useAuth();
+  const { data: projects, loading, refetch } = useApi<Project[]>(getProjects);
   const breadcrumbs = generateBreadcrumbs("projects-list");
+
+  const canCreateProject = user?.role === "Admin" || user?.role === "Project Manager";
+
+  const handleProjectCreated = (newProject: Project) => {
+    refetch();
+    navigate("project-details", { projectId: newProject.id });
+  };
 
   const filteredProjects =
     projects?.filter(
@@ -57,8 +68,8 @@ export function ProjectsListPage({ navigate }: ProjectsListPageProps) {
             />
           </div>
           <Button
-            onClick={() => {}}
-            disabled={true}
+            onClick={() => setIsModalOpen(true)}
+            disabled={!canCreateProject}
             className="flex items-center justify-center py-2.5 px-4 gap-2 w-full md:w-auto"
           >
             <Plus className="h-4 w-4" />
@@ -95,6 +106,12 @@ export function ProjectsListPage({ navigate }: ProjectsListPageProps) {
           )}
         </div>
       </div>
+
+      <ProjectCreateModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onProjectCreated={handleProjectCreated}
+      />
     </Layout>
   );
 }
