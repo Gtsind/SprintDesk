@@ -34,22 +34,25 @@ export function ProjectsListPage({ navigate }: ProjectsListPageProps) {
 
   return (
     <Layout navigate={navigate}>
-      <div className="px-4 py-6  ">
+      <div className="w-full">
         {/* Header */}
-        <div className="mb-4">
-          <h1 className="text-2xl p-1 font-bold text-gray-900">Projects</h1>
+        <div className="mb-4 px-4 md:px-0">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Projects</h1>
         </div>
 
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between ">
-          <SearchBar
-            searchValue={searchQuery}
-            onSearchChange={setSearchQuery}
-            searchPlaceholder="Search projects..."
-          />
+        {/* Toolbar */}
+        <div className="mb-6 px-4 md:px-0 flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between">
+          <div className="w-full md:max-w-md">
+            <SearchBar
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+              searchPlaceholder="Search projects..."
+            />
+          </div>
           <Button
             onClick={() => {}}
             disabled={true}
-            className="flex py-2 px-2 gap-2"
+            className="flex items-center justify-center py-2.5 px-4 gap-2 w-full md:w-auto"
           >
             <Plus className="h-4 w-4" />
             New Project
@@ -57,7 +60,7 @@ export function ProjectsListPage({ navigate }: ProjectsListPageProps) {
         </div>
 
         {/* Projects List */}
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="mx-4 md:mx-0 bg-white shadow-sm md:shadow rounded-lg overflow-hidden border border-gray-200 md:border-0">
           {filteredProjects.length === 0 ? (
             <div className="text-center py-12">
               <h3 className="mt-4 text-lg font-medium text-gray-900">

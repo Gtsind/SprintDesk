@@ -14,7 +14,7 @@ export function Header({ navigate }: HeaderProps) {
   };
 
   return (
-    <nav className="bg-blue-300 shadow">
+    <nav className="bg-white shadow relative z-50">
       <div className="flex justify-between h-16 max-w-screen px-4 sm:px-6 lg:px-8">
         <div className="flex items-center">
           <button

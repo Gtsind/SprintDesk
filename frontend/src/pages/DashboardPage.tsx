@@ -29,18 +29,15 @@ export function DashboardPage({ navigate }: DashboardPageProps) {
         <h1 className="text-2xl font-bold text-gray-900 mb-10">
           Welcome, {user?.firstname}
         </h1>
-
-        <div className="lg:grid-cols-2 gap-6">
-          <CardContainer
-            title="Projects"
-            items={projects}
-            emptyMessage="No projects found."
-            onItemClick={(item) => {
-              const project = item as Project;
-              navigate("project-details", { projectId: project.id });
-            }}
-          />
-        </div>
+        <CardContainer
+          title="Projects"
+          items={projects}
+          emptyMessage="No projects found."
+          onItemClick={(item) => {
+            const project = item as Project;
+            navigate("project-details", { projectId: project.id });
+          }}
+        />
       </div>
     </Layout>
   );

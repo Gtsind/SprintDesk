@@ -1,21 +1,10 @@
-import { useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Home,
-  FolderOpen,
-  Briefcase,
-  Plus,
-  Settings,
-} from "lucide-react";
+import { Home, FolderOpen, Plus, Settings, FileCode } from "lucide-react";
 
 interface SideBarProps {
   navigate?: (page: string) => void;
 }
 
 export function SideBar({ navigate }: SideBarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
   const menuItems = [
     {
       id: "dashboard",
@@ -32,9 +21,9 @@ export function SideBar({ navigate }: SideBarProps) {
       active: true,
     },
     {
-      id: "my-work",
-      label: "My Work",
-      icon: Briefcase,
+      id: "Issues",
+      label: "Issues",
+      icon: FileCode,
       action: () => {},
       active: false,
     },
@@ -49,23 +38,12 @@ export function SideBar({ navigate }: SideBarProps) {
 
   return (
     <div
-      className={`${
-        isCollapsed ? "w-20" : "w-64"
-      } bg-blue-200 shadow-sm border-r border-gray-200 transition-all duration-300 ease-in-out flex flex-col`}
+      className="w-64 bg-white shadow-sm border-r border-gray-200 flex-col hidden md:flex"
       style={{ height: "calc(100vh - 4rem)" }}
     >
-      {/* Toggle Button */}
-      <div className="flex justify-end p-4">
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 rounded-md hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          {isCollapsed ? (
-            <ChevronRight className="h-5 w-5" />
-          ) : (
-            <ChevronLeft className="h-5 w-5" />
-          )}
-        </button>
+      {/* Header Section */}
+      <div className="ml-4 p-4 border-b border-gray-100 mb-5">
+        <h3 className="text-sm font-medium text-gray-700">Your Work</h3>
       </div>
 
       {/* Navigation Items */}
@@ -82,13 +60,10 @@ export function SideBar({ navigate }: SideBarProps) {
                     item.active
                       ? "text-gray-900 hover:bg-gray-100 cursor-pointer"
                       : "text-gray-400 cursor-not-allowed"
-                  } ${isCollapsed ? "justify-center" : "justify-start"}`}
-                  title={isCollapsed ? item.label : undefined}
+                  } justify-start`}
                 >
                   <Icon className="h-5 w-5" />
-                  {!isCollapsed && (
-                    <span className="ml-3 truncate">{item.label}</span>
-                  )}
+                  <span className="ml-3 truncate">{item.label}</span>
                 </button>
               </li>
             );
@@ -101,13 +76,10 @@ export function SideBar({ navigate }: SideBarProps) {
         <button
           onClick={() => {}} // Inactive for now
           disabled={true}
-          className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-400 cursor-not-allowed ${
-            isCollapsed ? "justify-center" : "justify-start"
-          }`}
-          title={isCollapsed ? "Settings" : undefined}
+          className="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-400 cursor-not-allowed justify-start"
         >
           <Settings className="h-5 w-5" />
-          {!isCollapsed && <span className="ml-3 truncate">Settings</span>}
+          <span className="ml-3 truncate">Settings</span>
         </button>
       </div>
     </div>

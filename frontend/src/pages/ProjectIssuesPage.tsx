@@ -1,7 +1,6 @@
 import { AlertCircle } from "lucide-react";
 import { Layout } from "../components/Layout";
 import { LoadingSpinner } from "../components/LoadingSpinner";
-import { Button } from "../components/Button";
 import { ListCard } from "../components/ListCard";
 import { useApi } from "../hooks/useApi";
 import { getProjectIssues, getProjects } from "../services/api";

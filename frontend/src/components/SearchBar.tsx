@@ -14,7 +14,7 @@ export function SearchBar({
   className = "",
 }: SearchBarProps) {
   return (
-    <div className={`relative w-full sm:max-w-xs ${className}`}>
+    <div className={`relative w-full max-w-full sm:max-w-xs ${className}`}>
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
       <input
         type="text"

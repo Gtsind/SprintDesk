@@ -72,10 +72,10 @@ export function RegisterPage({ navigate }: RegisterPageProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-md w-full space-y-6 sm:space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-4 sm:mt-6 text-center text-2xl sm:text-3xl font-extrabold text-gray-900">
             Create your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
@@ -83,9 +83,9 @@ export function RegisterPage({ navigate }: RegisterPageProps) {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-6 sm:mt-8 space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormInput
                 id="firstname"
                 type="text"
@@ -154,17 +154,17 @@ export function RegisterPage({ navigate }: RegisterPageProps) {
             <Button
               type="submit"
               disabled={isRegistering}
-              className="w-full justify-center"
+              className="w-full justify-center py-3 text-base sm:text-sm"
             >
               {isRegistering ? "Creating account..." : "Create account"}
             </Button>
 
-            <div className="mt-6 text-center text-sm text-gray-500">
+            <div className="mt-4 sm:mt-6 text-center text-sm text-gray-500">
               Already have an account?{" "}
               <button
                 type="button"
                 onClick={() => navigate("login")}
-                className="text-indigo-600 hover:text-indigo-500 font-medium"
+                className="text-indigo-600 hover:text-indigo-500 font-medium underline-offset-2 hover:underline"
               >
                 Sign in
               </button>
