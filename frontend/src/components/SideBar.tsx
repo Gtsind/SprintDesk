@@ -24,8 +24,8 @@ export function SideBar({ navigate }: SideBarProps) {
       id: "Issues",
       label: "Issues",
       icon: FileCode,
-      action: () => {},
-      active: false,
+      action: () => navigate?.("all-issues"),
+      active: true,
     },
     {
       id: "create",

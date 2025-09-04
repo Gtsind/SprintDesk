@@ -28,7 +28,10 @@ export function ProjectIssuesPage({
 
   const project = projects?.find((p) => p.id === projectId) || null;
   const isLoading = issuesLoading || projectsLoading;
-  const breadcrumbs = generateBreadcrumbs("project-issues", { projectId, project: project || undefined });
+  const breadcrumbs = generateBreadcrumbs("project-issues", {
+    projectId,
+    project: project || undefined,
+  });
 
   if (isLoading) {
     return (

@@ -41,6 +41,7 @@ class IssuePublic(IssueBase):
 class IssueSummary(IssueBase):
     """DTO for minimal issue responses"""
     id: int
+    assignee_id: int | None
 
 
 from src.dto.user import UserSummary
