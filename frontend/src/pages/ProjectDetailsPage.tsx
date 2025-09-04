@@ -4,20 +4,27 @@ import { Layout } from "../components/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { ListCard } from "../components/ListCard";
+import { StatusBadge } from "../components/StatusBadge";
+import { Button } from "../components/Button";
+import { IssueCreateModal } from "../components/IssueCreateModal";
 import { useApi } from "../hooks/useApi";
 import { getProjectIssues, getProjects } from "../services/api";
 import type { Issue, Project } from "../types";
 
-interface ProjectIssuesPageProps {
+interface ProjectDetailsPageProps {
   navigate: (page: string, data?: unknown) => void;
   pageData: { projectId?: number };
 }
 
-export function ProjectDetails({ navigate, pageData }: ProjectIssuesPageProps) {
+export function ProjectDetails({
+  navigate,
+  pageData,
+}: ProjectDetailsPageProps) {
   const projectId = pageData.projectId;
   const [activeTab, setActiveTab] = useState<"issues" | "members">("issues");
+  const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
 
-  const { data: issues, loading: issuesLoading } = useApi<Issue[]>(
+  const { data: issues, loading: issuesLoading, refetch: refetchIssues } = useApi<Issue[]>(
     () => (projectId ? getProjectIssues(projectId) : Promise.resolve([])),
     [projectId]
   );
@@ -42,6 +49,11 @@ export function ProjectDetails({ navigate, pageData }: ProjectIssuesPageProps) {
 
   const members = project?.members || [];
 
+  const handleIssueCreated = () => {
+    refetchIssues();
+    setActiveTab("issues"); // Switch to issues tab to see the new issue
+  };
+
   return (
     <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
       <div className="px-4 py-6 sm:px-0">
@@ -51,14 +63,18 @@ export function ProjectDetails({ navigate, pageData }: ProjectIssuesPageProps) {
             {project?.name || "Project"}
           </h1>
           {project?.description && (
-            <p className="text-gray-600 text-lg">{project.description}</p>
+            <p className="text-gray-600 text-lg mb-3">{project.description}</p>
+          )}
+          {project?.status && (
+            <StatusBadge status={project.status} type="project-status" />
           )}
         </div>
 
         {/* Tabs */}
         <div className="mb-6">
           <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
+            <div className="flex justify-between items-center">
+              <nav className="-mb-px flex space-x-8">
               <button
                 onClick={() => setActiveTab("issues")}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
@@ -81,7 +97,16 @@ export function ProjectDetails({ navigate, pageData }: ProjectIssuesPageProps) {
                 <Users className="inline h-4 w-4 mr-1" />
                 Members ({members.length})
               </button>
-            </nav>
+              </nav>
+              {activeTab === "issues" && (
+                <Button
+                  onClick={() => setIsIssueModalOpen(true)}
+                  className="mb-2"
+                >
+                  New Issue
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -144,6 +169,17 @@ export function ProjectDetails({ navigate, pageData }: ProjectIssuesPageProps) {
           )}
         </div>
       </div>
+
+      {/* Issue Create Modal */}
+      {projectId && (
+        <IssueCreateModal
+          isOpen={isIssueModalOpen}
+          onClose={() => setIsIssueModalOpen(false)}
+          onIssueCreated={handleIssueCreated}
+          projectId={projectId}
+          projectMembers={members}
+        />
+      )}
     </Layout>
   );
 }

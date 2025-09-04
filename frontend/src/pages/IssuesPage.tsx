@@ -16,7 +16,7 @@ interface IssuesPageProps {
 export function IssuesPage({ navigate }: IssuesPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const { data: issues, loading } = useApi<Issue[]>(getIssues);
-  const breadcrumbs = generateBreadcrumbs("all-issues");
+  const breadcrumbs = generateBreadcrumbs("issues-list");
 
   if (loading) {
     return (

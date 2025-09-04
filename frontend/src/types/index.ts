@@ -99,11 +99,6 @@ export interface Comment {
   };
 }
 
-export interface NavigationState {
-  currentPage: "login" | "dashboard" | "project-details" | "issue-detail";
-  params: { [key: string]: string };
-}
-
 export interface UserRegistration {
   username: string;
   password: string;
@@ -118,13 +113,23 @@ export interface ProjectCreate {
   description?: string | null;
 }
 
-export interface IssueUpdate {
-  title?: string;
-  description: string | null;
+export interface IssueCreate {
+  project_id: number;
+  title: string;
+  description?: string;
   status?: "Open" | "In Progress" | "Review Ready" | "Closed" | "Blocked";
   priority?: "Low" | "Medium" | "High" | "Critical";
-  assignee_id?: number | null;
-  time_estimate?: number | null;
+  assignee_id?: number;
+  time_estimate?: number;
+}
+
+export interface IssueUpdate {
+  title?: string;
+  description?: string;
+  status?: "Open" | "In Progress" | "Review Ready" | "Closed" | "Blocked";
+  priority?: "Low" | "Medium" | "High" | "Critical";
+  assignee_id?: number;
+  time_estimate?: number;
 }
 
 export interface ApiError {

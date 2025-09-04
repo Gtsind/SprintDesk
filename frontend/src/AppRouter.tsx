@@ -4,7 +4,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
-import { ProjectDetails } from "./pages/ProjectDetails";
+import { ProjectDetails } from "./pages/ProjectDetailsPage";
 import { IssuesPage } from "./pages/IssuesPage";
 import { IssueDetailPage } from "./pages/IssueDetailPage";
 
@@ -14,7 +14,7 @@ type PageType =
   | "dashboard"
   | "projects-list"
   | "project-details"
-  | "all-issues"
+  | "issues-list"
   | "issue-detail";
 
 type PageDataMap = {
@@ -23,7 +23,7 @@ type PageDataMap = {
   dashboard: Record<string, never>;
   "projects-list": Record<string, never>;
   "project-details": { projectId: number };
-  "all-issues": Record<string, never>;
+  "issues-list": Record<string, never>;
   "issue-detail": { issueId: number };
 };
 
@@ -70,7 +70,7 @@ export function AppRouter() {
             pageData={pageData as PageDataMap["project-details"]}
           />
         );
-      case "all-issues":
+      case "issues-list":
         return <IssuesPage navigate={navigateWrapper} />;
       case "issue-detail":
         return (

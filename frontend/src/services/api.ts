@@ -5,6 +5,7 @@ import type {
   Comment,
   UserRegistration,
   ProjectCreate,
+  IssueCreate,
   IssueUpdate,
   ApiError,
 } from "../types";
@@ -116,6 +117,13 @@ export const createProject = async (projectData: ProjectCreate): Promise<Project
   return request<Project>("/projects/", {
     method: "POST",
     body: JSON.stringify(projectData),
+  });
+};
+
+export const createIssue = async (issueData: IssueCreate): Promise<Issue> => {
+  return request<Issue>("/issues/", {
+    method: "POST",
+    body: JSON.stringify(issueData),
   });
 };
 

@@ -16,10 +16,10 @@ export function generateBreadcrumbs(
     case "dashboard":
       return [];
 
-    case "all-issues":
+    case "issues-list":
       return [
         { label: "Dashboard", page: "dashboard" },
-        { label: "Issues", page: "all-issues" },
+        { label: "Issues", page: "issues-list" },
       ];
 
     case "projects-list":
