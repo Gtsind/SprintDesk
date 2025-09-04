@@ -38,6 +38,9 @@ export interface Project {
     username: string;
     firstname: string;
     lastname: string;
+    email: string;
+    role: "Admin" | "Project Manager" | "Contributor";
+    is_active: boolean;
   }[];
   issues?: {
     id: number;
@@ -97,7 +100,7 @@ export interface Comment {
 }
 
 export interface NavigationState {
-  currentPage: "login" | "dashboard" | "project-issues" | "issue-detail";
+  currentPage: "login" | "dashboard" | "project-details" | "issue-detail";
   params: { [key: string]: string };
 }
 

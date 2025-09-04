@@ -26,21 +26,22 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
     );
   }
 
-  const filteredIssues = issues?.filter(issue => 
-    issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    issue.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    issue.project?.name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const filteredIssues =
+    issues?.filter(
+      (issue) =>
+        issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        issue.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        issue.project?.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
 
   return (
     <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
       <div className="w-full">
         {/* Header */}
         <div className="mb-4 px-4 md:px-0">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Issues</h1>
-          <p className="text-gray-600 mt-2">
-            All issues from your projects
-          </p>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+            Issues
+          </h1>
         </div>
 
         {/* Toolbar */}

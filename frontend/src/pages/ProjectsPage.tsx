@@ -16,14 +16,15 @@ interface ProjectsListPageProps {
   navigate: (page: string, data?: unknown) => void;
 }
 
-export function ProjectsListPage({ navigate }: ProjectsListPageProps) {
+export function ProjectsPage({ navigate }: ProjectsListPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
   const { data: projects, loading, refetch } = useApi<Project[]>(getProjects);
   const breadcrumbs = generateBreadcrumbs("projects-list");
 
-  const canCreateProject = user?.role === "Admin" || user?.role === "Project Manager";
+  const canCreateProject =
+    user?.role === "Admin" || user?.role === "Project Manager";
 
   const handleProjectCreated = (newProject: Project) => {
     refetch();

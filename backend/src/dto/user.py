@@ -35,6 +35,7 @@ class UserPublic(UserBase):
 class UserSummary(UserBase):
     """DTO for minimal user info"""
     id: int
+    is_active: bool | None = None
 
 # We need to import this to avoid "not fully defined" errors when using forward reference
 from src.dto.project import ProjectSummary

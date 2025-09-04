@@ -1,6 +1,6 @@
-import { User, Calendar, FolderOpen, Users, AlertCircle } from "lucide-react";
+import { User, Calendar, FolderOpen, Users, AlertCircle, Mail } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
-import type { Issue, Project } from "../types";
+import type { Issue, Project, User as Member } from "../types";
 
 interface IssueListCardProps {
   type: "issue";
@@ -14,7 +14,13 @@ interface ProjectListCardProps {
   onClick: (item: Project) => void;
 }
 
-type ListCardProps = IssueListCardProps | ProjectListCardProps;
+interface MemberListCardProps {
+  type: "member";
+  item: Member;
+  onClick: (item: Member) => void;
+}
+
+type ListCardProps = IssueListCardProps | ProjectListCardProps | MemberListCardProps;
 
 export function ListCard({ type, item, onClick }: ListCardProps) {
   if (type === "issue") {
@@ -111,6 +117,38 @@ export function ListCard({ type, item, onClick }: ListCardProps) {
                   {project.description}
                 </p>
               )}
+            </div>
+          </div>
+        </button>
+      </li>
+    );
+  }
+
+  if (type === "member") {
+    const member = item as Member;
+    return (
+      <li>
+        <button
+          onClick={() => onClick(member)}
+          className="block w-full text-left hover:bg-gray-50 px-6 py-4"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center">
+                <User className="flex-shrink-0 mr-3 h-5 w-5 text-gray-400" />
+                <h3 className="text-sm font-medium text-gray-900">
+                  {member.firstname} {member.lastname}
+                </h3>
+                <div className="ml-4">
+                  <StatusBadge status={member.role} type="role" />
+                </div>
+              </div>
+              <div className="mt-2 flex items-center text-sm text-gray-500">
+                <Mail className="flex-shrink-0 mr-1.5 h-4 w-4" />
+                <span className="truncate">{member.email}</span>
+                <span className="mx-2">•</span>
+                <span className="truncate">@{member.username}</span>
+              </div>
             </div>
           </div>
         </button>
