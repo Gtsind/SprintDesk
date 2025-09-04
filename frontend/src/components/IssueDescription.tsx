@@ -8,7 +8,12 @@ interface IssueDescriptionProps {
   onCancel?: () => void;
 }
 
-export function IssueDescription({ description, isEditing = false, onUpdate, onCancel }: IssueDescriptionProps) {
+export function IssueDescription({
+  description,
+  isEditing = false,
+  onUpdate,
+  onCancel,
+}: IssueDescriptionProps) {
   const [editValue, setEditValue] = useState(description || "");
 
   useEffect(() => {
@@ -24,10 +29,8 @@ export function IssueDescription({ description, isEditing = false, onUpdate, onC
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-lg font-medium text-gray-900 mb-4">
-        Description
-      </h2>
+    <div className="bg-white shadow rounded-lg p-4">
+      <h2 className="text-lg font-medium text-gray-900 mb-4">Description</h2>
       {isEditing ? (
         <div className="space-y-4">
           <textarea
@@ -40,13 +43,14 @@ export function IssueDescription({ description, isEditing = false, onUpdate, onC
           <div className="flex gap-2">
             <Button
               onClick={handleSave}
-              variant="primary"
+              className="px-6 py-2.5 text-sm font-medium rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg"
             >
-              Save
+              Save Changes
             </Button>
             <Button
               onClick={onCancel}
               variant="secondary"
+              className="px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md"
             >
               Cancel
             </Button>
@@ -55,9 +59,7 @@ export function IssueDescription({ description, isEditing = false, onUpdate, onC
       ) : (
         <>
           {description ? (
-            <p className="text-gray-700 whitespace-pre-wrap">
-              {description}
-            </p>
+            <p className="text-gray-700 whitespace-pre-wrap">{description}</p>
           ) : (
             <p className="text-gray-500 italic">No description provided.</p>
           )}

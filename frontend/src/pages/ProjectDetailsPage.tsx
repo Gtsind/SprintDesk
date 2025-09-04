@@ -55,12 +55,12 @@ export function ProjectDetailsPage({
 
   const handleIssueCreated = () => {
     refetchIssues();
-    setActiveTab("issues"); // Switch to issues tab to see the new issue
+    setActiveTab("issues");
   };
 
   return (
     <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
-      <div className="px-4 py-6 sm:px-0">
+      <div>
         {/* Project Info */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -105,7 +105,7 @@ export function ProjectDetailsPage({
               {activeTab === "issues" && (
                 <Button
                   onClick={() => setIsIssueModalOpen(true)}
-                  className="flex items-center justify-center py-2.5 px-4 gap-2 md:w-auto"
+                  className="flex items-center justify-center py-2.5 px-4 gap-2 sm:w-auto"
                 >
                   <Plus className="h-4 w-4" />
                   New Issue

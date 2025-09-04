@@ -49,7 +49,7 @@ export function generateBreadcrumbs(
           data: { projectId: data?.issue?.project_id },
         },
         {
-          label: data?.issue?.title || `Issue #${data?.issueId}`,
+          label: `Issue #${data?.issue?.id || data?.issueId}`,
           page: "issue-detail",
           data: { issueId: data?.issueId },
         },
