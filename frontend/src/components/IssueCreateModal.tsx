@@ -3,6 +3,7 @@ import { Modal } from "./Modal";
 import { FormInput } from "./FormInput";
 import { Button } from "./Button";
 import { StatusBadge } from "./StatusBadge";
+import { LoadingIcon } from "./LoadingIcon";
 import { createIssue } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import type { IssueCreate, Issue, ApiError, User } from "../types";
@@ -26,7 +27,7 @@ export function IssueCreateModal({
   projectMembers,
 }: IssueCreateModalProps) {
   const { user } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -52,7 +53,9 @@ export function IssueCreateModal({
       const issueData: IssueCreate = {
         project_id: projectId,
         title: formData.title.trim(),
-        description: formData.description?.trim() ? formData.description.trim() : undefined,
+        description: formData.description?.trim()
+          ? formData.description.trim()
+          : undefined,
         priority: formData.priority,
         assignee_id: formData.assignee_id || undefined,
         time_estimate: formData.time_estimate || undefined,
@@ -85,7 +88,10 @@ export function IssueCreateModal({
     onClose();
   };
 
-  const handleInputChange = (field: string, value: string | number | undefined | Priority) => {
+  const handleInputChange = (
+    field: string,
+    value: string | number | undefined | Priority
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -96,7 +102,7 @@ export function IssueCreateModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Create New Issue">
+    <Modal isOpen={isOpen} onClose={handleClose} title="New Issue">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -107,7 +113,7 @@ export function IssueCreateModal({
         {/* Title */}
         <FormInput
           id="title"
-          label="Issue Title"
+          label="Title"
           type="text"
           value={formData.title}
           onChange={(e) => handleInputChange("title", e.target.value)}
@@ -145,7 +151,9 @@ export function IssueCreateModal({
             <select
               id="priority"
               value={formData.priority}
-              onChange={(e) => handleInputChange("priority", e.target.value as Priority)}
+              onChange={(e) =>
+                handleInputChange("priority", e.target.value as Priority)
+              }
               className="block w-40 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             >
               {priorities.map((priority) => (
@@ -172,7 +180,9 @@ export function IssueCreateModal({
             min="0"
             value={formData.time_estimate?.toString() || ""}
             onChange={(e) => {
-              const value = e.target.value ? parseInt(e.target.value) : undefined;
+              const value = e.target.value
+                ? parseInt(e.target.value)
+                : undefined;
               handleInputChange("time_estimate", value);
             }}
             placeholder="Enter estimated hours (optional)"
@@ -188,12 +198,14 @@ export function IssueCreateModal({
           >
             Assignee
           </label>
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-2 sm:space-y-0">
             <select
               id="assignee"
               value={formData.assignee_id || ""}
               onChange={(e) => {
-                const value = e.target.value ? parseInt(e.target.value) : undefined;
+                const value = e.target.value
+                  ? parseInt(e.target.value)
+                  : undefined;
                 handleInputChange("assignee_id", value);
               }}
               className="block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
@@ -211,7 +223,7 @@ export function IssueCreateModal({
                 variant="secondary"
                 onClick={handleAssignToMe}
                 disabled={isSubmitting}
-                className="whitespace-nowrap"
+                className="whitespace-nowrap px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 transition-colors duration-150 sm:flex-shrink-0"
               >
                 Assign to me
               </Button>
@@ -220,20 +232,29 @@ export function IssueCreateModal({
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end space-x-3 pt-4">
+        <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
           <Button
             type="button"
             variant="secondary"
             onClick={handleClose}
             disabled={isSubmitting}
+            className="px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={isSubmitting || !formData.title.trim()}
+            className="px-6 py-2.5 text-sm font-medium rounded-lg hover:to-indigo-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-lg"
           >
-            {isSubmitting ? "Creating..." : "Create Issue"}
+            {isSubmitting ? (
+              <span className="flex items-center">
+                <LoadingIcon className="-ml-1 mr-2 h-4 w-4 text-white" />
+                Creating...
+              </span>
+            ) : (
+              "Create Issue"
+            )}
           </Button>
         </div>
       </form>

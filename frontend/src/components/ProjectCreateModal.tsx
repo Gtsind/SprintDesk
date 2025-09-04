@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Modal } from "./Modal";
 import { FormInput } from "./FormInput";
 import { Button } from "./Button";
+import { LoadingIcon } from "./LoadingIcon";
 import { createProject } from "../services/api";
 import type { ProjectCreate, Project, ApiError } from "../types";
 
@@ -100,20 +101,29 @@ export function ProjectCreateModal({
           />
         </div>
 
-        <div className="flex justify-end space-x-3 pt-4">
+        <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
           <Button
             type="button"
             variant="secondary"
             onClick={handleClose}
             disabled={isSubmitting}
+            className="px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={isSubmitting || !formData.name.trim()}
+            className="px-6 py-2.5 text-sm font-medium rounded-lg hover:to-indigo-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-lg"
           >
-            {isSubmitting ? "Creating..." : "Create Project"}
+            {isSubmitting ? (
+              <span className="flex items-center">
+                <LoadingIcon className="-ml-1 mr-2 h-4 w-4 text-white" />
+                Creating...
+              </span>
+            ) : (
+              "Create Project"
+            )}
           </Button>
         </div>
       </form>

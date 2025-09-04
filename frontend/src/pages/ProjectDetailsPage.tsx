@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertCircle, Users, FileCode } from "lucide-react";
+import { AlertCircle, Users, FileCode, Plus } from "lucide-react";
 import { Layout } from "../components/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { LoadingSpinner } from "../components/LoadingSpinner";
@@ -16,7 +16,7 @@ interface ProjectDetailsPageProps {
   pageData: { projectId?: number };
 }
 
-export function ProjectDetails({
+export function ProjectDetailsPage({
   navigate,
   pageData,
 }: ProjectDetailsPageProps) {
@@ -24,7 +24,11 @@ export function ProjectDetails({
   const [activeTab, setActiveTab] = useState<"issues" | "members">("issues");
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
 
-  const { data: issues, loading: issuesLoading, refetch: refetchIssues } = useApi<Issue[]>(
+  const {
+    data: issues,
+    loading: issuesLoading,
+    refetch: refetchIssues,
+  } = useApi<Issue[]>(
     () => (projectId ? getProjectIssues(projectId) : Promise.resolve([])),
     [projectId]
   );
@@ -75,34 +79,35 @@ export function ProjectDetails({
           <div className="border-b border-gray-200">
             <div className="flex justify-between items-center">
               <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => setActiveTab("issues")}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === "issues"
-                    ? "border-indigo-500 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                <FileCode className="inline h-4 w-4 mr-1" />
-                Issues ({issues?.length || 0})
-              </button>
-              <button
-                onClick={() => setActiveTab("members")}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === "members"
-                    ? "border-indigo-500 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                <Users className="inline h-4 w-4 mr-1" />
-                Members ({members.length})
-              </button>
+                <button
+                  onClick={() => setActiveTab("issues")}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === "issues"
+                      ? "border-indigo-500 text-indigo-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  <FileCode className="inline h-4 w-4 mr-1" />
+                  Issues ({issues?.length || 0})
+                </button>
+                <button
+                  onClick={() => setActiveTab("members")}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === "members"
+                      ? "border-indigo-500 text-indigo-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  <Users className="inline h-4 w-4 mr-1" />
+                  Members ({members.length})
+                </button>
               </nav>
               {activeTab === "issues" && (
                 <Button
                   onClick={() => setIsIssueModalOpen(true)}
-                  className="mb-2"
+                  className="flex items-center justify-center py-2.5 px-4 gap-2 md:w-auto"
                 >
+                  <Plus className="h-4 w-4" />
                   New Issue
                 </Button>
               )}

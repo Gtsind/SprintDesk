@@ -4,7 +4,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
-import { ProjectDetails } from "./pages/ProjectDetailsPage";
+import { ProjectDetailsPage } from "./pages/ProjectDetailsPage";
 import { IssuesPage } from "./pages/IssuesPage";
 import { IssueDetailPage } from "./pages/IssueDetailPage";
 
@@ -65,7 +65,7 @@ export function AppRouter() {
         return <ProjectsPage navigate={navigateWrapper} />;
       case "project-details":
         return (
-          <ProjectDetails
+          <ProjectDetailsPage
             navigate={navigateWrapper}
             pageData={pageData as PageDataMap["project-details"]}
           />
