@@ -18,19 +18,19 @@ export function generateBreadcrumbs(
 
     case "issues-list":
       return [
-        { label: "Dashboard", page: "dashboard" },
+        { label: "Your work", page: "dashboard" },
         { label: "Issues", page: "issues-list" },
       ];
 
     case "projects-list":
       return [
-        { label: "Dashboard", page: "dashboard" },
+        { label: "Your work", page: "dashboard" },
         { label: "Projects", page: "projects-list" },
       ];
 
     case "project-details":
       return [
-        { label: "Dashboard", page: "dashboard" },
+        { label: "Your work", page: "dashboard" },
         { label: "Projects", page: "projects-list" },
         {
           label: data?.project?.name || "Project",
@@ -41,7 +41,7 @@ export function generateBreadcrumbs(
 
     case "issue-detail":
       return [
-        { label: "Dashboard", page: "dashboard" },
+        { label: "Your work", page: "dashboard" },
         { label: "Projects", page: "projects-list" },
         {
           label: data?.issue?.project?.name || "Project",

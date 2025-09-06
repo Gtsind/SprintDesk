@@ -22,13 +22,13 @@ export function Header({ navigate, breadcrumbs = [] }: HeaderProps) {
   };
 
   return (
-    <nav className="bg-white shadow relative z-50">
-      <div className="max-w-screen px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+    <nav className="bg-gray-300 shadow sticky top-0 w-full z-50">
+      <div className="max-w-screen px-6 lg:px-10">
+        <div className="flex justify-between h-8 pt-4">
           <div className="flex items-center">
             <button
               onClick={() => navigate && navigate("dashboard")}
-              className="flex-shrink-0 cursor-pointer"
+              className="cursor-pointer"
             >
               <h1 className="text-xl font-bold text-gray-900">SprintDesk</h1>
             </button>
@@ -45,11 +45,12 @@ export function Header({ navigate, breadcrumbs = [] }: HeaderProps) {
             </button>
           </div>
         </div>
-        {breadcrumbs.length > 0 && (
-          <div className="pb-4">
-            <BreadCrumbs breadcrumbs={breadcrumbs} navigate={navigate!} />
-          </div>
-        )}
+        <div className="py-4">
+          <BreadCrumbs
+            breadcrumbs={breadcrumbs}
+            navigate={navigate ?? (() => {})}
+          />
+        </div>
       </div>
     </nav>
   );

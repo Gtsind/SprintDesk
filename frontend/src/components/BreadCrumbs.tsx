@@ -7,15 +7,16 @@ interface BreadCrumbsProps {
 }
 
 export function BreadCrumbs({ breadcrumbs, navigate }: BreadCrumbsProps) {
-  if (breadcrumbs.length === 0) {
-    return null;
-  }
+  const items =
+    breadcrumbs.length > 0
+      ? breadcrumbs
+      : [{ label: "Your work", page: "dashboard" }];
 
   return (
     <div className="flex items-center space-x-2 text-sm text-gray-500">
-      {breadcrumbs.map((breadcrumb, index) => {
-        const isLast = index === breadcrumbs.length - 1;
-        
+      {items.map((breadcrumb, index) => {
+        const isLast = index === items.length - 1;
+
         return (
           <div key={index} className="flex items-center">
             {isLast ? (
@@ -25,14 +26,12 @@ export function BreadCrumbs({ breadcrumbs, navigate }: BreadCrumbsProps) {
             ) : (
               <button
                 onClick={() => navigate(breadcrumb.page, breadcrumb.data)}
-                className="hover:text-gray-700 transition-colors"
+                className="hover:text-gray-700 transition-colors cursor-pointer"
               >
                 {breadcrumb.label}
               </button>
             )}
-            {!isLast && (
-              <ChevronRight className="h-4 w-4 mx-2 text-gray-400" />
-            )}
+            {!isLast && <ChevronRight className="h-4 w-4 mx-2 text-gray-400" />}
           </div>
         );
       })}

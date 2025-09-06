@@ -78,7 +78,7 @@ export function ProjectDetailsPage({
         <div className="mb-6">
           <div className="border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <nav className="-mb-px flex space-x-8">
+              <nav className="flex space-x-8">
                 <button
                   onClick={() => setActiveTab("issues")}
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
@@ -105,7 +105,7 @@ export function ProjectDetailsPage({
               {activeTab === "issues" && (
                 <Button
                   onClick={() => setIsIssueModalOpen(true)}
-                  className="flex items-center justify-center py-2.5 px-4 gap-2 sm:w-auto"
+                  className="flex items-center justify-center py-2 px-4 gap-2 sm:w-auto"
                 >
                   <Plus className="h-4 w-4" />
                   New Issue

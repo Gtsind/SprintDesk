@@ -37,17 +37,9 @@ export function SideBar({ navigate }: SideBarProps) {
   ];
 
   return (
-    <div
-      className="w-64 bg-white shadow-sm border-r border-gray-200 flex-col hidden md:flex"
-      style={{ height: "calc(100vh - 4rem)" }}
-    >
-      {/* Header Section */}
-      <div className="ml-4 p-4 border-b border-gray-100 mb-5">
-        <h3 className="text-sm font-medium text-gray-700">Your Work</h3>
-      </div>
-
+    <div className="fixed left-0 w-64 h-[calc(100vh-84px)] bg-white shadow-sm border-r border-gray-200 flex-col hidden md:flex">
       {/* Navigation Items */}
-      <nav className="flex-1 px-4">
+      <nav className="flex-1 p-6">
         <ul className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -72,14 +64,13 @@ export function SideBar({ navigate }: SideBarProps) {
       </nav>
 
       {/* Settings Button at Bottom */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="px-6 border-t border-gray-200">
         <button
           onClick={() => {}} // Inactive for now
-          disabled={true}
-          className="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-400 cursor-not-allowed justify-start"
+          className="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-900  cursor-pointer"
         >
-          <Settings className="h-5 w-5" />
-          <span className="ml-3 truncate">Settings</span>
+          <Settings className="h-5 w-5 hover:bg-gray-100" />
+          <span className="ml-3 truncate">Preferences</span>
         </button>
       </div>
     </div>

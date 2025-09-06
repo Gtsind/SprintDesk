@@ -15,7 +15,7 @@ export function Layout({ children, navigate, breadcrumbs }: LayoutProps) {
       <Header navigate={navigate} breadcrumbs={breadcrumbs} />
       <div className="flex">
         <SideBar navigate={navigate} />
-        <main className="flex-1 py-6 md:py-10 px-4 md:px-16 lg:px-32 xl:px-48 md:mr-8">{children}</main>
+        <main className="flex-1 overflow-auto sm:ml-64">{children}</main>
       </div>
     </div>
   );
