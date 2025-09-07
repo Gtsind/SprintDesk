@@ -51,7 +51,7 @@ export function ProjectsPage({ navigate }: ProjectsListPageProps) {
 
   return (
     <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
-      <div className="w-full">
+      <div className="w-full p-6">
         {/* Header */}
         <div className="mb-4 px-4 md:px-0">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">

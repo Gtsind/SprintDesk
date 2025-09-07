@@ -163,6 +163,12 @@ export const updateIssue = async (
   });
 };
 
+export const closeIssue = async (issueId: number): Promise<Issue> => {
+  return request<Issue>(`/issues/${issueId}/close`, {
+    method: "PATCH",
+  });
+};
+
 export const deleteIssue = async (issueId: number): Promise<void> => {
   return request<void>(`/issues/${issueId}`, {
     method: "DELETE",

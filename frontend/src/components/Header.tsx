@@ -22,7 +22,7 @@ export function Header({ navigate, breadcrumbs = [] }: HeaderProps) {
   };
 
   return (
-    <nav className="bg-gray-300 shadow sticky top-0 w-full z-50">
+    <nav className="bg-white shadow sticky top-0 w-full z-50">
       <div className="max-w-screen px-6 lg:px-10">
         <div className="flex justify-between h-8 pt-4">
           <div className="flex items-center">

@@ -25,7 +25,7 @@ export function DashboardPage({ navigate }: DashboardPageProps) {
 
   return (
     <Layout navigate={navigate}>
-      <div>
+      <div className="p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-10">
           Welcome, {user?.firstname}
         </h1>
@@ -34,8 +34,7 @@ export function DashboardPage({ navigate }: DashboardPageProps) {
           items={projects}
           emptyMessage="No projects found."
           onItemClick={(item) => {
-            const project = item as Project;
-            navigate("project-details", { projectId: project.id });
+            navigate("project-details", { projectId: item.id });
           }}
         />
       </div>

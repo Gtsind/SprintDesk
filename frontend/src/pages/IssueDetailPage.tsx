@@ -8,7 +8,7 @@ import { IssueDescription } from "../components/IssueDescription";
 import { CommentSection } from "../components/CommentSection";
 import { IssueSidebar } from "../components/IssueSidebar";
 import { useApi } from "../hooks/useApi";
-import { getIssue, updateIssue, deleteIssue } from "../services/api";
+import { getIssue, updateIssue, deleteIssue, closeIssue } from "../services/api";
 import type { Issue, IssueUpdate, ApiError } from "../types";
 import { StatusBadge } from "../components/StatusBadge";
 
@@ -22,6 +22,7 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [error, setError] = useState("");
   const {
@@ -65,6 +66,26 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
       } else {
         setError("An unexpected error occurred");
       }
+    }
+  };
+
+  const handleCloseIssue = async () => {
+    if (!issueId) return;
+
+    try {
+      setError("");
+      setIsClosing(true);
+      await closeIssue(issueId);
+      refetch();
+      setIsDropdownOpen(false);
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "detail" in error) {
+        setError((error as ApiError).detail);
+      } else {
+        setError("An unexpected error occurred");
+      }
+    } finally {
+      setIsClosing(false);
     }
   };
 
@@ -172,13 +193,11 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
                   <div className="py-1">
                     <button
-                      onClick={() => {
-                        // Close issue functionality - placeholder for now
-                        setIsDropdownOpen(false);
-                      }}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                      onClick={handleCloseIssue}
+                      disabled={isClosing}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Close issue
+                      {isClosing ? "Closing..." : "Close issue"}
                     </button>
                     <button
                       onClick={() => {
