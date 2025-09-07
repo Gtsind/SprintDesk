@@ -29,21 +29,20 @@ export function IssueDescription({
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-4">
-      <h2 className="text-lg font-medium text-gray-900 mb-4">Description</h2>
+    <div className="my-6">
       {isEditing ? (
         <div className="space-y-4">
           <textarea
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
             rows={6}
-            placeholder="Enter issue description..."
+            placeholder="Add a description..."
           />
           <div className="flex gap-2">
             <Button
               onClick={handleSave}
-              className="px-6 py-2.5 text-sm font-medium rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg"
+              className="px-6 py-2.5 text-sm font-medium rounded-lg bg-indigo-200 hover:bg-indigo-400 text-white shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg"
             >
               Save Changes
             </Button>
@@ -59,9 +58,13 @@ export function IssueDescription({
       ) : (
         <>
           {description ? (
-            <p className="text-gray-700 whitespace-pre-wrap">{description}</p>
+            <p className="text-gray-700 whitespace-pre-wrap h-[100px]">
+              {description}
+            </p>
           ) : (
-            <p className="text-gray-500 italic">No description provided.</p>
+            <p className="text-gray-500 italic h-[100px]">
+              Add a description...
+            </p>
           )}
         </>
       )}

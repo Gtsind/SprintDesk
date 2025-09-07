@@ -6,47 +6,55 @@ interface IssueSidebarProps {
 
 export function IssueSidebar({ issue }: IssueSidebarProps) {
   return (
-    <div className="space-y-6">
-      <div className="bg-white shadow rounded-lg p-6">
-        <dl className="space-y-3">
+    <div className="p-6">
+      <dl className="space-y-3">
+        <div>
+          <dt className="text-sm font-medium text-gray-500">Assignee</dt>
+          <dd className="text-sm text-gray-900">
+            {issue.assignee
+              ? `${issue.assignee.firstname} ${issue.assignee.lastname}`
+              : "Unassigned"}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-sm font-medium text-gray-500">Project</dt>
+          <dd className="text-sm text-gray-900">{issue.project.name}</dd>
+        </div>
+        <div>
+          <dt className="text-sm font-medium text-gray-500">Time Estimate</dt>
+          <dd className="text-sm text-gray-900">
+            {issue.time_estimate ? `${issue.time_estimate} hours` : "Not set"}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-sm font-medium text-gray-500">Created by</dt>
+          <dd className="text-sm text-gray-900">
+            {issue.author.firstname} {issue.author.lastname}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-sm font-medium text-gray-500">Created</dt>
+          <dd className="text-sm text-gray-900">
+            {new Date(issue.created_at).toLocaleDateString()}
+          </dd>
+        </div>
+        {issue.updated_at && (
           <div>
-            <dt className="text-sm font-medium text-gray-500">Assignee</dt>
+            <dt className="text-sm font-medium text-gray-500">Last Updated</dt>
             <dd className="text-sm text-gray-900">
-              {issue.assignee
-                ? `${issue.assignee.firstname} ${issue.assignee.lastname}`
-                : "Unassigned"}
+              {new Date(issue.updated_at).toLocaleString()}
             </dd>
           </div>
+        )}
+        {issue.closed_at && (
           <div>
-            <dt className="text-sm font-medium text-gray-500">Project</dt>
-            <dd className="text-sm text-gray-900">{issue.project.name}</dd>
-          </div>
-          <div>
-            <dt className="text-sm font-medium text-gray-500">Time Estimate</dt>
+            <dt className="text-sm font-medium text-gray-500">Closed</dt>
             <dd className="text-sm text-gray-900">
-              {issue.time_estimate ? `${issue.time_estimate} hours` : "Not set"}
+              {new Date(issue.closed_at).toLocaleString()}
             </dd>
           </div>
-          {issue.updated_at && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">
-                Last Updated
-              </dt>
-              <dd className="text-sm text-gray-900">
-                {new Date(issue.updated_at).toLocaleString()}
-              </dd>
-            </div>
-          )}
-          {issue.closed_at && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Closed</dt>
-              <dd className="text-sm text-gray-900">
-                {new Date(issue.closed_at).toLocaleString()}
-              </dd>
-            </div>
-          )}
-        </dl>
-      </div>
+        )}
+      </dl>
     </div>
   );
 }

@@ -39,7 +39,7 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
       <div className="w-full">
         {/* Header */}
         <div className="mb-4 px-4 md:px-0">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+          <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
             Issues
           </h1>
         </div>
@@ -50,13 +50,13 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
             <SearchBar
               searchValue={searchQuery}
               onSearchChange={setSearchQuery}
-              searchPlaceholder="Search issues, projects..."
+              searchPlaceholder="Search issues..."
             />
           </div>
         </div>
 
         {/* Issues List */}
-        <div className="mx-4 md:mx-0 bg-white shadow-sm md:shadow rounded-lg overflow-hidden border border-gray-200 md:border-0">
+        <div className="mx-4 md:mx-0 bg-white overflow-hidden border border-gray-200 md:border-0">
           {filteredIssues.length === 0 ? (
             <div className="text-center py-12">
               <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
@@ -70,7 +70,7 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-200">
+            <ul className="divide-y divide-gray-300">
               {filteredIssues.map((issue) => (
                 <ListCard
                   key={issue.id}

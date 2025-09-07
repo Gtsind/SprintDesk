@@ -37,7 +37,7 @@ export function SideBar({ navigate }: SideBarProps) {
   ];
 
   return (
-    <div className="fixed left-0 w-64 h-[calc(100vh-84px)] bg-white shadow-sm border-r border-gray-200 flex-col hidden md:flex">
+    <div className="fixed left-0 w-64 h-[calc(100vh-84px)] flex-col hidden md:flex ">
       {/* Navigation Items */}
       <nav className="flex-1 p-6">
         <ul className="space-y-2">
@@ -50,8 +50,8 @@ export function SideBar({ navigate }: SideBarProps) {
                   disabled={!item.active}
                   className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     item.active
-                      ? "text-gray-900 hover:bg-gray-100 cursor-pointer"
-                      : "text-gray-400 cursor-not-allowed"
+                      ? "text-gray-900 hover:bg-gray-200 cursor-pointer"
+                      : "text-gray-400 cursor-pointer"
                   } justify-start`}
                 >
                   <Icon className="h-5 w-5" />
@@ -64,10 +64,10 @@ export function SideBar({ navigate }: SideBarProps) {
       </nav>
 
       {/* Settings Button at Bottom */}
-      <div className="px-6 border-t border-gray-200">
+      <div className="px-6">
         <button
           onClick={() => {}} // Inactive for now
-          className="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-900  cursor-pointer"
+          className="w-full flex items-center px-3 py-6 text-sm font-medium rounded-md transition-colors text-gray-900  cursor-pointer"
         >
           <Settings className="h-5 w-5 hover:bg-gray-100" />
           <span className="ml-3 truncate">Preferences</span>

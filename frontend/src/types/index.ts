@@ -113,6 +113,12 @@ export interface ProjectCreate {
   description?: string | null;
 }
 
+export interface ProjectUpdate {
+  name?: string;
+  description?: string | null;
+  status?: "Active" | "Completed" | "On Hold" | "Cancelled";
+}
+
 export interface IssueCreate {
   project_id: number;
   title: string;

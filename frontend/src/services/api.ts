@@ -5,6 +5,7 @@ import type {
   Comment,
   UserRegistration,
   ProjectCreate,
+  ProjectUpdate,
   IssueCreate,
   IssueUpdate,
   ApiError,
@@ -117,6 +118,22 @@ export const createProject = async (projectData: ProjectCreate): Promise<Project
   return request<Project>("/projects/", {
     method: "POST",
     body: JSON.stringify(projectData),
+  });
+};
+
+export const updateProject = async (
+  projectId: number,
+  updateData: ProjectUpdate
+): Promise<Project> => {
+  return request<Project>(`/projects/${projectId}`, {
+    method: "PATCH",
+    body: JSON.stringify(updateData),
+  });
+};
+
+export const deleteProject = async (projectId: number): Promise<void> => {
+  return request<void>(`/projects/${projectId}`, {
+    method: "DELETE",
   });
 };
 

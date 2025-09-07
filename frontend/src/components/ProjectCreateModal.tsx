@@ -97,7 +97,7 @@ export function ProjectCreateModal({
             value={formData.description || ""}
             onChange={(e) => handleInputChange("description", e.target.value)}
             placeholder="Enter project description (optional)"
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-indigo-500"
           />
         </div>
 

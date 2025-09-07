@@ -11,11 +11,13 @@ interface LayoutProps {
 
 export function Layout({ children, navigate, breadcrumbs }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-100">
       <Header navigate={navigate} breadcrumbs={breadcrumbs} />
-      <div className="flex">
+      <div className="flex flex-1">
         <SideBar navigate={navigate} />
-        <main className="flex-1 overflow-auto sm:ml-64">{children}</main>
+        <main className="flex-1 overflow-auto bg-white sm:ml-70 rounded-lg shadow-md p-6 md:p-10 mx-4 h-[calc(100vh-96px)]">
+          {children}
+        </main>
       </div>
     </div>
   );

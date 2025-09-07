@@ -6,10 +6,11 @@ import { LoadingSpinner } from "../components/LoadingSpinner";
 import { ListCard } from "../components/ListCard";
 import { StatusBadge } from "../components/StatusBadge";
 import { Button } from "../components/Button";
+import { ActionButtons } from "../components/ActionButtons";
 import { IssueCreateModal } from "../components/IssueCreateModal";
 import { useApi } from "../hooks/useApi";
-import { getProjectIssues, getProjects } from "../services/api";
-import type { Issue, Project } from "../types";
+import { getProjectIssues, getProjects, updateProject, deleteProject } from "../services/api";
+import type { Issue, Project, ProjectUpdate, ApiError } from "../types";
 
 interface ProjectDetailsPageProps {
   navigate: (page: string, data?: unknown) => void;
@@ -23,6 +24,12 @@ export function ProjectDetailsPage({
   const projectId = pageData.projectId;
   const [activeTab, setActiveTab] = useState<"issues" | "members">("issues");
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [error, setError] = useState("");
 
   const {
     data: issues,
@@ -33,8 +40,11 @@ export function ProjectDetailsPage({
     [projectId]
   );
 
-  const { data: projects, loading: projectsLoading } =
-    useApi<Project[]>(getProjects);
+  const {
+    data: projects,
+    loading: projectsLoading,
+    refetch: refetchProjects,
+  } = useApi<Project[]>(getProjects);
 
   const project = projects?.find((p) => p.id === projectId) || null;
   const isLoading = issuesLoading || projectsLoading;
@@ -58,20 +68,148 @@ export function ProjectDetailsPage({
     setActiveTab("issues");
   };
 
+  const handleUpdateProject = async (updateData: ProjectUpdate) => {
+    if (!projectId) return;
+
+    try {
+      setError("");
+      await updateProject(projectId, updateData);
+      refetchProjects();
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "detail" in error) {
+        setError((error as ApiError).detail);
+      } else {
+        setError("An unexpected error occurred");
+      }
+    }
+  };
+
+  const handleEditProject = () => {
+    setIsEditing(true);
+    setEditName(project?.name || "");
+    setEditDescription(project?.description || "");
+  };
+
+  const handleSaveProject = async () => {
+    if (!editName.trim()) return;
+
+    await handleUpdateProject({
+      name: editName.trim(),
+      description: editDescription.trim() || null,
+    });
+    setIsEditing(false);
+    setEditName("");
+    setEditDescription("");
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditName("");
+    setEditDescription("");
+  };
+
+  const handleCompleteProject = async () => {
+    if (!projectId) return;
+
+    try {
+      setError("");
+      setIsCompleting(true);
+      await handleUpdateProject({ status: "Completed" });
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "detail" in error) {
+        setError((error as ApiError).detail);
+      } else {
+        setError("An unexpected error occurred");
+      }
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!projectId) return;
+
+    try {
+      setError("");
+      setIsDeleting(true);
+      await deleteProject(projectId);
+      navigate("projects-list");
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "detail" in error) {
+        setError((error as ApiError).detail);
+      } else {
+        setError("An unexpected error occurred");
+      }
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
       <div>
         {/* Project Info */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {project?.name || "Project"}
-          </h1>
-          {project?.description && (
-            <p className="text-gray-600 text-lg mb-3">{project.description}</p>
-          )}
-          {project?.status && (
-            <StatusBadge status={project.status} type="project-status" />
-          )}
+        <div className="mb-8 flex justify-between items-start">
+          <div className="flex-1">
+            {isEditing ? (
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="text-3xl font-semibold text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:border-indigo-500"
+                  placeholder="Project name"
+                />
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 text-lg"
+                  placeholder="Project description"
+                />
+                <div className="flex gap-2">
+                  <Button onClick={handleSaveProject} className="px-4 py-2">
+                    Save Changes
+                  </Button>
+                  <Button
+                    onClick={handleCancelEdit}
+                    variant="secondary"
+                    className="px-4 py-2"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <h1 className="text-3xl font-semibold text-gray-900 mb-2">
+                  {project?.name || "Project"}
+                </h1>
+                {project?.description && (
+                  <p className="text-gray-600 text-lg mb-3">
+                    {project.description}
+                  </p>
+                )}
+                {project?.status && (
+                  <StatusBadge status={project.status} type="project-status" />
+                )}
+              </>
+            )}
+
+            {error && (
+              <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+          </div>
+          <ActionButtons
+            entityType="project"
+            isEditing={isEditing}
+            isDeleting={isDeleting}
+            isClosing={isCompleting}
+            onEdit={handleEditProject}
+            onClose={handleCompleteProject}
+            onDelete={handleDeleteProject}
+          />
         </div>
 
         {/* Tabs */}

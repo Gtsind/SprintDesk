@@ -32,13 +32,8 @@ export function ProjectsPage({ navigate }: ProjectsListPageProps) {
   };
 
   const filteredProjects =
-    projects?.filter(
-      (project) =>
-        project.name.toLowerCase().trim().includes(searchQuery.toLowerCase()) ||
-        project.description
-          ?.toLowerCase()
-          .trim()
-          .includes(searchQuery.toLowerCase())
+    projects?.filter((project) =>
+      project.name.toLowerCase().trim().includes(searchQuery.toLowerCase())
     ) || [];
 
   if (loading) {
@@ -51,10 +46,10 @@ export function ProjectsPage({ navigate }: ProjectsListPageProps) {
 
   return (
     <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
-      <div className="w-full p-6">
+      <div className="w-full">
         {/* Header */}
         <div className="mb-4 px-4 md:px-0">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+          <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
             Projects
           </h1>
         </div>
@@ -79,7 +74,7 @@ export function ProjectsPage({ navigate }: ProjectsListPageProps) {
         </div>
 
         {/* Projects List */}
-        <div className="mx-4 md:mx-0 bg-white shadow-sm md:shadow rounded-lg overflow-hidden border border-gray-200 md:border-0">
+        <div className="mx-4 md:mx-0 bg-white rounded-lg overflow-hidden border-b-gray-300">
           {filteredProjects.length === 0 ? (
             <div className="text-center py-12">
               <h3 className="mt-4 text-lg font-medium text-gray-900">
@@ -92,7 +87,7 @@ export function ProjectsPage({ navigate }: ProjectsListPageProps) {
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-200">
+            <ul className="divide-y divide-gray-300">
               {filteredProjects.map((project) => (
                 <ListCard
                   key={project.id}

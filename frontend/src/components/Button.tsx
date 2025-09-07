@@ -18,13 +18,13 @@ export function Button({
   className = "",
 }: ButtonProps) {
   const baseClasses =
-    "inline-flex items-center text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50";
+    " items-center text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50";
 
   const variantClasses = {
     primary:
-      "text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 border border-transparent",
+      "text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 ",
     secondary:
-      "text-gray-700 bg-white hover:bg-gray-50 focus:ring-indigo-500 border border-gray-300 shadow-sm",
+      "text-gray-700 bg-white hover:bg-gray-50  border border-gray-300 shadow-sm",
     danger:
       "text-white bg-red-400 hover:bg-red-700 focus:ring-red-500 border border-transparent",
   };
