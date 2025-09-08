@@ -5,6 +5,7 @@ import {
   Users,
   AlertCircle,
   Mail,
+  Trash2,
 } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
 import type { Issue, Project, User as Member } from "../types";
@@ -13,18 +14,21 @@ interface IssueListCardProps {
   type: "issue";
   item: Issue;
   onClick: (item: Issue) => void;
+  onRemove?: (item: Issue) => void;
 }
 
 interface ProjectListCardProps {
   type: "project";
   item: Project;
   onClick: (item: Project) => void;
+  onRemove?: (item: Project) => void;
 }
 
 interface MemberListCardProps {
   type: "member";
   item: Member;
   onClick: (item: Member) => void;
+  onRemove?: (item: Member) => void;
 }
 
 type ListCardProps =
@@ -32,10 +36,10 @@ type ListCardProps =
   | ProjectListCardProps
   | MemberListCardProps;
 
-export function ListCard({ type, item, onClick }: ListCardProps) {
+export function ListCard({ type, item, onClick, onRemove }: ListCardProps) {
   if (type === "issue") {
     return (
-      <li>
+      <li className="group relative">
         <button
           onClick={() => onClick(item)}
           className="w-full hover:bg-gray-100 px-6 py-4"
@@ -72,13 +76,25 @@ export function ListCard({ type, item, onClick }: ListCardProps) {
             </div>
           </div>
         </button>
+        {onRemove && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(item);
+            }}
+            className="absolute top-1/2 right-4 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-600"
+            title={`Delete issue: ${item.title}`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
       </li>
     );
   }
 
   if (type === "project") {
     return (
-      <li>
+      <li className="group relative">
         <button
           onClick={() => onClick(item)}
           className="w-full hover:bg-gray-100 px-6 py-4"
@@ -120,6 +136,18 @@ export function ListCard({ type, item, onClick }: ListCardProps) {
             </div>
           </div>
         </button>
+        {onRemove && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(item);
+            }}
+            className="absolute top-1/2 right-4 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-600"
+            title={`Delete project: ${item.name}`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
       </li>
     );
   }
@@ -127,7 +155,7 @@ export function ListCard({ type, item, onClick }: ListCardProps) {
   if (type === "member") {
     const member = item as Member;
     return (
-      <li>
+      <li className="group relative">
         <button
           onClick={() => onClick(member)}
           className="w-full text-left hover:bg-gray-50 px-6 py-4"
@@ -146,12 +174,30 @@ export function ListCard({ type, item, onClick }: ListCardProps) {
               <div className="mt-2 flex items-center text-sm text-gray-500">
                 <Mail className="flex-shrink-0 mr-1.5 h-4 w-4" />
                 <span className="truncate">{member.email}</span>
+                {member.title && (
+                  <>
+                    <span className="mx-2">•</span>
+                    <span className="truncate">{member.title}</span>
+                  </>
+                )}
                 <span className="mx-2">•</span>
                 <span className="truncate">@{member.username}</span>
               </div>
             </div>
           </div>
         </button>
+        {onRemove && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(member);
+            }}
+            className="absolute top-1/2 right-4 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-600"
+            title={`Remove ${member.firstname} ${member.lastname} from project`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
       </li>
     );
   }

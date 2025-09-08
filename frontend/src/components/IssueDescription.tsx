@@ -35,7 +35,7 @@ export function IssueDescription({
           <textarea
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
+            className="w-full px-3 py-2 border border-gray-300 focus:border-gray-400 rounded-md focus:outline-none"
             rows={6}
             placeholder="Add a description..."
           />
@@ -49,7 +49,7 @@ export function IssueDescription({
             <Button
               onClick={onCancel}
               variant="secondary"
-              className="px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md"
+              className="px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 hover:bg-gray-100"
             >
               Cancel
             </Button>

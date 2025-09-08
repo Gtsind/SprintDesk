@@ -39,8 +39,16 @@ const request = async <T>(
 
   try {
     const response = await fetch(url, config);
+
+    // Check if response contains JSON
+    const isJson = response.headers
+      .get("content-type")
+      ?.includes("application/json");
+
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = isJson
+        ? await response.json()
+        : { detail: "Unknown error" };
 
       // Handle expired/invalid token
       if (
@@ -55,13 +63,15 @@ const request = async <T>(
       // Handle validation errors from FastAPI
       if (errorData.detail && Array.isArray(errorData.detail)) {
         const validationMessages = errorData.detail
-          .map((error: any) => error.msg)
+          .map((e: any) => e.msg)
           .join(", ");
-        throw { detail: validationMessages } as ApiError;
+        throw {
+          detail: validationMessages,
+        } as ApiError;
       }
 
       // Handle regular API errors
-      throw errorData as ApiError;
+      throw { detail: errorData.detail || "Request failed" } as ApiError;
     }
 
     // Handle 204 No Content responses
@@ -69,8 +79,8 @@ const request = async <T>(
       return null as T;
     }
 
-    return await response.json();
-  } catch (error) {
+    return isJson ? await response.json() : (null as T);
+  } catch (error: any) {
     // Re-throw if it's already our formatted error
     if (error && typeof error === "object" && "detail" in error) {
       throw error;
@@ -102,6 +112,14 @@ export const getCurrentUser = async (): Promise<User> => {
   return request<User>("/users/me");
 };
 
+export const getAllUsers = async (): Promise<User[]> => {
+  return request<User[]>("/users/");
+};
+
+export const getActiveUsers = async (): Promise<User[]> => {
+  return request<User[]>("/users/active");
+};
+
 export const getProjects = async (): Promise<Project[]> => {
   return request<Project[]>("/projects/");
 };
@@ -114,7 +132,9 @@ export const getProject = async (projectId: number): Promise<Project> => {
   return request<Project>(`/projects/${projectId}`);
 };
 
-export const createProject = async (projectData: ProjectCreate): Promise<Project> => {
+export const createProject = async (
+  projectData: ProjectCreate
+): Promise<Project> => {
   return request<Project>("/projects/", {
     method: "POST",
     body: JSON.stringify(projectData),
@@ -188,6 +208,24 @@ export const closeIssue = async (issueId: number): Promise<Issue> => {
 
 export const deleteIssue = async (issueId: number): Promise<void> => {
   return request<void>(`/issues/${issueId}`, {
+    method: "DELETE",
+  });
+};
+
+export const addProjectMember = async (
+  projectId: number,
+  userId: number
+): Promise<void> => {
+  return request<void>(`/projects/${projectId}/members/${userId}`, {
+    method: "POST",
+  });
+};
+
+export const removeProjectMember = async (
+  projectId: number,
+  userId: number
+): Promise<void> => {
+  return request<void>(`/projects/${projectId}/members/${userId}`, {
     method: "DELETE",
   });
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AlertCircle, Users, FileCode, Plus } from "lucide-react";
 import { Layout } from "../components/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
@@ -8,9 +8,11 @@ import { StatusBadge } from "../components/StatusBadge";
 import { Button } from "../components/Button";
 import { ActionButtons } from "../components/ActionButtons";
 import { IssueCreateModal } from "../components/IssueCreateModal";
+import { DeleteConfirmationModal } from "../components/DeleteConfirmationModal";
 import { useApi } from "../hooks/useApi";
-import { getProjectIssues, getProjects, updateProject, deleteProject } from "../services/api";
-import type { Issue, Project, ProjectUpdate, ApiError } from "../types";
+import { useProjectActions } from "../hooks/useProjectActions";
+import { getProjectIssues, getProject, getActiveUsers } from "../services/api";
+import type { Issue, Project, User } from "../types";
 
 interface ProjectDetailsPageProps {
   navigate: (page: string, data?: unknown) => void;
@@ -24,34 +26,133 @@ export function ProjectDetailsPage({
   const projectId = pageData.projectId;
   const [activeTab, setActiveTab] = useState<"issues" | "members">("issues");
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState("");
-  const [editDescription, setEditDescription] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isCompleting, setIsCompleting] = useState(false);
-  const [error, setError] = useState("");
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const {
     data: issues,
     loading: issuesLoading,
     refetch: refetchIssues,
+    error: issuesError,
   } = useApi<Issue[]>(
     () => (projectId ? getProjectIssues(projectId) : Promise.resolve([])),
     [projectId]
   );
 
-  const {
-    data: projects,
-    loading: projectsLoading,
-    refetch: refetchProjects,
-  } = useApi<Project[]>(getProjects);
+  const { data: allUsers, loading: usersLoading } =
+    useApi<User[]>(getActiveUsers);
 
-  const project = projects?.find((p) => p.id === projectId) || null;
-  const isLoading = issuesLoading || projectsLoading;
+  const {
+    data: project,
+    loading: projectLoading,
+    refetch: refetchProject,
+    error: projectError,
+  } = useApi<Project | null>(
+    () => (projectId ? getProject(projectId) : Promise.resolve(null)),
+    [projectId]
+  );
+
+  const {
+    isEditing,
+    isDeleting,
+    isCompleting,
+    isAddingMember,
+    isRemovingMember,
+    isDeletingIssue,
+    editData,
+    error,
+    showDeleteConfirmationModal,
+    deleteContext,
+    setEditData,
+    handleEditProject,
+    handleSaveProject,
+    handleCancelEdit,
+    handleCompleteProject,
+    handleIssueCreated,
+    handleAddMember,
+    handleDeleteProjectClick,
+    handleRemoveMemberClick,
+    handleDeleteIssueClick,
+    handleConfirmDelete,
+    handleCancelDelete,
+  } = useProjectActions({
+    projectId,
+    refetchProject,
+    refetchIssues,
+    navigate,
+    initialName: project?.name || "",
+    initialDescription: project?.description || "",
+  });
+
+  const isLoading = issuesLoading || projectLoading;
   const breadcrumbs = generateBreadcrumbs("project-details", {
     projectId,
     project: project || undefined,
   });
+
+  const members = project?.members || [];
+
+  // Filter out users who are already members and only include Contributors
+  const availableUsers =
+    allUsers?.filter(
+      (user) =>
+        user.role === "Contributor" &&
+        !members.some((member) => member.id === user.id)
+    ) || [];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowUserDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Helper function to get modal props based on delete context
+  const getModalProps = () => {
+    const { type, item } = deleteContext;
+
+    switch (type) {
+      case "project":
+        const project = item as Project;
+        return {
+          title: "Delete Project",
+          message: `Are you sure you want to delete "${project?.name}"?\nThis action cannot be undone.`,
+          confirmButtonText: "Delete",
+          isLoading: isDeleting,
+        };
+      case "member":
+        const member = item as User;
+        return {
+          title: "Remove Member",
+          message: `Remove ${member?.firstname} ${member?.lastname} from this project?`,
+          confirmButtonText: "Remove",
+          isLoading: isRemovingMember,
+        };
+      case "issue":
+        const issue = item as Issue;
+        return {
+          title: "Delete Issue",
+          message: `Are you sure you want to delete "${issue?.title}"?\nThis action cannot be undone.`,
+          confirmButtonText: "Delete",
+          isLoading: isDeletingIssue,
+        };
+      default:
+        return {
+          title: "Confirm Delete",
+          message: "Are you sure you want to proceed?",
+          confirmButtonText: "Delete",
+          isLoading: false,
+        };
+    }
+  };
 
   if (isLoading) {
     return (
@@ -60,89 +161,6 @@ export function ProjectDetailsPage({
       </Layout>
     );
   }
-
-  const members = project?.members || [];
-
-  const handleIssueCreated = () => {
-    refetchIssues();
-    setActiveTab("issues");
-  };
-
-  const handleUpdateProject = async (updateData: ProjectUpdate) => {
-    if (!projectId) return;
-
-    try {
-      setError("");
-      await updateProject(projectId, updateData);
-      refetchProjects();
-    } catch (error: unknown) {
-      if (error && typeof error === "object" && "detail" in error) {
-        setError((error as ApiError).detail);
-      } else {
-        setError("An unexpected error occurred");
-      }
-    }
-  };
-
-  const handleEditProject = () => {
-    setIsEditing(true);
-    setEditName(project?.name || "");
-    setEditDescription(project?.description || "");
-  };
-
-  const handleSaveProject = async () => {
-    if (!editName.trim()) return;
-
-    await handleUpdateProject({
-      name: editName.trim(),
-      description: editDescription.trim() || null,
-    });
-    setIsEditing(false);
-    setEditName("");
-    setEditDescription("");
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setEditName("");
-    setEditDescription("");
-  };
-
-  const handleCompleteProject = async () => {
-    if (!projectId) return;
-
-    try {
-      setError("");
-      setIsCompleting(true);
-      await handleUpdateProject({ status: "Completed" });
-    } catch (error: unknown) {
-      if (error && typeof error === "object" && "detail" in error) {
-        setError((error as ApiError).detail);
-      } else {
-        setError("An unexpected error occurred");
-      }
-    } finally {
-      setIsCompleting(false);
-    }
-  };
-
-  const handleDeleteProject = async () => {
-    if (!projectId) return;
-
-    try {
-      setError("");
-      setIsDeleting(true);
-      await deleteProject(projectId);
-      navigate("projects-list");
-    } catch (error: unknown) {
-      if (error && typeof error === "object" && "detail" in error) {
-        setError((error as ApiError).detail);
-      } else {
-        setError("An unexpected error occurred");
-      }
-      setIsDeleting(false);
-    }
-  };
 
   return (
     <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
@@ -154,16 +172,20 @@ export function ProjectDetailsPage({
               <div className="space-y-4">
                 <input
                   type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="text-3xl font-semibold text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:border-indigo-500"
+                  value={editData.name}
+                  onChange={(e) =>
+                    setEditData({ ...editData, name: e.target.value })
+                  }
+                  className="text-2xl text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:border-gray-400"
                   placeholder="Project name"
                 />
                 <textarea
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
+                  value={editData.description}
+                  onChange={(e) =>
+                    setEditData({ ...editData, description: e.target.value })
+                  }
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 text-lg"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 text-lg"
                   placeholder="Project description"
                 />
                 <div className="flex gap-2">
@@ -185,7 +207,7 @@ export function ProjectDetailsPage({
                   {project?.name || "Project"}
                 </h1>
                 {project?.description && (
-                  <p className="text-gray-600 text-lg mb-3">
+                  <p className="text-gray-700 whitespace-pre-wrap text-lg mb-3">
                     {project.description}
                   </p>
                 )}
@@ -195,9 +217,9 @@ export function ProjectDetailsPage({
               </>
             )}
 
-            {error && (
+            {(error || projectError || issuesError) && (
               <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                {error}
+                {error || projectError || issuesError}
               </div>
             )}
           </div>
@@ -206,51 +228,89 @@ export function ProjectDetailsPage({
             isEditing={isEditing}
             isDeleting={isDeleting}
             isClosing={isCompleting}
-            onEdit={handleEditProject}
+            onEdit={() =>
+              handleEditProject(project?.name || "", project?.description || "")
+            }
             onClose={handleCompleteProject}
-            onDelete={handleDeleteProject}
+            onDelete={() => project && handleDeleteProjectClick(project)}
           />
         </div>
 
         {/* Tabs */}
-        <div className="mb-6">
-          <div className="border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <nav className="flex space-x-8">
-                <button
-                  onClick={() => setActiveTab("issues")}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === "issues"
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
-                >
+        <div className="mb-6 border-b border-gray-200 flex justify-between items-center">
+          <nav className="flex space-x-8">
+            {["issues", "members"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as "issues" | "members")}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === tab
+                    ? "border-indigo-500 text-indigo-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                {tab === "issues" ? (
                   <FileCode className="inline h-4 w-4 mr-1" />
-                  Issues ({issues?.length || 0})
-                </button>
-                <button
-                  onClick={() => setActiveTab("members")}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === "members"
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
-                >
+                ) : (
                   <Users className="inline h-4 w-4 mr-1" />
-                  Members ({members.length})
-                </button>
-              </nav>
-              {activeTab === "issues" && (
-                <Button
-                  onClick={() => setIsIssueModalOpen(true)}
-                  className="flex items-center justify-center py-2 px-4 gap-2 sm:w-auto"
-                >
-                  <Plus className="h-4 w-4" />
-                  New Issue
-                </Button>
+                )}
+                {tab === "issues"
+                  ? `Issues (${issues?.length || 0})`
+                  : `Members (${members.length})`}
+              </button>
+            ))}
+          </nav>
+          {activeTab === "issues" && (
+            <Button
+              onClick={() => setIsIssueModalOpen(true)}
+              className="flex items-center gap-2 py-1.5 px-3"
+            >
+              <Plus className="h-4 w-4" /> New Issue
+            </Button>
+          )}
+          {activeTab === "members" && (
+            <div className="relative" ref={dropdownRef}>
+              <Button
+                onClick={() => setShowUserDropdown(!showUserDropdown)}
+                disabled={
+                  isAddingMember || usersLoading || availableUsers.length === 0
+                }
+                className="flex items-center gap-2 py-1.5 px-3"
+              >
+                <Plus className="h-4 w-4" />
+                {isAddingMember ? "Adding..." : "Add Member"}
+              </Button>
+
+              {showUserDropdown && availableUsers.length > 0 && (
+                <div className="absolute right-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                  <div className="py-1 max-h-60 overflow-y-auto">
+                    {availableUsers.map((user) => (
+                      <button
+                        key={user.id}
+                        onClick={() => {
+                          handleAddMember(user.id);
+                          setShowUserDropdown(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
+                      >
+                        <div className="font-medium">
+                          {user.firstname} {user.lastname}
+                        </div>
+                        {user.title && (
+                          <div className="text-gray-600 text-xs">
+                            {user.title}
+                          </div>
+                        )}
+                        <div className="text-gray-500 text-xs">
+                          @{user.username}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Tab Content */}
@@ -277,6 +337,7 @@ export function ProjectDetailsPage({
                       onClick={(issue) =>
                         navigate("issue-detail", { issueId: issue.id })
                       }
+                      onRemove={handleDeleteIssueClick}
                     />
                   ))}
                 </ul>
@@ -304,6 +365,7 @@ export function ProjectDetailsPage({
                       type="member"
                       item={member}
                       onClick={() => {}}
+                      onRemove={handleRemoveMemberClick}
                     />
                   ))}
                 </ul>
@@ -323,6 +385,14 @@ export function ProjectDetailsPage({
           projectMembers={members}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteConfirmationModal}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        {...getModalProps()}
+      />
     </Layout>
   );
 }

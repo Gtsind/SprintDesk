@@ -92,7 +92,7 @@ export function CommentSection({ issueId }: CommentSectionProps) {
             onChange={(e) => setNewComment(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={3}
-            className="w-full px-3 py-2 pr-12 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-0 focus:border-gray-300 resize-none"
+            className="w-full px-3 py-2 pr-12 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-0 focus:border-gray-400 resize-none"
             placeholder="Leave a comment..."
             required
           />
@@ -102,7 +102,7 @@ export function CommentSection({ issueId }: CommentSectionProps) {
             className={`absolute bottom-2 right-2 p-1 m-1 border rounded-full ${
               newComment.trim()
                 ? "border-indigo-500 bg-indigo-500 text-white hover:bg-indigo-600"
-                : "border-gray-400 text-black hover:bg-gray-500"
+                : "border-gray-400 text-black hover:bg-gray-100"
             }`}
             title="Submit comment (Ctrl+Enter)"
           >

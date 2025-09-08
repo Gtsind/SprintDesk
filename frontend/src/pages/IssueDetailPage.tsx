@@ -156,7 +156,7 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
                   setEditTitle("");
                 }
               }}
-              className="text-lg text-gray-900 bg-white border border-gray-300 rounded-md px-2 py-1 w-full lg:w-4/5 focus:outline-none mb-1.5"
+              className="text-lg text-gray-900 bg-white border border-gray-300 rounded-md px-2 py-1 w-full lg:w-4/5 focus:outline-none focus:border-gray-400 mb-1.5"
               placeholder="Issue title"
               autoFocus
             />

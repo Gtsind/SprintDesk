@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { EllipsisVertical } from "lucide-react";
 import { Button } from "./Button";
 
@@ -24,6 +24,19 @@ export function ActionButtons({
   entityType = "issue",
 }: ActionButtonsProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleCloseClick = () => {
     onClose?.();
@@ -70,7 +83,7 @@ export function ActionButtons({
           Edit
         </Button>
       )}
-      <div className="relative">
+      <div className="relative" ref={dropdownRef}>
         <Button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           variant="secondary"

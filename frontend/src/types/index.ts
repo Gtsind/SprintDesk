@@ -4,6 +4,7 @@ export interface User {
   firstname: string;
   lastname: string;
   email: string;
+  title: string | null;
   role: "Admin" | "Project Manager" | "Contributor";
   is_active: boolean;
   projects?: {
@@ -33,15 +34,7 @@ export interface Project {
     firstname: string;
     lastname: string;
   };
-  members?: {
-    id: number;
-    username: string;
-    firstname: string;
-    lastname: string;
-    email: string;
-    role: "Admin" | "Project Manager" | "Contributor";
-    is_active: boolean;
-  }[];
+  members?: User[];
   issues?: {
     id: number;
     title: string;
