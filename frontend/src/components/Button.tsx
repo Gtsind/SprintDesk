@@ -18,7 +18,7 @@ export function Button({
   className = "",
 }: ButtonProps) {
   const baseClasses =
-    " items-center text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50";
+    " items-center text-sm font-medium rounded-md focus:outline-none focus:ring-1 focus:ring-offset-2 disabled:opacity-50";
 
   const variantClasses = {
     primary:

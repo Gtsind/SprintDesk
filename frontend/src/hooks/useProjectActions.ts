@@ -185,7 +185,7 @@ export function useProjectActions({
           break;
       }
       setShowDeleteConfirmationModal(false);
-    } catch (err) {
+    } catch {
       // Error is already handled by individual functions
     }
   };

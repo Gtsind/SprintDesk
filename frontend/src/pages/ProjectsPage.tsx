@@ -4,13 +4,14 @@ import { Layout } from "../components/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { ListCard } from "../components/ListCard";
-import { SearchBar } from "../components/SearchBar";
+import { Toolbar, type ActiveFilters } from "../components/toolbar";
 import { ProjectCreateModal } from "../components/ProjectCreateModal";
 import { useApi } from "../hooks/useApi";
 import { useAuth } from "../contexts/AuthContext";
 import { getProjects } from "../services/api";
 import type { Project } from "../types";
 import { Button } from "../components/Button";
+import { createProjectsPageFilterConfig, applyFilters, projectFilterFunctions } from "../utils/filterConfigs";
 
 interface ProjectsListPageProps {
   navigate: (page: string, data?: unknown) => void;
@@ -18,6 +19,7 @@ interface ProjectsListPageProps {
 
 export function ProjectsPage({ navigate }: ProjectsListPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
   const { data: projects, loading, refetch } = useApi<Project[]>(getProjects);
@@ -31,10 +33,21 @@ export function ProjectsPage({ navigate }: ProjectsListPageProps) {
     navigate("project-details", { projectId: newProject.id });
   };
 
-  const filteredProjects =
-    projects?.filter((project) =>
-      project.name.toLowerCase().trim().includes(searchQuery.toLowerCase())
-    ) || [];
+  // Apply search filter first
+  const searchFilteredProjects = projects?.filter((project) =>
+    project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    project.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
+
+  // Then apply active filters
+  const filteredProjects = applyFilters(
+    searchFilteredProjects,
+    activeFilters,
+    projectFilterFunctions
+  );
+
+  // Create filter configuration
+  const filterConfig = createProjectsPageFilterConfig(projects || undefined);
 
   if (loading) {
     return (
@@ -55,22 +68,25 @@ export function ProjectsPage({ navigate }: ProjectsListPageProps) {
         </div>
 
         {/* Toolbar */}
-        <div className="mb-6 px-4 md:px-0 flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between">
-          <div className="w-full md:max-w-md">
-            <SearchBar
-              searchValue={searchQuery}
-              onSearchChange={setSearchQuery}
-              searchPlaceholder="Search projects..."
-            />
-          </div>
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            disabled={!canCreateProject}
-            className="flex items-center justify-center py-2.5 px-4 gap-2 w-full md:w-auto"
-          >
-            <Plus className="h-4 w-4" />
-            New Project
-          </Button>
+        <div className="mb-6 px-4 md:px-0">
+          <Toolbar
+            searchValue={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder="Search projects..."
+            filterConfig={filterConfig}
+            activeFilters={activeFilters}
+            onFiltersChange={setActiveFilters}
+            rightContent={
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                disabled={!canCreateProject}
+                className="flex items-center justify-center py-2.5 px-4 gap-2 w-full md:w-auto"
+              >
+                <Plus className="h-4 w-4" />
+                New Project
+              </Button>
+            }
+          />
         </div>
 
         {/* Projects List */}
@@ -81,8 +97,8 @@ export function ProjectsPage({ navigate }: ProjectsListPageProps) {
                 {searchQuery ? "No projects found" : "No projects"}
               </h3>
               <p className="mt-2 text-gray-600">
-                {searchQuery
-                  ? `No projects match "${searchQuery}"`
+                {searchQuery || Object.keys(activeFilters).length > 0
+                  ? "Try adjusting your search or filters"
                   : "You don't have access to any projects yet."}
               </p>
             </div>

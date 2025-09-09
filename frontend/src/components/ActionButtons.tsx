@@ -29,13 +29,16 @@ export function ActionButtons({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleCloseClick = () => {
@@ -48,38 +51,21 @@ export function ActionButtons({
     setIsDropdownOpen(false);
   };
 
-  const getEntityLabel = (action: string) => {
-    switch (entityType) {
-      case "issue":
-        return action === "close" ? "Close issue" : "Delete issue";
-      case "project":
-        return action === "close" ? "Complete project" : "Delete project";
-      case "member":
-        return action === "close" ? "Remove member" : "Remove member";
-      default:
-        return action === "close" ? "Close" : "Delete";
-    }
+  // Simple label configuration
+  const labels = {
+    issue: { close: "Close issue", delete: "Delete issue", closingText: "Closing Issue...", deletingText: "Deleting Issue..." },
+    project: { close: "Complete project", delete: "Delete project", closingText: "Completing Project...", deletingText: "Deleting Project..." },
+    member: { close: "Remove member", delete: "Remove member", closingText: "Removing Member...", deletingText: "Removing Member..." },
   };
 
-  const getLoadingLabel = (action: string) => {
-    switch (entityType) {
-      case "issue":
-        return action === "close" ? "Closing Issue..." : "Deleting Issue...";
-      case "project":
-        return action === "close"
-          ? "Completing Project..."
-          : "Deleting Project...";
-      case "member":
-        return action === "close" ? "Removing Member..." : "Removing Member...";
-      default:
-        return action === "close" ? "Processing..." : "Deleting...";
-    }
+  const currentLabels = labels[entityType] || {
+    close: "Close", delete: "Delete", closingText: "Processing...", deletingText: "Deleting..."
   };
 
   return (
     <div className="flex gap-2 ml-4">
       {showEditButton && !isEditing && onEdit && (
-        <Button onClick={onEdit} variant="secondary" className="px-4 py-2">
+        <Button onClick={onEdit} variant="secondary" className="px-4 py-2 ">
           Edit
         </Button>
       )}
@@ -100,9 +86,7 @@ export function ActionButtons({
                   disabled={isClosing}
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isClosing
-                    ? getLoadingLabel("close")
-                    : getEntityLabel("close")}
+                  {isClosing ? currentLabels.closingText : currentLabels.close}
                 </button>
               )}
               {onDelete && (
@@ -111,9 +95,7 @@ export function ActionButtons({
                   disabled={isDeleting}
                   className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isDeleting
-                    ? getLoadingLabel("delete")
-                    : getEntityLabel("delete")}
+                  {isDeleting ? currentLabels.deletingText : currentLabels.delete}
                 </button>
               )}
             </div>

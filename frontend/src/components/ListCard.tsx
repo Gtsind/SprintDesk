@@ -60,15 +60,13 @@ export function ListCard({ type, item, onClick, onRemove }: ListCardProps) {
                 <span className="truncate">
                   Created by {item.author.firstname} {item.author.lastname}
                 </span>
-                {item.assignee && (
-                  <>
-                    <span className="mx-2">•</span>
-                    <span className="truncate">
-                      Assigned to {item.assignee.firstname}{" "}
-                      {item.assignee.lastname}
-                    </span>
-                  </>
-                )}
+                <span className="mx-2">•</span>
+                <span className="truncate">
+                  {item.assignee 
+                    ? `Assigned to ${item.assignee.firstname} ${item.assignee.lastname}`
+                    : "Unassigned"
+                  }
+                </span>
                 <span className="mx-2">•</span>
                 <Calendar className="flex-shrink-0 mr-1.5 h-4 w-4" />
                 <span>{new Date(item.created_at).toLocaleDateString()}</span>
