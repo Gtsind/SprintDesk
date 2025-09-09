@@ -1,4 +1,4 @@
-import { StatusBadge } from "./StatusBadge";
+import { StatusBadge } from "./ui/StatusBadge";
 import type { Project, Issue, User } from "../types";
 
 interface CardProps {

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { AlertCircle } from "lucide-react";
-import { Layout } from "../components/Layout";
+import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
-import { LoadingSpinner } from "../components/LoadingSpinner";
-import { Button } from "../components/Button";
-import { ActionButtons } from "../components/ActionButtons";
-import { IssueDescription } from "../components/IssueDescription";
-import { CommentSection } from "../components/CommentSection";
-import { IssueSidebar } from "../components/IssueSidebar";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+import { Button } from "../components/ui/Button";
+import { ActionButtons } from "../components/ui/ActionButtons";
+import { IssueDescription } from "../components/issue/IssueDescription";
+import { CommentSection } from "../components/issue/CommentSection";
+import { IssueSidebar } from "../components/issue/IssueSidebar";
 import { useApi } from "../hooks/useApi";
 import {
   getIssue,
@@ -16,7 +16,7 @@ import {
   closeIssue,
 } from "../services/api";
 import type { Issue, IssueUpdate, ApiError } from "../types";
-import { StatusBadge } from "../components/StatusBadge";
+import { StatusBadge } from "../components/ui/StatusBadge";
 
 interface IssueDetailPageProps {
   navigate: (page: string, data?: unknown) => void;

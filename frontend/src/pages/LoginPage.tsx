@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { FormInput } from "../components/FormInput";
-import { Button } from "../components/Button";
+import { FormInput } from "../components/ui/FormInput";
+import { Button } from "../components/ui/Button";
 import type { ApiError } from "../types";
 
 interface LoginPageProps {
@@ -43,7 +43,10 @@ export function LoginPage({ navigate }: LoginPageProps) {
           </p>
         </div>
 
-        <form className="mt-6 sm:mt-8 space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
+        <form
+          className="mt-6 sm:mt-8 space-y-4 sm:space-y-6"
+          onSubmit={handleSubmit}
+        >
           <div className="rounded-md space-y-4">
             <FormInput
               id="username"

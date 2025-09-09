@@ -1,8 +1,8 @@
 import { useState, useEffect, type FormEvent } from "react";
 import { MessageSquareText, ArrowUp } from "lucide-react";
-import { useApi } from "../hooks/useApi";
-import { getIssueComments, createComment } from "../services/api";
-import type { Comment } from "../types";
+import { useApi } from "../../hooks/useApi";
+import { getIssueComments, createComment } from "../../services/api";
+import type { Comment } from "../../types";
 
 interface CommentSectionProps {
   issueId: number;

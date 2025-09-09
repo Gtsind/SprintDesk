@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { Modal } from "./Modal";
-import { FormInput } from "./FormInput";
-import { Button } from "./Button";
-import { StatusBadge } from "./StatusBadge";
-import { LoadingIcon } from "./LoadingIcon";
-import { createIssue } from "../services/api";
-import { useAuth } from "../contexts/AuthContext";
-import type { IssueCreate, Issue, ApiError, User } from "../types";
+import { FormInput } from "../ui/FormInput";
+import { Button } from "../ui/Button";
+import { StatusBadge } from "../ui/StatusBadge";
+import { LoadingIcon } from "../ui/LoadingIcon";
+import { createIssue } from "../../services/api";
+import { useAuth } from "../../contexts/AuthContext";
+import type { IssueCreate, Issue, ApiError, User } from "../../types";
 
 interface IssueCreateModalProps {
   isOpen: boolean;

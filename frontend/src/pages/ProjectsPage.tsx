@@ -1,17 +1,21 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { Layout } from "../components/Layout";
+import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
-import { LoadingSpinner } from "../components/LoadingSpinner";
-import { ListCard } from "../components/ListCard";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+import { ListCard } from "../components/ui/ListCard";
 import { Toolbar, type ActiveFilters } from "../components/toolbar";
-import { ProjectCreateModal } from "../components/ProjectCreateModal";
+import { ProjectCreateModal } from "../components/modals/ProjectCreateModal";
 import { useApi } from "../hooks/useApi";
 import { useAuth } from "../contexts/AuthContext";
 import { getProjects } from "../services/api";
 import type { Project } from "../types";
-import { Button } from "../components/Button";
-import { createProjectsPageFilterConfig, applyFilters, projectFilterFunctions } from "../utils/filterConfigs";
+import { Button } from "../components/ui/Button";
+import {
+  createProjectsPageFilterConfig,
+  applyFilters,
+  projectFilterFunctions,
+} from "../utils/filterConfigs";
 
 interface ProjectsListPageProps {
   navigate: (page: string, data?: unknown) => void;
@@ -34,10 +38,12 @@ export function ProjectsPage({ navigate }: ProjectsListPageProps) {
   };
 
   // Apply search filter first
-  const searchFilteredProjects = projects?.filter((project) =>
-    project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const searchFilteredProjects =
+    projects?.filter(
+      (project) =>
+        project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
 
   // Then apply active filters
   const filteredProjects = applyFilters(

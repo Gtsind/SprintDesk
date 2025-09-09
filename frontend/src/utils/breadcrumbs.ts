@@ -1,4 +1,4 @@
-import type { BreadCrumb } from "../components/Header";
+import type { BreadCrumb } from "../components/layout/Header";
 import type { Project, Issue } from "../types";
 
 export function generateBreadcrumbs(

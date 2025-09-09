@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { AlertCircle } from "lucide-react";
-import { Layout } from "../components/Layout";
+import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
-import { LoadingSpinner } from "../components/LoadingSpinner";
-import { ListCard } from "../components/ListCard";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+import { ListCard } from "../components/ui/ListCard";
 import { Toolbar, type ActiveFilters } from "../components/toolbar";
 import { useApi } from "../hooks/useApi";
 import { getIssues, getProjects, getActiveUsers } from "../services/api";
 import type { Issue, Project, User } from "../types";
-import { createIssuesPageFilterConfig, applyFilters, issueFilterFunctions } from "../utils/filterConfigs";
+import {
+  createIssuesPageFilterConfig,
+  applyFilters,
+  issueFilterFunctions,
+} from "../utils/filterConfigs";
 
 interface IssuesPageProps {
   navigate: (page: string, data?: unknown) => void;
@@ -31,12 +35,13 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
   }
 
   // Apply search filter first
-  const searchFilteredIssues = issues?.filter(
-    (issue) =>
-      issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      issue.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      issue.project?.name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const searchFilteredIssues =
+    issues?.filter(
+      (issue) =>
+        issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        issue.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        issue.project?.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
 
   // Then apply active filters
   const filteredIssues = applyFilters(
@@ -46,7 +51,10 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
   );
 
   // Create filter configuration
-  const filterConfig = createIssuesPageFilterConfig(projects || undefined, users || undefined);
+  const filterConfig = createIssuesPageFilterConfig(
+    projects || undefined,
+    users || undefined
+  );
 
   return (
     <Layout navigate={navigate} breadcrumbs={breadcrumbs}>

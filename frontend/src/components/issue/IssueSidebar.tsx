@@ -1,4 +1,4 @@
-import type { Issue } from "../types";
+import type { Issue } from "../../types";
 
 interface IssueSidebarProps {
   issue: Issue;

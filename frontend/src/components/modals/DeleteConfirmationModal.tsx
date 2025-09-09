@@ -1,6 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 import { Modal } from "./Modal";
-import { Button } from "./Button";
+import { Button } from "../ui/Button";
 
 export interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -51,7 +51,9 @@ export function DeleteConfirmationModal({
 
         {/* Message */}
         <div className="text-center">
-          <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{message}</p>
+          <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+            {message}
+          </p>
         </div>
 
         {/* Action Buttons */}

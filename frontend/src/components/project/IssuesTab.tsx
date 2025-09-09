@@ -1,8 +1,8 @@
 import { AlertCircle } from "lucide-react";
-import { ListCard } from "./ListCard";
-import { EmptyState } from "./EmptyState";
-import type { Issue } from "../types";
-import type { ActiveFilters } from "./toolbar";
+import { ListCard } from "../ui/ListCard";
+import { EmptyState } from "../ui/EmptyState";
+import type { Issue } from "../../types";
+import type { ActiveFilters } from "../toolbar";
 
 interface IssuesTabProps {
   issues: Issue[];
@@ -19,7 +19,8 @@ export function IssuesTab({
   onIssueClick,
   onIssueDelete,
 }: IssuesTabProps) {
-  const hasSearchOrFilters = searchQuery || Object.keys(activeFilters).length > 0;
+  const hasSearchOrFilters =
+    searchQuery || Object.keys(activeFilters).length > 0;
 
   if (issues.length === 0) {
     return (

@@ -1,5 +1,5 @@
-import { Layout } from "../components/Layout";
-import { LoadingSpinner } from "../components/LoadingSpinner";
+import { Layout } from "../components/layout/Layout";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { CardContainer } from "../components/CardContainer";
 import { useAuth } from "../contexts/AuthContext";
 import { useApi } from "../hooks/useApi";

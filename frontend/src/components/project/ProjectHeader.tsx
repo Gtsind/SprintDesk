@@ -1,7 +1,7 @@
-import { StatusBadge } from "./StatusBadge";
-import { Button } from "./Button";
-import { ActionButtons } from "./ActionButtons";
-import type { Project } from "../types";
+import { StatusBadge } from "../ui/StatusBadge";
+import { Button } from "../ui/Button";
+import { ActionButtons } from "../ui/ActionButtons";
+import type { Project } from "../../types";
 
 interface ProjectHeaderProps {
   project: Project | null;
@@ -40,13 +40,17 @@ export function ProjectHeader({
             <input
               type="text"
               value={editData.name}
-              onChange={(e) => onEditData({ ...editData, name: e.target.value })}
+              onChange={(e) =>
+                onEditData({ ...editData, name: e.target.value })
+              }
               className="text-2xl text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:border-gray-400"
               placeholder="Project name"
             />
             <textarea
               value={editData.description}
-              onChange={(e) => onEditData({ ...editData, description: e.target.value })}
+              onChange={(e) =>
+                onEditData({ ...editData, description: e.target.value })
+              }
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 text-lg"
               placeholder="Project description"
@@ -55,7 +59,11 @@ export function ProjectHeader({
               <Button onClick={onSave} className="px-4 py-2">
                 Save Changes
               </Button>
-              <Button onClick={onCancel} variant="secondary" className="px-4 py-2">
+              <Button
+                onClick={onCancel}
+                variant="secondary"
+                className="px-4 py-2"
+              >
                 Cancel
               </Button>
             </div>

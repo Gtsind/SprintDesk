@@ -2,7 +2,7 @@ import {
   getPriorityColor,
   getProjectStatusColor,
   getStatusColor,
-} from "../utils/colors";
+} from "../../utils/colors";
 
 interface StatusBadgeProps {
   status: string;

@@ -119,7 +119,7 @@ export function FilterDropdown({
 
                   {/* Options panel that appears on hover */}
                   {hoveredFilter === filter.key && (
-                    <div className="absolute left-56 top-0 w-72 bg-white rounded-md shadow-lg border border-gray-200 z-30">
+                    <div className="absolute bg-white rounded-md shadow-lg border border-gray-200 z-30 w-48 -right-8 top-full  md:w-72 md:left-56 md:top-0 md:right-auto md:mt-0">
                       <FilterOption
                         definition={filter}
                         activeValue={activeFilters[filter.key]}

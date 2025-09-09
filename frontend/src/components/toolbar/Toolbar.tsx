@@ -1,4 +1,4 @@
-import { SearchBar } from "../SearchBar";
+import { SearchBar } from "./SearchBar";
 import { FilterDropdown } from "./FilterDropdown";
 import { ActiveFilterBadges } from "./ActiveFilterBadges";
 import type { FilterConfig, ActiveFilters } from "../../types/toolbar";
@@ -22,7 +22,7 @@ export function Toolbar({
   activeFilters = {},
   onFiltersChange,
   rightContent,
-  className = ""
+  className = "",
 }: ToolbarProps) {
   const handleFiltersChange = (newFilters: ActiveFilters) => {
     onFiltersChange?.(newFilters);
@@ -47,10 +47,8 @@ export function Toolbar({
             />
           )}
         </div>
-        
-        <div className="flex items-center gap-4">
-          {rightContent}
-        </div>
+
+        <div className="flex items-center gap-4">{rightContent}</div>
       </div>
 
       {hasFilters && (

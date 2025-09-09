@@ -8,7 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
-import type { Issue, Project, User as Member } from "../types";
+import type { Issue, Project, User as Member } from "../../types";
 
 interface IssueListCardProps {
   type: "issue";
@@ -62,10 +62,9 @@ export function ListCard({ type, item, onClick, onRemove }: ListCardProps) {
                 </span>
                 <span className="mx-2">•</span>
                 <span className="truncate">
-                  {item.assignee 
+                  {item.assignee
                     ? `Assigned to ${item.assignee.firstname} ${item.assignee.lastname}`
-                    : "Unassigned"
-                  }
+                    : "Unassigned"}
                 </span>
                 <span className="mx-2">•</span>
                 <Calendar className="flex-shrink-0 mr-1.5 h-4 w-4" />

@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { Modal } from "./Modal";
-import { FormInput } from "./FormInput";
-import { Button } from "./Button";
-import { LoadingIcon } from "./LoadingIcon";
-import { createProject } from "../services/api";
-import type { ProjectCreate, Project, ApiError } from "../types";
+import { FormInput } from "../ui/FormInput";
+import { Button } from "../ui/Button";
+import { LoadingIcon } from "../ui/LoadingIcon";
+import { createProject } from "../../services/api";
+import type { ProjectCreate, Project, ApiError } from "../../types";
 
 interface ProjectCreateModalProps {
   isOpen: boolean;

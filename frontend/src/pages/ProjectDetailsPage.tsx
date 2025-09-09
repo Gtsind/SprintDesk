@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { Layout } from "../components/Layout";
+import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { getModalProps } from "../utils/getModalProps";
-import { LoadingSpinner } from "../components/LoadingSpinner";
-import { IssueCreateModal } from "../components/IssueCreateModal";
-import { DeleteConfirmationModal } from "../components/DeleteConfirmationModal";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+import { IssueCreateModal } from "../components/modals/IssueCreateModal";
+import { DeleteConfirmationModal } from "../components/modals/DeleteConfirmationModal";
 import { Toolbar } from "../components/toolbar";
-import { ProjectHeader } from "../components/ProjectHeader";
-import { TabNavigation } from "../components/TabNavigation";
-import { IssuesTab } from "../components/IssuesTab";
-import { MembersTab } from "../components/MembersTab";
+import { ProjectHeader } from "../components/project/ProjectHeader";
+import { TabNavigation } from "../components/project/TabNavigation";
+import { IssuesTab } from "../components/project/IssuesTab";
+import { MembersTab } from "../components/project/MembersTab";
+import { MemberDropdown } from "../components/project/MemberDropdown";
 import { useApi } from "../hooks/useApi";
 import { useProjectActions } from "../hooks/useProjectActions";
 import { useTabManagement } from "../hooks/useTabManagement";
@@ -40,6 +41,7 @@ export function ProjectDetailsPage({
     switchTab,
   } = useTabManagement();
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+  const [showMemberDropdown, setShowMemberDropdown] = useState(false);
 
   const {
     data: project,
@@ -61,8 +63,7 @@ export function ProjectDetailsPage({
     [projectId]
   );
 
-  const { data: allUsers, loading: usersLoading } =
-    useApi<User[]>(getActiveUsers);
+  const { data: allUsers } = useApi<User[]>(getActiveUsers);
 
   const {
     isEditing,
@@ -119,9 +120,20 @@ export function ProjectDetailsPage({
     activeFilters
   );
 
+  // Get unique authors from current issues (cast to User type for filter compatibility)
+  const uniqueAuthors = issues
+    ? issues.reduce((authors: User[], issue) => {
+        if (!authors.find(author => author.id === issue.author.id)) {
+          authors.push(issue.author as User);
+        }
+        return authors;
+      }, [])
+    : [];
+
   // Create filter configurations based on active tab
   const issuesFilterConfig = createProjectDetailsIssuesFilterConfig(
-    allUsers || undefined
+    members, // Use project members for assignee filter
+    uniqueAuthors // Use unique issue authors for author filter
   );
   const membersFilterConfig = createProjectDetailsMembersFilterConfig();
   const currentFilterConfig =
@@ -169,11 +181,19 @@ export function ProjectDetailsPage({
           issueCount={filteredIssues.length}
           memberCount={filteredMembers.length}
           onNewIssue={() => setIsIssueModalOpen(true)}
-          availableUsers={availableUsers}
-          onAddMember={handleAddMember}
-          isAddingMember={isAddingMember}
-          usersLoading={usersLoading}
+          onAddMember={() => setShowMemberDropdown(true)}
         />
+
+        {/* Member Dropdown positioned under Members tab */}
+        <div className="relative mb-4">
+          <MemberDropdown
+            availableUsers={availableUsers}
+            onAddMember={handleAddMember}
+            isAddingMember={isAddingMember}
+            isOpen={showMemberDropdown}
+            onClose={() => setShowMemberDropdown(false)}
+          />
+        </div>
 
         {/* Toolbar for filtering current tab */}
         <div className="mb-6">

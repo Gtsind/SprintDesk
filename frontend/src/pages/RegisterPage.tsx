@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { FormInput } from "../components/FormInput";
-import { Button } from "../components/Button";
+import { FormInput } from "../components/ui/FormInput";
+import { Button } from "../components/ui/Button";
 import { register } from "../services/api";
 import type { UserRegistration, ApiError } from "../types";
 
@@ -83,7 +83,10 @@ export function RegisterPage({ navigate }: RegisterPageProps) {
           </p>
         </div>
 
-        <form className="mt-6 sm:mt-8 space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
+        <form
+          className="mt-6 sm:mt-8 space-y-4 sm:space-y-6"
+          onSubmit={handleSubmit}
+        >
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormInput

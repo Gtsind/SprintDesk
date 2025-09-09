@@ -1,5 +1,5 @@
-import { StatusBadge } from "./StatusBadge";
-import type { Issue } from "../types";
+import { StatusBadge } from "../ui/StatusBadge";
+import type { Issue } from "../../types";
 
 interface IssueHeaderProps {
   issue: Issue;

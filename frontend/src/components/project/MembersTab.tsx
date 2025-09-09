@@ -1,8 +1,8 @@
 import { Users } from "lucide-react";
-import { ListCard } from "./ListCard";
-import { EmptyState } from "./EmptyState";
-import type { User } from "../types";
-import type { ActiveFilters } from "./toolbar";
+import { ListCard } from "../ui/ListCard";
+import { EmptyState } from "../ui/EmptyState";
+import type { User } from "../../types";
+import type { ActiveFilters } from "../toolbar";
 
 interface MembersTabProps {
   members: User[];
@@ -19,7 +19,8 @@ export function MembersTab({
   onMemberClick,
   onMemberRemove,
 }: MembersTabProps) {
-  const hasSearchOrFilters = searchQuery || Object.keys(activeFilters).length > 0;
+  const hasSearchOrFilters =
+    searchQuery || Object.keys(activeFilters).length > 0;
 
   if (members.length === 0) {
     return (

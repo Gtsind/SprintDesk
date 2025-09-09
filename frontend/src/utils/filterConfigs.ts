@@ -142,7 +142,8 @@ export function createIssuesPageFilterConfig(
 }
 
 export function createProjectDetailsIssuesFilterConfig(
-  users?: User[]
+  assignees?: User[],
+  authors?: User[]
 ): FilterConfig {
   return {
     filters: [
@@ -158,7 +159,7 @@ export function createProjectDetailsIssuesFilterConfig(
         type: "multi" as const,
         options: ISSUE_PRIORITY_OPTIONS,
       },
-      ...(users
+      ...(assignees
         ? [
             {
               key: "assignee",
@@ -166,18 +167,18 @@ export function createProjectDetailsIssuesFilterConfig(
               type: "multi" as const,
               options: [
                 { value: "unassigned", label: "Unassigned" },
-                ...createUserOptions(users)
+                ...createUserOptions(assignees)
               ],
             },
           ]
         : []),
-      ...(users
+      ...(authors
         ? [
             {
               key: "author",
               label: "Author",
               type: "multi" as const,
-              options: createUserOptions(users),
+              options: createUserOptions(authors),
             },
           ]
         : []),

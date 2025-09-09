@@ -1,13 +1,23 @@
 import { useState, useEffect } from "react";
-import type { FilterDefinition, FilterOption as FilterOptionType } from "../../types/toolbar";
+import type {
+  FilterDefinition,
+  FilterOption as FilterOptionType,
+} from "../../types/toolbar";
 
 interface FilterOptionProps {
   definition: FilterDefinition;
   activeValue: string | number | (string | number)[] | undefined;
-  onValueChange: (key: string, value: string | number | (string | number)[] | undefined) => void;
+  onValueChange: (
+    key: string,
+    value: string | number | (string | number)[] | undefined
+  ) => void;
 }
 
-export function FilterOption({ definition, activeValue, onValueChange }: FilterOptionProps) {
+export function FilterOption({
+  definition,
+  activeValue,
+  onValueChange,
+}: FilterOptionProps) {
   const [options, setOptions] = useState<FilterOptionType[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -40,9 +50,9 @@ export function FilterOption({ definition, activeValue, onValueChange }: FilterO
   const handleMultiSelect = (value: string | number) => {
     const currentValues = Array.isArray(activeValue) ? activeValue : [];
     const newValues = currentValues.includes(value)
-      ? currentValues.filter(v => v !== value)
+      ? currentValues.filter((v) => v !== value)
       : [...currentValues, value];
-    
+
     onValueChange(definition.key, newValues.length > 0 ? newValues : undefined);
   };
 
@@ -55,22 +65,25 @@ export function FilterOption({ definition, activeValue, onValueChange }: FilterO
   }
 
   return (
-    <div className="py-2">
+    <div className="p-1">
       <div className="max-h-60 overflow-y-auto">
         {options.map((option) => {
-          const isSelected = definition.type === "single" 
-            ? activeValue === option.value
-            : Array.isArray(activeValue) && activeValue.includes(option.value);
-          
+          const isSelected =
+            definition.type === "single"
+              ? activeValue === option.value
+              : Array.isArray(activeValue) &&
+                activeValue.includes(option.value);
+
           return (
             <button
               key={option.value}
-              onClick={() => definition.type === "single" 
-                ? handleSingleSelect(option.value)
-                : handleMultiSelect(option.value)
+              onClick={() =>
+                definition.type === "single"
+                  ? handleSingleSelect(option.value)
+                  : handleMultiSelect(option.value)
               }
               className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between transition-colors ${
-                isSelected ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700'
+                isSelected ? "bg-indigo-50 text-indigo-700" : "text-gray-700"
               }`}
             >
               <span className="flex items-center">
@@ -85,9 +98,7 @@ export function FilterOption({ definition, activeValue, onValueChange }: FilterO
                 {option.label}
               </span>
               {option.count !== undefined && (
-                <span className="text-xs text-gray-500">
-                  ({option.count})
-                </span>
+                <span className="text-xs text-gray-500">({option.count})</span>
               )}
             </button>
           );
