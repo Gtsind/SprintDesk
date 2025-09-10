@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { Button } from "../components/ui/Button";
-import { ActionButtons } from "../components/ui/ActionButtons";
+import { IssueHeader } from "../components/issue/IssueHeader";
 import { IssueDescription } from "../components/issue/IssueDescription";
 import { CommentSection } from "../components/issue/CommentSection";
 import { IssueSidebar } from "../components/issue/IssueSidebar";
@@ -14,9 +14,10 @@ import {
   updateIssue,
   deleteIssue,
   closeIssue,
+  getProjectMembers,
 } from "../services/api";
-import type { Issue, IssueUpdate, ApiError } from "../types";
-import { StatusBadge } from "../components/ui/StatusBadge";
+import type { Issue, IssueUpdate, ApiError, User } from "../types";
+import { DisplayErrorModal } from "../components/modals/DisplayErrorModal";
 
 interface IssueDetailPageProps {
   navigate: (page: string, data?: unknown) => void;
@@ -25,11 +26,14 @@ interface IssueDetailPageProps {
 
 export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
   const issueId = pageData.issueId;
-  const [isEditing, setIsEditing] = useState(false);
-  const [editTitle, setEditTitle] = useState("");
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [error, setError] = useState("");
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const {
     data: issue,
     loading: isLoading,
@@ -40,37 +44,81 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
     [issueId]
   );
 
+  const { data: projectMembers = [] } = useApi<User[]>(
+    () =>
+      issue?.project.id
+        ? getProjectMembers(issue.project.id)
+        : Promise.resolve([]),
+    [issue?.project.id]
+  );
+
+  // Sync drafts with issue data when it loads, but don't overwrite active edits
+  useEffect(() => {
+    if (issue && !isEditingTitle && !isEditingDescription) {
+      setTitle(issue.title || "");
+      setDescription(issue.description || "");
+    }
+  }, [issue, isEditingTitle, isEditingDescription]);
+
   const breadcrumbs = generateBreadcrumbs("issue-detail", {
     issueId,
     issue: issue || undefined,
   });
 
-  const handleDescriptionUpdate = async (newDescription: string) => {
-    await handleUpdateIssue({ description: newDescription || undefined });
+  const handleDescriptionUpdate = async () => {
+    const currentDescription = issue?.description || "";
+
+    // Only update if description actually changed
+    if (description !== currentDescription) {
+      try {
+        await handleUpdateIssue({ description: description });
+      } catch {
+        setDescription(currentDescription); // Revert on error
+      }
+    }
+
+    // Set editing to false AFTER processing the update to prevent useEffect interference
+    setIsEditingDescription(false);
   };
 
   const handleTitleUpdate = async () => {
-    if (editTitle.trim() && editTitle !== issue?.title) {
-      await handleUpdateIssue({ title: editTitle.trim() });
-      setIsEditing(false);
-      setEditTitle("");
+    const trimmedTitle = title.trim();
+    setIsEditingTitle(false);
+
+    // Validate empty title
+    if (!trimmedTitle) {
+      setTitle(issue?.title || "");
+      setError(
+        "Title cannot be empty. The title has been reverted to its previous value."
+      );
+      setShowErrorModal(true);
+      return;
     }
+
+    if (trimmedTitle !== issue?.title) {
+      try {
+        await handleUpdateIssue({ title: trimmedTitle });
+      } catch {
+        // Error already handled in handleUpdateIssue
+      }
+    }
+    // Revert to original issue value instead of clearing
+    setTitle(issue?.title || "");
   };
 
   const handleUpdateIssue = async (updateData: IssueUpdate) => {
     if (!issueId) return;
 
     try {
-      setError("");
       await updateIssue(issueId, updateData);
       refetch();
-      setIsEditing(false);
     } catch (error: unknown) {
       if (error && typeof error === "object" && "detail" in error) {
         setError((error as ApiError).detail);
       } else {
         setError("An unexpected error occurred");
       }
+      setShowErrorModal(true);
     }
   };
 
@@ -88,6 +136,7 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
       } else {
         setError("An unexpected error occurred");
       }
+      setShowErrorModal(true);
     } finally {
       setIsClosing(false);
     }
@@ -107,6 +156,7 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
       } else {
         setError("An unexpected error occurred");
       }
+      setShowErrorModal(true);
       setIsDeleting(false);
     }
   };
@@ -140,73 +190,52 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
 
   return (
     <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
-      {/* {Header} */}
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          {isEditing ? (
-            <input
-              type="text"
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleTitleUpdate();
-                } else if (e.key === "Escape") {
-                  setIsEditing(false);
-                  setEditTitle("");
-                }
-              }}
-              className="text-lg text-gray-900 bg-white border border-gray-300 rounded-md px-2 py-1 w-full lg:w-4/5 focus:outline-none focus:border-gray-400 mb-1.5"
-              placeholder="Issue title"
-              autoFocus
-            />
-          ) : (
-            <h1 className="text-2xl font-semibold text-gray-900 mb-3">
-              {issue.title}
-            </h1>
-          )}
-          <div className="flex space-x-2 mb-3">
-            <StatusBadge status={issue.priority} type="priority" />
-            <StatusBadge status={issue.status} type="status" />
-          </div>
-
-          {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
-        </div>
-        {/* {Action buttons} */}
-        <ActionButtons
-          onEdit={() => {
-            setIsEditing(true);
-            setEditTitle(issue?.title || "");
-          }}
-          onClose={handleCloseIssue}
-          onDelete={handleDeleteIssue}
-          isEditing={isEditing}
-          isClosing={isClosing}
-          isDeleting={isDeleting}
-          entityType="issue"
-        />
-      </div>
+      <IssueHeader
+        issue={issue}
+        isEditingTitle={isEditingTitle}
+        title={title}
+        setTitle={setTitle}
+        setIsEditingTitle={setIsEditingTitle}
+        onTitleUpdate={handleTitleUpdate}
+        onClose={handleCloseIssue}
+        onDelete={handleDeleteIssue}
+        isClosing={isClosing}
+        isDeleting={isDeleting}
+      />
       <div className="grid grid-cols-5 gap-6">
         <div className="col-span-4">
           <IssueDescription
-            description={issue.description}
-            isEditing={isEditing}
+            originalDescription={issue.description}
+            isEditing={isEditingDescription}
+            description={description}
+            setDescription={setDescription}
+            setIsEditing={setIsEditingDescription}
             onUpdate={handleDescriptionUpdate}
-            onCancel={() => {
-              setIsEditing(false);
-              setEditTitle("");
-            }}
           />
+
           <CommentSection issueId={issue.id} />
         </div>
         <div className="col-span-1">
-          <IssueSidebar issue={issue} />
+          <IssueSidebar
+            issue={issue}
+            projectMembers={projectMembers || []}
+            onIssueUpdate={refetch}
+            onError={(errorMessage) => {
+              setError(errorMessage);
+              setShowErrorModal(true);
+            }}
+          />
         </div>
       </div>
+
+      <DisplayErrorModal
+        isOpen={showErrorModal}
+        onClose={() => {
+          setShowErrorModal(false);
+          setError("");
+        }}
+        error={error}
+      />
     </Layout>
   );
 }

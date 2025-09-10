@@ -181,7 +181,8 @@ class IssueService:
         if not issue:
             raise IssueNotFoundError()
         
-        if not self._can_update_issue(issue, current_user_id, current_user_role):
+        can_update, _ = self._can_update_issue(issue, current_user_id, current_user_role)
+        if not can_update:
             raise NotAuthorizedError("You are not authorized to close this issue.")
         
         updated_issue = self.issue_repository.close_issue(issue_id, current_user_id)
@@ -197,7 +198,8 @@ class IssueService:
         if not issue:
             raise IssueNotFoundError()
         
-        if not self._can_update_issue(issue, current_user_id, current_user_role):
+        can_update, _ = self._can_update_issue(issue, current_user_id, current_user_role)
+        if not can_update:
             raise NotAuthorizedError("You are not authorized to reopen this issue.")
         
         updated_issue = self.issue_repository.reopen_issue(issue_id)

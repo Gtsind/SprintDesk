@@ -212,6 +212,10 @@ export const deleteIssue = async (issueId: number): Promise<void> => {
   });
 };
 
+export const getProjectMembers = async (projectId: number): Promise<User[]> => {
+  return request<User[]>(`/projects/${projectId}/members`);
+};
+
 export const addProjectMember = async (
   projectId: number,
   userId: number

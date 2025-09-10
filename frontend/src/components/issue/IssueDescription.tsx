@@ -1,68 +1,73 @@
-import { useState, useEffect } from "react";
-import { Button } from "../ui/Button";
+import type { KeyboardEvent } from "react";
 
 interface IssueDescriptionProps {
-  description: string | null;
+  originalDescription: string | null;
   isEditing?: boolean;
-  onUpdate?: (description: string) => void;
-  onCancel?: () => void;
+  description: string;
+  setDescription: (description: string) => void;
+  setIsEditing: (editing: boolean) => void;
+  onUpdate?: () => void;
 }
 
 export function IssueDescription({
-  description,
+  originalDescription,
   isEditing = false,
+  description,
+  setDescription,
+  setIsEditing,
   onUpdate,
-  onCancel,
 }: IssueDescriptionProps) {
-  const [editValue, setEditValue] = useState(description || "");
-
-  useEffect(() => {
-    if (isEditing) {
-      setEditValue(description || "");
-    }
-  }, [isEditing, description]);
-
   const handleSave = () => {
     if (onUpdate) {
-      onUpdate(editValue.trim());
+      onUpdate();
     }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setIsEditing(false);
+      // Revert to original issue description instead of clearing
+      setDescription(originalDescription || "");
+    }
+    // Shift+Enter allows new lines (default textarea behavior)
   };
 
   return (
     <div className="my-6">
       {isEditing ? (
-        <div className="space-y-4">
-          <textarea
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 focus:border-gray-400 rounded-md focus:outline-none"
-            rows={6}
-            placeholder="Add a description..."
-          />
-          <div className="flex gap-2">
-            <Button
-              onClick={handleSave}
-              className="px-6 py-2.5 text-sm font-medium rounded-lg bg-indigo-200 hover:bg-indigo-400 text-white shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg"
-            >
-              Save Changes
-            </Button>
-            <Button
-              onClick={onCancel}
-              variant="secondary"
-              className="px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 hover:bg-gray-100"
-            >
-              Cancel
-            </Button>
-          </div>
-        </div>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={handleSave}
+          className="w-full text-gray-700 bg-transparent p-2 focus:outline-none whitespace-pre-wrap"
+          placeholder="Add a description..."
+          autoFocus
+        />
       ) : (
         <>
-          {description ? (
-            <p className="text-gray-700 whitespace-pre-wrap h-[100px]">
-              {description}
+          {originalDescription ? (
+            <p
+              className="text-gray-700 whitespace-pre-wrap cursor-pointer hover:bg-gray-50 rounded p-2"
+              onClick={() => {
+                setIsEditing(true);
+                setDescription(originalDescription);
+              }}
+            >
+              {originalDescription}
             </p>
           ) : (
-            <p className="text-gray-500 italic h-[100px]">
+            <p
+              className="text-gray-500 italic cursor-pointer hover:bg-gray-50 rounded p-2"
+              onClick={() => {
+                setIsEditing(true);
+                setDescription("");
+              }}
+            >
               Add a description...
             </p>
           )}
