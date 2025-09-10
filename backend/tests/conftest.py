@@ -1,5 +1,4 @@
 import pytest
-import os
 from typing import Generator
 from fastapi.testclient import TestClient
 from sqlmodel import SQLModel, create_engine, Session
@@ -37,7 +36,7 @@ def test_session(test_engine) -> Generator[Session, None, None]:
     SQLModel.metadata.drop_all(test_engine)
 
 @pytest.fixture(scope="function")
-def client(test_session: Session) -> TestClient:
+def client(test_session: Session) -> Generator[TestClient, None, None]:
     """Create FastAPI test client with test database"""
     def get_test_db_session():
         return test_session
@@ -112,7 +111,7 @@ def project_manager_user(test_session: Session) -> User:
     user = User(
         firstname="Project",
         lastname="Manager",
-        username="pm",
+        username="pmuser",
         email="pm@example.com",
         title="Project Manager",
         role=UserRole.PROJECT_MANAGER,
@@ -126,8 +125,8 @@ def project_manager_user(test_session: Session) -> User:
     return user
 
 @pytest.fixture
-def sample_project(test_session: Session, admin_user: User) -> Project:
-    """Create sample project for testing"""
+def sample_project_base(test_session: Session, admin_user: User) -> Project:
+    """Create sample project for testing without any members"""
     project = Project(
         name="Test Project",
         description="A test project",
@@ -141,6 +140,56 @@ def sample_project(test_session: Session, admin_user: User) -> Project:
     return project
 
 @pytest.fixture
+def sample_project(test_session: Session, sample_project_base: Project, regular_user: User) -> Project:
+    """Create sample project with regular_user as member"""
+    from src.models import ProjectMembership
+    
+    # Add regular_user as a member of the project
+    membership = ProjectMembership(project_id=sample_project_base.id, user_id=regular_user.id)
+    test_session.add(membership)
+    test_session.commit()
+    
+    return sample_project_base
+
+@pytest.fixture  
+def sample_issue_base(test_session: Session, sample_project_base: Project, admin_user: User) -> Issue:
+    """Create sample issue for testing in a project without regular_user membership"""
+    issue = Issue(
+        title="Test Issue",
+        description="A test issue",
+        status=IssueStatus.OPEN,
+        priority=IssuePriority.MEDIUM,
+        project_id=sample_project_base.id or 0,
+        author_id=admin_user.id,
+        assignee_id=admin_user.id,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc)
+    )
+    test_session.add(issue)
+    test_session.commit()
+    test_session.refresh(issue)
+    return issue
+
+@pytest.fixture
+def sample_issue_by_admin(test_session: Session, sample_project: Project, admin_user: User) -> Issue:
+    """Create sample issue authored by admin for testing unauthorized delete"""
+    issue = Issue(
+        title="Admin Issue",
+        description="An issue created by admin",
+        status=IssueStatus.OPEN,
+        priority=IssuePriority.MEDIUM,
+        project_id=sample_project.id or 0,
+        author_id=admin_user.id,
+        assignee_id=admin_user.id,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc)
+    )
+    test_session.add(issue)
+    test_session.commit()
+    test_session.refresh(issue)
+    return issue
+
+@pytest.fixture
 def sample_issue(test_session: Session, sample_project: Project, regular_user: User) -> Issue:
     """Create sample issue for testing"""
     issue = Issue(
@@ -148,7 +197,7 @@ def sample_issue(test_session: Session, sample_project: Project, regular_user: U
         description="A test issue",
         status=IssueStatus.OPEN,
         priority=IssuePriority.MEDIUM,
-        project_id=sample_project.id,
+        project_id=sample_project.id or 0,
         author_id=regular_user.id,
         assignee_id=regular_user.id,
         created_at=datetime.now(timezone.utc),
@@ -176,7 +225,7 @@ def sample_comment(test_session: Session, sample_issue: Issue, regular_user: Use
     """Create sample comment for testing"""
     comment = Comment(
         content="This is a test comment",
-        issue_id=sample_issue.id,
+        issue_id=sample_issue.id or 0,
         author_id=regular_user.id,
         created_at=datetime.now(timezone.utc)
     )

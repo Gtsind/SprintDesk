@@ -9,11 +9,7 @@ class TestIssueEndpoints:
 
     def test_create_issue_as_member(self, client: TestClient, regular_user: User, sample_project: Project, test_session):
         """Test creating issue as project member"""
-        # Add regular_user as member to sample_project
-        from src.models.intermediate_tables import ProjectMembership
-        membership = ProjectMembership(project_id=sample_project.id, user_id=regular_user.id)
-        test_session.add(membership)
-        test_session.commit()
+        # regular_user is already a member via sample_project fixture
         
         token = get_auth_token(client, "johndoe", "userpass123")
         headers = get_auth_headers(token)
@@ -58,14 +54,14 @@ class TestIssueEndpoints:
         assert data["title"] == "Admin Issue"
         assert data["author_id"] == admin_user.id
 
-    def test_create_issue_as_non_member(self, client: TestClient, regular_user: User, sample_project: Project):
+    def test_create_issue_as_non_member(self, client: TestClient, regular_user: User, sample_project_base: Project):
         """Test creating issue as non-member (should fail)"""
         token = get_auth_token(client, "johndoe", "userpass123")
         headers = get_auth_headers(token)
         
         issue_data = {
             "title": "Should Fail",
-            "project_id": sample_project.id
+            "project_id": sample_project_base.id
         }
         
         response = client.post("/api/v1/issues/", json=issue_data, headers=headers)
@@ -117,11 +113,7 @@ class TestIssueEndpoints:
 
     def test_get_all_issues_as_member(self, client: TestClient, regular_user: User, sample_issue: Issue, test_session):
         """Test getting issues as project member"""
-        # Add regular_user as member to the project
-        from src.models.intermediate_tables import ProjectMembership
-        membership = ProjectMembership(project_id=sample_issue.project_id, user_id=regular_user.id)
-        test_session.add(membership)
-        test_session.commit()
+        # regular_user is already a member via sample_project fixture
         
         token = get_auth_token(client, "johndoe", "userpass123")
         headers = get_auth_headers(token)
@@ -146,11 +138,7 @@ class TestIssueEndpoints:
 
     def test_get_issue_by_id_as_member(self, client: TestClient, regular_user: User, sample_issue: Issue, test_session):
         """Test getting issue by ID as project member"""
-        # Add regular_user as member
-        from src.models.intermediate_tables import ProjectMembership
-        membership = ProjectMembership(project_id=sample_issue.project_id, user_id=regular_user.id)
-        test_session.add(membership)
-        test_session.commit()
+        # regular_user is already a member via sample_project fixture
         
         token = get_auth_token(client, "johndoe", "userpass123")
         headers = get_auth_headers(token)
@@ -159,12 +147,12 @@ class TestIssueEndpoints:
         
         assert response.status_code == 200
 
-    def test_get_issue_by_id_unauthorized(self, client: TestClient, regular_user: User, sample_issue: Issue):
+    def test_get_issue_by_id_unauthorized(self, client: TestClient, regular_user: User, sample_issue_base: Issue):
         """Test getting issue by ID as non-member"""
         token = get_auth_token(client, "johndoe", "userpass123")
         headers = get_auth_headers(token)
         
-        response = client.get(f"/api/v1/issues/{sample_issue.id}", headers=headers)
+        response = client.get(f"/api/v1/issues/{sample_issue_base.id}", headers=headers)
         
         assert response.status_code == 403
 
@@ -237,12 +225,12 @@ class TestIssueEndpoints:
         
         assert response.status_code == 204
 
-    def test_delete_issue_unauthorized(self, client: TestClient, regular_user: User, sample_issue: Issue):
+    def test_delete_issue_unauthorized(self, client: TestClient, regular_user: User, sample_issue_by_admin: Issue):
         """Test deleting issue as unauthorized user"""
         token = get_auth_token(client, "johndoe", "userpass123")
         headers = get_auth_headers(token)
         
-        response = client.delete(f"/api/v1/issues/{sample_issue.id}", headers=headers)
+        response = client.delete(f"/api/v1/issues/{sample_issue_by_admin.id}", headers=headers)
         
         assert response.status_code == 403
 

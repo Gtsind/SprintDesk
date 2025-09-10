@@ -351,10 +351,10 @@ class TestLabelEndpoints:
         response = client.post("/api/v1/labels/", json=label_data, headers=headers)
         assert response.status_code == 201
         
-        # Try to create label with different case - should be allowed as they're different
+        # Try to create label with different case - should be rejected as duplicate (case-insensitive)
         label_data = {
             "name": "LOWERCASE",
             "is_active": True
         }
         response = client.post("/api/v1/labels/", json=label_data, headers=headers)
-        assert response.status_code == 201
+        assert response.status_code == 400

@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 from src.models.base import CommentBase
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -12,7 +12,7 @@ class CommentCreate(CommentBase):
 
 class CommentUpdate(SQLModel):
     """DTO for comment updates"""
-    content: str | None = None
+    content: str | None = Field(default=None, min_length=1, max_length=2000)
 
 class CommentPublic(CommentBase):
     """DTO for comment responses"""

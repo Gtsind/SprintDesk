@@ -31,7 +31,7 @@ class TestProjectEndpoints:
 
     def test_create_project_as_project_manager(self, client: TestClient, project_manager_user: User):
         """Test creating project as project manager"""
-        token = get_auth_token(client, "pm", "pmpass123")
+        token = get_auth_token(client, "pmuser", "pmpass123")
         headers = get_auth_headers(token)
         
         project_data = {
@@ -75,11 +75,7 @@ class TestProjectEndpoints:
 
     def test_get_all_projects_as_member(self, client: TestClient, regular_user: User, sample_project: Project, test_session):
         """Test getting projects as member (should only see projects they're part of)"""
-        # Add regular_user as member to sample_project
-        from src.models.intermediate_tables import ProjectMembership
-        membership = ProjectMembership(project_id=sample_project.id, user_id=regular_user.id)
-        test_session.add(membership)
-        test_session.commit()
+        # regular_user is already a member via sample_project fixture
         
         token = get_auth_token(client, "johndoe", "userpass123")
         headers = get_auth_headers(token)
@@ -116,12 +112,12 @@ class TestProjectEndpoints:
         data = response.json()
         assert data["created_by"] == admin_user.id
 
-    def test_get_project_by_id_unauthorized(self, client: TestClient, regular_user: User, sample_project: Project):
+    def test_get_project_by_id_unauthorized(self, client: TestClient, regular_user: User, sample_project_base: Project):
         """Test getting project by ID as non-member"""
         token = get_auth_token(client, "johndoe", "userpass123")
         headers = get_auth_headers(token)
         
-        response = client.get(f"/api/v1/projects/{sample_project.id}", headers=headers)
+        response = client.get(f"/api/v1/projects/{sample_project_base.id}", headers=headers)
         
         assert response.status_code == 403
 
@@ -190,21 +186,21 @@ class TestProjectEndpoints:
         
         assert response.status_code == 403
 
-    def test_add_project_member_as_admin(self, client: TestClient, admin_user: User, regular_user: User, sample_project: Project):
+    def test_add_project_member_as_admin(self, client: TestClient, admin_user: User, regular_user: User, sample_project_base: Project):
         """Test adding member to project as admin"""
         token = get_auth_token(client, "admin", "adminpass123")
         headers = get_auth_headers(token)
         
-        response = client.post(f"/api/v1/projects/{sample_project.id}/members/{regular_user.id}", headers=headers)
+        response = client.post(f"/api/v1/projects/{sample_project_base.id}/members/{regular_user.id}", headers=headers)
         
         assert response.status_code == 204
 
-    def test_add_project_member_as_creator(self, client: TestClient, admin_user: User, regular_user: User, sample_project: Project):
+    def test_add_project_member_as_creator(self, client: TestClient, admin_user: User, regular_user: User, sample_project_base: Project):
         """Test adding member to project as creator"""
         token = get_auth_token(client, "admin", "adminpass123")
         headers = get_auth_headers(token)
         
-        response = client.post(f"/api/v1/projects/{sample_project.id}/members/{regular_user.id}", headers=headers)
+        response = client.post(f"/api/v1/projects/{sample_project_base.id}/members/{regular_user.id}", headers=headers)
         
         assert response.status_code == 204
 
@@ -219,11 +215,7 @@ class TestProjectEndpoints:
 
     def test_add_duplicate_project_member(self, client: TestClient, admin_user: User, regular_user: User, sample_project: Project, test_session):
         """Test adding already existing member"""
-        # First add the member
-        from src.models.intermediate_tables import ProjectMembership
-        membership = ProjectMembership(project_id=sample_project.id, user_id=regular_user.id)
-        test_session.add(membership)
-        test_session.commit()
+        # regular_user is already a member via sample_project fixture
         
         token = get_auth_token(client, "admin", "adminpass123")
         headers = get_auth_headers(token)
@@ -243,11 +235,7 @@ class TestProjectEndpoints:
 
     def test_remove_project_member_as_admin(self, client: TestClient, admin_user: User, regular_user: User, sample_project: Project, test_session):
         """Test removing member from project as admin"""
-        # First add the member
-        from src.models.intermediate_tables import ProjectMembership
-        membership = ProjectMembership(project_id=sample_project.id, user_id=regular_user.id)
-        test_session.add(membership)
-        test_session.commit()
+        # regular_user is already a member via sample_project fixture
         
         token = get_auth_token(client, "admin", "adminpass123")
         headers = get_auth_headers(token)
@@ -267,11 +255,7 @@ class TestProjectEndpoints:
 
     def test_get_project_members(self, client: TestClient, admin_user: User, regular_user: User, sample_project: Project, test_session):
         """Test getting project members"""
-        # Add regular_user as member
-        from src.models.intermediate_tables import ProjectMembership
-        membership = ProjectMembership(project_id=sample_project.id, user_id=regular_user.id)
-        test_session.add(membership)
-        test_session.commit()
+        # regular_user is already a member via sample_project fixture
         
         token = get_auth_token(client, "admin", "adminpass123")
         headers = get_auth_headers(token)

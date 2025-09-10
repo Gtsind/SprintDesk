@@ -72,7 +72,7 @@ class CommentService:
         if current_user_role == UserRole.CONTRIBUTOR and author_id != current_user_id:
             raise NotAuthorizedError("Not allowed to view these comments.")
         
-        # Get all comments by author
+        # Project Managers can see all comments in projects they own -> Get all comments by author
         comments: list[Comment] = self.comment_repository.get_comments_by_author(author_id)
 
         # Filter by projects the user can access
@@ -113,7 +113,7 @@ class CommentService:
         
         self.comment_repository.delete(comment_id)
 
-    def _can_access_project(self, project_id: int, project_creator: int, user_id: int, user_role: UserRole) -> bool:
+    def _can_access_project(self, project_id: int, project_creator: int | None, user_id: int, user_role: UserRole) -> bool:
         """Check if user can access project (view/comment on issues)"""
         # Admin -> can access everything
         if user_role == UserRole.ADMIN:
@@ -126,7 +126,7 @@ class CommentService:
         # Contributors -> Only projects they are members of
         return self.project_repository.is_member(project_id, user_id)
     
-    def _can_modify_comment(self, comment: Comment, project_creator: int, user_id: int, user_role: UserRole) -> bool:
+    def _can_modify_comment(self, comment: Comment, project_creator: int | None, user_id: int, user_role: UserRole) -> bool:
         """Check if user can update/delete comment"""
         if user_role == UserRole.ADMIN:
             return True

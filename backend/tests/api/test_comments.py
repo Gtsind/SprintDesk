@@ -8,11 +8,7 @@ class TestCommentEndpoints:
 
     def test_create_comment_as_member(self, client: TestClient, regular_user: User, sample_issue: Issue, test_session):
         """Test creating comment as project member"""
-        # Add regular_user as member to the project
-        from src.models.intermediate_tables import ProjectMembership
-        membership = ProjectMembership(project_id=sample_issue.project_id, user_id=regular_user.id)
-        test_session.add(membership)
-        test_session.commit()
+        # regular_user is already a member via sample_project fixture
         
         token = get_auth_token(client, "johndoe", "userpass123")
         headers = get_auth_headers(token)
@@ -98,11 +94,7 @@ class TestCommentEndpoints:
 
     def test_get_comment_by_id_as_member(self, client: TestClient, regular_user: User, sample_comment: Comment, test_session):
         """Test getting comment by ID as project member"""
-        # Add regular_user as member to the project
-        from src.models.intermediate_tables import ProjectMembership
-        membership = ProjectMembership(project_id=sample_comment.issue.project_id, user_id=regular_user.id)
-        test_session.add(membership)
-        test_session.commit()
+        # regular_user is already a member via sample_project fixture
         
         token = get_auth_token(client, "johndoe", "userpass123")
         headers = get_auth_headers(token)
@@ -224,11 +216,7 @@ class TestCommentEndpoints:
 
     def test_get_comments_by_issue_as_member(self, client: TestClient, regular_user: User, sample_issue: Issue, test_session):
         """Test getting comments by issue as project member"""
-        # Add regular_user as member to the project
-        from src.models.intermediate_tables import ProjectMembership
-        membership = ProjectMembership(project_id=sample_issue.project_id, user_id=regular_user.id)
-        test_session.add(membership)
-        test_session.commit()
+        # regular_user is already a member via sample_project fixture
         
         token = get_auth_token(client, "johndoe", "userpass123")
         headers = get_auth_headers(token)
@@ -267,12 +255,13 @@ class TestCommentEndpoints:
         for comment in data:
             assert comment["author_id"] == regular_user.id
 
-    def test_get_comments_by_author_unauthorized(self, client: TestClient, regular_user: User):
-        """Test getting comments by author as non-admin"""
+    def test_get_comments_by_author_unauthorized(self, client: TestClient, regular_user: User, admin_user: User):
+        """Test getting comments by author as non-admin (different user)"""
         token = get_auth_token(client, "johndoe", "userpass123")
         headers = get_auth_headers(token)
         
-        response = client.get(f"/api/v1/comments/author/{regular_user.id}", headers=headers)
+        # Regular user trying to access admin user's comments should fail
+        response = client.get(f"/api/v1/comments/author/{admin_user.id}", headers=headers)
         
         assert response.status_code == 403
 

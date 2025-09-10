@@ -7,7 +7,7 @@ class LabelCreate(LabelBase):
 
 class LabelUpdate(SQLModel):
     """DTO for label updates"""
-    name: str | None = None
+    name: str | None = Field(default=None, min_length=1, max_length=50)
     is_active: bool | None = None
 
 class LabelPublic(LabelBase):
