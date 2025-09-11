@@ -10,7 +10,7 @@ export function BreadCrumbs({ breadcrumbs, navigate }: BreadCrumbsProps) {
   const items =
     breadcrumbs.length > 0
       ? breadcrumbs
-      : [{ label: "Your work", page: "dashboard" }];
+      : [{ label: "My work", page: "dashboard" }];
 
   return (
     <div className="flex items-center space-x-2 text-sm text-gray-500">

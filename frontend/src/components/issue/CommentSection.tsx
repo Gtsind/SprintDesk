@@ -1,7 +1,9 @@
 import { useState, useEffect, type FormEvent } from "react";
-import { MessageSquareText, ArrowUp } from "lucide-react";
+import { MessageSquareText, ArrowUp, Edit2, Trash2, X, Check } from "lucide-react";
 import { useApi } from "../../hooks/useApi";
-import { getIssueComments, createComment } from "../../services/api";
+import { useCommentActions } from "../../hooks/useCommentActions";
+import { getIssueComments } from "../../services/api";
+import { DeleteConfirmationModal } from "../modals/DeleteConfirmationModal";
 import type { Comment } from "../../types";
 
 interface CommentSectionProps {
@@ -11,7 +13,19 @@ interface CommentSectionProps {
 export function CommentSection({ issueId }: CommentSectionProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
-  const [submittingComment, setSubmittingComment] = useState(false);
+  
+  const {
+    submittingComment,
+    editingComment,
+    deletingCommentById,
+    handleSubmitComment,
+    startEdit,
+    cancelEdit,
+    saveEdit,
+    startDelete,
+    cancelDelete,
+    handleDeleteConfirm,
+  } = useCommentActions(issueId);
 
   const { data: commentsData, loading } = useApi<Comment[]>(
     () => getIssueComments(issueId),
@@ -25,27 +39,19 @@ export function CommentSection({ issueId }: CommentSectionProps) {
     }
   }, [commentsData]);
 
-  const handleSubmitComment = async (e?: FormEvent) => {
+  const onSubmitComment = async (e?: FormEvent) => {
     e?.preventDefault();
-    if (!newComment.trim()) return;
-
-    setSubmittingComment(true);
-
-    try {
-      const comment = await createComment(issueId, newComment);
-      setComments((prev) => [...prev, comment]);
-      setNewComment("");
-    } catch (error) {
-      console.error("Failed to create comment: ", error);
-    } finally {
-      setSubmittingComment(false);
-    }
+    await handleSubmitComment(
+      newComment,
+      (comment) => setComments((prev) => [...prev, comment]),
+      () => setNewComment("")
+    );
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && e.ctrlKey) {
       e.preventDefault();
-      handleSubmitComment();
+      onSubmitComment();
     }
   };
 
@@ -67,25 +73,98 @@ export function CommentSection({ issueId }: CommentSectionProps) {
           comments.map((comment) => (
             <div
               key={comment.id}
-              className="border border-gray-200 rounded-lg p-4 shadow-sm"
+              className="group border border-gray-200 rounded-lg p-4 shadow-sm"
             >
-              <div className="flex items-center space-x-2 mb-2">
-                <span className="text-sm font-medium text-gray-900">
-                  {comment.author.firstname} {comment.author.lastname}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {new Date(comment.created_at).toLocaleString()}
-                </span>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-900">
+                    {comment.author.firstname} {comment.author.lastname}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {new Date(comment.created_at).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => startEdit(comment)}
+                    className="p-1 text-gray-400 hover:text-gray-600 rounded"
+                    title="Edit comment"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => startDelete(comment.id)}
+                    className="p-1 text-gray-400 hover:text-red-600 rounded"
+                    title="Delete comment"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-              <p className="text-gray-700 whitespace-pre-wrap">
-                {comment.content}
-              </p>
+              
+              {editingComment?.id === comment.id ? (
+                <div className="space-y-2">
+                  <textarea
+                    defaultValue={comment.content}
+                    className="w-full px-3 py-2 rounded-md focus:outline-none resize-none"
+                    rows={3}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        cancelEdit();
+                      }
+                      if (e.key === "Enter" && e.ctrlKey) {
+                        e.preventDefault();
+                        saveEdit(
+                          e.currentTarget.value,
+                          (updatedComment) => setComments((prev) =>
+                            prev.map((c) => (c.id === comment.id ? updatedComment : c))
+                          )
+                        );
+                      }
+                    }}
+                    ref={(textarea) => {
+                      if (textarea) {
+                        textarea.focus();
+                        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+                      }
+                    }}
+                  />
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={(e) => {
+                        const textarea = e.currentTarget.parentElement?.previousElementSibling as HTMLTextAreaElement;
+                        saveEdit(
+                          textarea.value,
+                          (updatedComment) => setComments((prev) =>
+                            prev.map((c) => (c.id === comment.id ? updatedComment : c))
+                          )
+                        );
+                      }}
+                      className="p-1 text-green-600 hover:text-green-700 rounded"
+                      title="Save"
+                    >
+                      <Check className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      className="p-1 text-gray-400 hover:text-gray-600 rounded"
+                      title="Cancel"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-700 whitespace-pre-wrap">
+                  {comment.content}
+                </p>
+              )}
             </div>
           ))}
       </div>
 
       {/* Comment Form */}
-      <form onSubmit={handleSubmitComment}>
+      <form onSubmit={onSubmitComment}>
         <div className="relative">
           <textarea
             value={newComment}
@@ -110,6 +189,20 @@ export function CommentSection({ issueId }: CommentSectionProps) {
           </button>
         </div>
       </form>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deletingCommentById !== null}
+        onClose={cancelDelete}
+        onConfirm={() =>
+          handleDeleteConfirm((deletedId) =>
+            setComments((prev) => prev.filter((c) => c.id !== deletedId))
+          )
+        }
+        title="Delete Comment"
+        message="Are you sure you want to delete this comment? This action cannot be undone."
+        confirmButtonText="Delete"
+      />
     </div>
   );
 }

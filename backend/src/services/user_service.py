@@ -50,7 +50,7 @@ class UserService:
         return self.user_repository.get_all()
 
     def get_active_users(self, current_user_role: UserRole) -> list[User]:
-        """Get all active users (Admin only)"""
+        """Get all active users (Admin and Project Manager)"""
         if not current_user_role in [UserRole.ADMIN, UserRole.PROJECT_MANAGER]:
             raise NotAuthorizedError("You can only view your own profile.")
             

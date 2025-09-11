@@ -144,6 +144,10 @@ export interface LabelUpdate {
   color_hash?: number;
 }
 
+export interface CommentUpdate {
+  content: string;
+}
+
 export interface ApiError {
   detail: string;
 }

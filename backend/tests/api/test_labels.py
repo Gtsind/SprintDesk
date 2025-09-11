@@ -13,7 +13,8 @@ class TestLabelEndpoints:
         
         label_data = {
             "name": "feature",
-            "is_active": True
+            "is_active": True,
+            "color_hash": 0,
         }
         
         response = client.post("/api/v1/labels/", json=label_data, headers=headers)
@@ -31,7 +32,8 @@ class TestLabelEndpoints:
         
         label_data = {
             "name": "enhancement",
-            "is_active": True
+            "is_active": True,
+            "color_hash": 1,
         }
         
         response = client.post("/api/v1/labels/", json=label_data, headers=headers)
@@ -313,7 +315,8 @@ class TestLabelEndpoints:
         # Create
         label_data = {
             "name": "workflow-test",
-            "is_active": True
+            "is_active": True,
+            "color_hash": 3,
         }
         response = client.post("/api/v1/labels/", json=label_data, headers=headers)
         assert response.status_code == 201
@@ -346,7 +349,8 @@ class TestLabelEndpoints:
         # Create label with lowercase name
         label_data = {
             "name": "lowercase",
-            "is_active": True
+            "is_active": True,
+            "color_hash": 5,
         }
         response = client.post("/api/v1/labels/", json=label_data, headers=headers)
         assert response.status_code == 201

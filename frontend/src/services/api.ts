@@ -193,6 +193,22 @@ export const createComment = async (
   });
 };
 
+export const updateComment = async (
+  commentId: number,
+  content: string
+): Promise<Comment> => {
+  return request<Comment>(`/comments/${commentId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ content }),
+  });
+};
+
+export const deleteComment = async (commentId: number): Promise<void> => {
+  return request<void>(`/comments/${commentId}`, {
+    method: "DELETE",
+  });
+};
+
 export const updateIssue = async (
   issueId: number,
   updateData: IssueUpdate
