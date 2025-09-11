@@ -9,7 +9,7 @@ import { IssueDescription } from "../components/issue/IssueDescription";
 import { CommentSection } from "../components/issue/CommentSection";
 import { IssueSidebar } from "../components/issue/IssueSidebar";
 import { useApi } from "../hooks/useApi";
-import { useIssueOperations } from "../hooks/useIssueOperations";
+import { useIssueActions } from "../hooks/useIssueActions";
 import { getIssue, getProjectMembers } from "../services/api";
 import type { Issue, User } from "../types";
 import { DisplayErrorModal } from "../components/modals/DisplayErrorModal";
@@ -32,10 +32,10 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
       issueId ? getIssue(issueId) : Promise.reject(new Error("No issue ID")),
     [issueId]
   );
-  
+
   // Use local state to track the current issue (for optimistic updates)
   const [currentIssue, setCurrentIssue] = useState<Issue | null>(issue);
-  
+
   // Sync currentIssue when issue from API loads
   useEffect(() => {
     if (issue) {
@@ -52,13 +52,13 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
   );
 
   const { handleUpdate, handleClose, handleDelete, isClosing, isDeleting } =
-    useIssueOperations({
+    useIssueActions({
       issue: currentIssue!,
       onUpdate: (updatedIssue) => {
         if (updatedIssue) {
-          setCurrentIssue(updatedIssue); // Use the response from backend
+          setCurrentIssue(updatedIssue);
         } else {
-          refetch(); // Fallback to refetch if no updated issue provided
+          refetch();
         }
       },
       onError: (errorMessage) => {

@@ -1,20 +1,20 @@
 import { useState } from "react";
-import { updateIssue, deleteIssue } from "../services/api";
+import { updateIssue, deleteIssue, closeIssue } from "../services/api";
 import type { Issue, IssueUpdate } from "../types";
 
-interface UseIssueOperationsProps {
+interface UseIssueActionsProps {
   issue: Issue;
   onUpdate: (updatedIssue?: Issue) => void;
   onError: (message: string) => void;
   navigate: (page: string, data?: unknown) => void;
 }
 
-export function useIssueOperations({
+export function useIssueActions({
   issue,
   onUpdate,
   onError,
   navigate,
-}: UseIssueOperationsProps) {
+}: UseIssueActionsProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -31,10 +31,11 @@ export function useIssueOperations({
 
   const handleClose = async (): Promise<void> => {
     if (isClosing) return;
-    
+
     try {
       setIsClosing(true);
-      await handleUpdate({ status: "Closed" });
+      const updatedIssue = await closeIssue(issue.id);
+      onUpdate(updatedIssue);
     } catch (err: any) {
       onError(err?.detail || "Failed to close issue");
     } finally {
@@ -44,7 +45,7 @@ export function useIssueOperations({
 
   const handleDelete = async (): Promise<void> => {
     if (isDeleting) return;
-    
+
     try {
       setIsDeleting(true);
       await deleteIssue(issue.id);
@@ -60,7 +61,7 @@ export function useIssueOperations({
     handleUpdate,
     handleClose,
     handleDelete,
-    
+
     // Loading states
     isClosing,
     isDeleting,

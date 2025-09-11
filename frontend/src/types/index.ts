@@ -1,3 +1,20 @@
+export type IssueStatus =
+  | "Open"
+  | "In Progress"
+  | "Review Ready"
+  | "Closed"
+  | "Blocked";
+export type IssuePriority = "Low" | "Medium" | "High" | "Critical";
+export type UserRole = "Admin" | "Project Manager" | "Contributor";
+export type ProjectStatus = "Active" | "Completed" | "On Hold" | "Cancelled";
+
+export interface UserSummary {
+  id: number;
+  username: string;
+  firstname: string;
+  lastname: string;
+}
+
 export interface User {
   id: number;
   username: string;
@@ -5,19 +22,19 @@ export interface User {
   lastname: string;
   email: string;
   title: string | null;
-  role: "Admin" | "Project Manager" | "Contributor";
+  role: UserRole;
   is_active: boolean;
   projects?: {
     id: number;
     name: string;
-    status: "Active" | "Completed" | "On Hold" | "Cancelled";
+    status: ProjectStatus;
   }[];
   assigned_issues?: {
     id: number;
     title: string;
     description: string | null;
-    status: "Open" | "In Progress" | "Review Ready" | "Closed" | "Blocked";
-    priority: "Low" | "Medium" | "High" | "Critical";
+    status: IssueStatus;
+    priority: IssuePriority;
     time_estimate: number | null;
   }[];
 }
@@ -26,21 +43,16 @@ export interface Project {
   id: number;
   name: string;
   description: string | null;
-  status: "Active" | "Completed" | "On Hold" | "Cancelled";
+  status: ProjectStatus;
   created_at: string;
-  creator: {
-    id: number;
-    username: string;
-    firstname: string;
-    lastname: string;
-  };
+  creator: UserSummary;
   members?: User[];
   issues?: {
     id: number;
     title: string;
     description: string | null;
-    status: "Open" | "In Progress" | "Review Ready" | "Closed" | "Blocked";
-    priority: "Low" | "Medium" | "High" | "Critical";
+    status: IssueStatus;
+    priority: IssuePriority;
     assignee_id: number | null;
   }[];
 }
@@ -49,8 +61,8 @@ export interface Issue {
   id: number;
   title: string;
   description: string | null;
-  status: "Open" | "In Progress" | "Review Ready" | "Closed" | "Blocked";
-  priority: "Low" | "Medium" | "High" | "Critical";
+  status: IssueStatus;
+  priority: IssuePriority;
   time_estimate: number | null;
   project_id: number;
   author_id: number;
@@ -58,18 +70,8 @@ export interface Issue {
   created_at: string;
   updated_at: string | null;
   closed_at?: string;
-  author: {
-    id: number;
-    username: string;
-    firstname: string;
-    lastname: string;
-  };
-  assignee: {
-    id: number;
-    username: string;
-    firstname: string;
-    lastname: string;
-  } | null;
+  author: UserSummary;
+  assignee: UserSummary | null;
   project: {
     id: number;
     name: string;
@@ -84,12 +86,7 @@ export interface Comment {
   issue_id: number;
   author_id: number;
   created_at: string;
-  author: {
-    id: number;
-    username: string;
-    firstname: string;
-    lastname: string;
-  };
+  author: UserSummary;
 }
 
 export interface UserRegistration {
@@ -109,15 +106,15 @@ export interface ProjectCreate {
 export interface ProjectUpdate {
   name?: string;
   description?: string | null;
-  status?: "Active" | "Completed" | "On Hold" | "Cancelled";
+  status?: ProjectStatus;
 }
 
 export interface IssueCreate {
   project_id: number;
   title: string;
   description?: string;
-  status?: "Open" | "In Progress" | "Review Ready" | "Closed" | "Blocked";
-  priority?: "Low" | "Medium" | "High" | "Critical";
+  status?: IssueStatus;
+  priority?: IssuePriority;
   assignee_id?: number;
   time_estimate?: number;
 }
@@ -125,8 +122,8 @@ export interface IssueCreate {
 export interface IssueUpdate {
   title?: string;
   description?: string;
-  status?: "Open" | "In Progress" | "Review Ready" | "Closed" | "Blocked";
-  priority?: "Low" | "Medium" | "High" | "Critical";
+  status?: IssueStatus;
+  priority?: IssuePriority;
   assignee_id?: number;
   time_estimate?: number;
 }

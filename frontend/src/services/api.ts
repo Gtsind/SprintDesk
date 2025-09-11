@@ -209,6 +209,12 @@ export const closeIssue = async (issueId: number): Promise<Issue> => {
   });
 };
 
+export const reopenIssue = async (issueId: number): Promise<Issue> => {
+  return request<Issue>(`/issues/${issueId}/reopen`, {
+    method: "PATCH",
+  });
+};
+
 export const deleteIssue = async (issueId: number): Promise<void> => {
   return request<void>(`/issues/${issueId}`, {
     method: "DELETE",
