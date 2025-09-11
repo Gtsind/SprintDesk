@@ -3,11 +3,14 @@ import type {
   Project,
   Issue,
   Comment,
+  Label,
   UserRegistration,
   ProjectCreate,
   ProjectUpdate,
   IssueCreate,
   IssueUpdate,
+  LabelCreate,
+  LabelUpdate,
   ApiError,
 } from "../types";
 
@@ -230,6 +233,56 @@ export const removeProjectMember = async (
   userId: number
 ): Promise<void> => {
   return request<void>(`/projects/${projectId}/members/${userId}`, {
+    method: "DELETE",
+  });
+};
+
+// Labels
+export const getLabels = async (): Promise<Label[]> => {
+  return request<Label[]>("/labels/");
+};
+
+export const getIssueLabels = async (issueId: number): Promise<Label[]> => {
+  return request<Label[]>(`/labels/issue/${issueId}`);
+};
+
+export const createLabel = async (labelData: LabelCreate): Promise<Label> => {
+  return request<Label>("/labels/", {
+    method: "POST",
+    body: JSON.stringify(labelData),
+  });
+};
+
+export const updateLabel = async (
+  labelId: number,
+  labelData: LabelUpdate
+): Promise<Label> => {
+  return request<Label>(`/labels/${labelId}`, {
+    method: "PATCH",
+    body: JSON.stringify(labelData),
+  });
+};
+
+export const deleteLabel = async (labelId: number): Promise<void> => {
+  return request<void>(`/labels/${labelId}`, {
+    method: "DELETE",
+  });
+};
+
+export const addLabelToIssue = async (
+  issueId: number,
+  labelId: number
+): Promise<void> => {
+  return request<void>(`/issues/${issueId}/labels/${labelId}`, {
+    method: "POST",
+  });
+};
+
+export const removeLabelFromIssue = async (
+  issueId: number,
+  labelId: number
+): Promise<void> => {
+  return request<void>(`/issues/${issueId}/labels/${labelId}`, {
     method: "DELETE",
   });
 };

@@ -1,62 +1,61 @@
 import { StatusBadge } from "../ui/StatusBadge";
 import { ActionButtons } from "../ui/ActionButtons";
-import type { Issue } from "../../types";
+import { useInlineEdit } from "../../hooks/useInlineEdit";
+import type { Issue, IssueUpdate } from "../../types";
 
 interface IssueHeaderProps {
   issue: Issue;
-  isEditingTitle: boolean;
-  title: string;
-  setTitle: (title: string) => void;
-  setIsEditingTitle: (editing: boolean) => void;
-  onTitleUpdate: () => Promise<void>;
+  onUpdate: (updateData: IssueUpdate) => Promise<void>;
   onClose: () => Promise<void>;
   onDelete: () => Promise<void>;
+  onError: (message: string) => void;
   isClosing: boolean;
   isDeleting: boolean;
 }
 
 export function IssueHeader({ 
   issue, 
-  isEditingTitle,
-  title,
-  setTitle,
-  setIsEditingTitle,
-  onTitleUpdate, 
+  onUpdate,
   onClose, 
-  onDelete, 
+  onDelete,
+  onError,
   isClosing, 
   isDeleting 
 }: IssueHeaderProps) {
   
+  const titleEditor = useInlineEdit({
+    initialValue: issue.title,
+    onSave: async (newTitle: string) => {
+      await onUpdate({ title: newTitle });
+    },
+    onError,
+    validate: (value: string) => {
+      if (!value.trim()) {
+        return "Title cannot be empty. The title has been reverted to its previous value.";
+      }
+      return null;
+    },
+  });
+  
   return (
     <div className="flex justify-between items-start">
       <div className="flex-1">
-        {isEditingTitle ? (
+        {titleEditor.isEditing ? (
           <input
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                onTitleUpdate();
-              } else if (e.key === "Escape") {
-                setIsEditingTitle(false);
-                // Revert to original issue title instead of clearing
-                setTitle(issue.title);
-              }
-            }}
-            onBlur={onTitleUpdate}
-            className="text-2xl font-semibold text-gray-900 bg-transparent border-none px-2 py-1 w-full lg:w-4/5 focus:outline-none mb-3 "
+            value={titleEditor.value}
+            onChange={(e) => titleEditor.setValue(e.target.value)}
+            onKeyDown={(e) => titleEditor.handleKeyDown(e)}
+            onBlur={titleEditor.handleSave}
+            className="text-2xl font-semibold text-gray-900 bg-transparent border-none px-2 py-1 w-full lg:w-4/5 focus:outline-none mb-3"
             placeholder="Issue title"
             autoFocus
+            disabled={titleEditor.isSaving}
           />
         ) : (
           <h1
-            className="text-2xl font-semibold text-gray-900 mb-3 cursor-pointer hover:bg-gray-50 rounded px-2 py-1 "
-            onClick={() => {
-              setIsEditingTitle(true);
-              setTitle(issue.title);
-            }}
+            className="text-2xl font-semibold text-gray-900 mb-3 cursor-pointer hover:bg-gray-50 rounded px-2 py-1"
+            onClick={titleEditor.startEditing}
           >
             {issue.title}
           </h1>

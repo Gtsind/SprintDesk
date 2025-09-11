@@ -131,6 +131,22 @@ export interface IssueUpdate {
   time_estimate?: number;
 }
 
+export interface Label {
+  id: number;
+  name: string;
+  color_hash: number;
+}
+
+export interface LabelCreate {
+  name: string;
+  color_hash?: number;
+}
+
+export interface LabelUpdate {
+  name?: string;
+  color_hash?: number;
+}
+
 export interface ApiError {
   detail: string;
 }

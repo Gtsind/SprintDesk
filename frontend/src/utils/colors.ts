@@ -44,3 +44,23 @@ export function getProjectStatusColor(status: string) {
       return "bg-gray-100 text-gray-800";
   }
 }
+
+const LABEL_COLORS = [
+  "bg-gray-100 text-gray-800",
+  "bg-gray-700 text-white",
+  "bg-purple-100 text-purple-800",
+  "bg-teal-100 text-teal-800",
+  "bg-green-100 text-green-800",
+  "bg-yellow-100 text-yellow-800",
+  "bg-orange-100 text-orange-800",
+  "bg-pink-100 text-pink-800",
+  "bg-red-100 text-red-800",
+] as const;
+
+export function getLabelColor(index: number): string {
+  return LABEL_COLORS[index % LABEL_COLORS.length];
+}
+
+export function getLabelColors(): readonly string[] {
+  return LABEL_COLORS;
+}

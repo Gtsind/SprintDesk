@@ -10,5 +10,6 @@ class Label(LabelBase, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     is_active: bool = Field(default=True)
+    color_hash: int = Field(default=0, index=True)
     # Relationships
     issue_labels: list["IssueLabel"] = Relationship(back_populates="label", cascade_delete=True)

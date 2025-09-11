@@ -1,72 +1,53 @@
-import type { KeyboardEvent } from "react";
+import { useInlineEdit } from "../../hooks/useInlineEdit";
+import type { Issue, IssueUpdate } from "../../types";
 
 interface IssueDescriptionProps {
-  originalDescription: string | null;
-  isEditing?: boolean;
-  description: string;
-  setDescription: (description: string) => void;
-  setIsEditing: (editing: boolean) => void;
-  onUpdate?: () => void;
+  issue: Issue;
+  onUpdate: (updateData: IssueUpdate) => Promise<void>;
+  onError: (message: string) => void;
 }
 
 export function IssueDescription({
-  originalDescription,
-  isEditing = false,
-  description,
-  setDescription,
-  setIsEditing,
+  issue,
   onUpdate,
+  onError,
 }: IssueDescriptionProps) {
-  const handleSave = () => {
-    if (onUpdate) {
-      onUpdate();
-    }
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSave();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      setIsEditing(false);
-      // Revert to original issue description instead of clearing
-      setDescription(originalDescription || "");
-    }
-    // Shift+Enter allows new lines (default textarea behavior)
-  };
+  
+  const descriptionEditor = useInlineEdit({
+    initialValue: issue.description,
+    onSave: async (newDescription: string) => {
+      await onUpdate({ description: newDescription });
+    },
+    onError,
+    placeholder: "Add a description...",
+  });
 
   return (
     <div className="my-6">
-      {isEditing ? (
+      {descriptionEditor.isEditing ? (
         <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={handleSave}
+          value={descriptionEditor.value}
+          onChange={(e) => descriptionEditor.setValue(e.target.value)}
+          onKeyDown={(e) => descriptionEditor.handleKeyDown(e, true)}
+          onBlur={descriptionEditor.handleSave}
           className="w-full text-gray-700 bg-transparent p-2 focus:outline-none whitespace-pre-wrap"
           placeholder="Add a description..."
           autoFocus
+          disabled={descriptionEditor.isSaving}
         />
       ) : (
         <>
-          {originalDescription ? (
+          {issue.description ? (
             <p
               className="text-gray-700 whitespace-pre-wrap cursor-pointer hover:bg-gray-50 rounded p-2"
-              onClick={() => {
-                setIsEditing(true);
-                setDescription(originalDescription);
-              }}
+              onClick={descriptionEditor.startEditing}
             >
-              {originalDescription}
+              {issue.description}
             </p>
           ) : (
             <p
               className="text-gray-500 italic cursor-pointer hover:bg-gray-50 rounded p-2"
-              onClick={() => {
-                setIsEditing(true);
-                setDescription("");
-              }}
+              onClick={descriptionEditor.startEditing}
             >
               Add a description...
             </p>

@@ -13,13 +13,13 @@ import {
   CircleAlert,
   User as UserIcon,
 } from "lucide-react";
-import { updateIssue } from "../../services/api";
+import { LabelsSection } from "../labels/LabelsSection";
 import type { Issue, IssueUpdate, User } from "../../types";
 
 interface IssueSidebarProps {
   issue: Issue;
   projectMembers: User[];
-  onIssueUpdate?: () => void;
+  onUpdate: (updateData: IssueUpdate) => Promise<void>;
   onError?: (error: string) => void;
 }
 
@@ -28,7 +28,7 @@ type DropdownType = "status" | "priority" | "assignee" | null;
 export function IssueSidebar({
   issue,
   projectMembers,
-  onIssueUpdate,
+  onUpdate,
   onError,
 }: IssueSidebarProps) {
   const [activeDropdown, setActiveDropdown] = useState<DropdownType>(null);
@@ -98,8 +98,7 @@ export function IssueSidebar({
   const handleUpdateIssue = async (updateData: IssueUpdate) => {
     try {
       setIsUpdating(true);
-      await updateIssue(issue.id, updateData);
-      onIssueUpdate?.();
+      await onUpdate(updateData); // Use the optimized handler from parent
       setActiveDropdown(null);
     } catch (err: any) {
       onError?.(err?.detail || "Failed to update issue");
@@ -119,10 +118,7 @@ export function IssueSidebar({
     setEditingTimeEstimate(false);
   };
 
-  const renderDropdown = (
-    type: DropdownType,
-    options: string[] | User[]
-  ) => {
+  const renderDropdown = (type: DropdownType, options: string[] | User[]) => {
     if (activeDropdown !== type) return null;
 
     return (
@@ -238,18 +234,8 @@ export function IssueSidebar({
           {renderDropdown("assignee", projectMembers)}
         </div>
 
-        {/* Labels - Placeholder */}
-        <div>
-          <dt className="ml-3.5 text-sm font-medium text-gray-500">Labels</dt>
-          <dd className="mt-1">
-            <button
-              disabled
-              className="w-full text-left px-3 py-2 text-sm bg-gray-100 rounded-md text-gray-400 cursor-not-allowed"
-            >
-              Coming soon...
-            </button>
-          </dd>
-        </div>
+        {/* Labels */}
+        <LabelsSection issueId={issue.id} onError={onError} />
 
         {/* Time Estimate */}
         <div>
