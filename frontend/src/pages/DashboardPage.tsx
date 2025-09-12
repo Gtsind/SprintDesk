@@ -27,7 +27,7 @@ export function DashboardPage({ navigate }: DashboardPageProps) {
   return (
     <Layout navigate={navigate}>
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 mb-6">
+        <h1 className="text-2xl text-center font-semibold text-gray-900 mb-6">
           Welcome, {user?.firstname}
         </h1>
         {renderDashboardContent()}

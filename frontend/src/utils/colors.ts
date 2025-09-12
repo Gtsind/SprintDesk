@@ -64,3 +64,50 @@ export function getLabelColor(index: number): string {
 export function getLabelColors(): readonly string[] {
   return LABEL_COLORS;
 }
+
+// Chart color mappings for pie charts
+const CHART_STATUS_COLORS = {
+  Open: "#60a5fa", // light blue
+  "In Progress": "#ffc658", // yellow
+  "Review Ready": "#8884d8", // purple
+  Closed: "#82ca9d", // green
+  Blocked: "#ef4444", // red
+};
+
+const CHART_PRIORITY_COLORS = {
+  Low: "#82ca9d", // green
+  Medium: "#ffc658", // yellow
+  High: "#fb923c", // orange
+  Critical: "#ef4444", // red
+};
+
+// Role chart colors
+const ROLE_CHART_COLORS = {
+  Admin: "#8884d8", // blue
+  "Project Manager": "#82ca9d", // green
+  Contributor: "#ffc658", // yellow
+};
+
+const PROJECT_STATUS_CHART_COLORS = {
+  Active: "#60a5fa", // light blue (ongoing work)
+  Completed: "#82ca9d", // green (finished)
+  "On Hold": "#ffc658", // yellow (paused/waiting)
+  Cancelled: "#ef4444", // red (dropped/terminated)
+};
+
+const CHART_COLOR_MAP: Record<
+  "status" | "priority" | "role" | "projectStatus",
+  Record<string, string>
+> = {
+  status: CHART_STATUS_COLORS,
+  priority: CHART_PRIORITY_COLORS,
+  role: ROLE_CHART_COLORS,
+  projectStatus: PROJECT_STATUS_CHART_COLORS,
+};
+
+export function getChartColor(
+  type: "status" | "priority" | "role" | "projectStatus",
+  value: string
+): string {
+  return CHART_COLOR_MAP[type][value] ?? "#6b7280"; // fallback gray
+}

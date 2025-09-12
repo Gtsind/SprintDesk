@@ -24,10 +24,12 @@ export function LabelsSection({ issueId, onError }: LabelsSectionProps) {
     handleRemoveLabelFromIssue,
   } = useLabels({ issueId, onError });
 
-
   const handleCreateAndAdd = async (name: string, colorIndex: number) => {
     try {
-      const newLabel = await handleCreateLabel({ name, color_hash: colorIndex });
+      const newLabel = await handleCreateLabel({
+        name,
+        color_hash: colorIndex,
+      });
       // Add to issue labels immediately, passing the label object to avoid state timing issues
       await handleAddLabelToIssue(newLabel.id, newLabel);
       setShowMenu(false);
@@ -87,7 +89,7 @@ export function LabelsSection({ issueId, onError }: LabelsSectionProps) {
 
         {/* No Labels - Show Add Button */}
         {issueLabels.length === 0 && (
-          <div className="ml-3.5 relative">
+          <div className="relative">
             <button
               onClick={() => setShowMenu(true)}
               className="w-full text-left px-3 py-2 text-sm bg-white rounded-md hover:bg-gray-50 focus:outline-none flex items-center gap-2"
@@ -106,7 +108,6 @@ export function LabelsSection({ issueId, onError }: LabelsSectionProps) {
             />
           </div>
         )}
-
       </dd>
     </div>
   );

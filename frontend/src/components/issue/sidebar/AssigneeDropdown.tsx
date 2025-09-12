@@ -9,11 +9,11 @@ interface AssigneeDropdownProps {
   disabled?: boolean;
 }
 
-export function AssigneeDropdown({ 
-  currentAssignee, 
-  projectMembers, 
-  onUpdate, 
-  disabled 
+export function AssigneeDropdown({
+  currentAssignee,
+  projectMembers,
+  onUpdate,
+  disabled,
 }: AssigneeDropdownProps) {
   const { isOpen, toggle, close, dropdownRef } = useDropdown();
 
@@ -31,7 +31,7 @@ export function AssigneeDropdown({
     }
   };
 
-  const displayText = currentAssignee 
+  const displayText = currentAssignee
     ? `${currentAssignee.firstname} ${currentAssignee.lastname}`
     : "Unassigned";
 
@@ -59,7 +59,7 @@ export function AssigneeDropdown({
           >
             <span className="text-gray-500">Unassigned</span>
           </button>
-          
+
           {/* Project members */}
           {projectMembers.map((member) => (
             <button

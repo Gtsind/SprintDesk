@@ -151,3 +151,8 @@ export interface CommentUpdate {
 export interface ApiError {
   detail: string;
 }
+
+export interface ChartData {
+  name: string;
+  value: number;
+}
