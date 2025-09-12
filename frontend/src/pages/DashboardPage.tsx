@@ -1,10 +1,8 @@
 import { Layout } from "../components/layout/Layout";
-import { LoadingSpinner } from "../components/ui/LoadingSpinner";
-import { CardContainer } from "../components/CardContainer";
 import { useAuth } from "../contexts/AuthContext";
-import { useApi } from "../hooks/useApi";
-import { getProjects } from "../services/api";
-import type { Project } from "../types";
+import { AdminDashboard } from "../components/dashboard/AdminDashboard";
+import { ProjectManagerDashboard } from "../components/dashboard/ProjectManagerDashboard";
+import { ContributorDashboard } from "../components/dashboard/ContributorDashboard";
 
 interface DashboardPageProps {
   navigate: (page: string, data?: unknown) => void;
@@ -12,31 +10,27 @@ interface DashboardPageProps {
 
 export function DashboardPage({ navigate }: DashboardPageProps) {
   const { user } = useAuth();
-  const { data: projects, loading: projectsLoading } =
-    useApi<Project[]>(getProjects);
 
-  if (projectsLoading) {
-    return (
-      <Layout>
-        <LoadingSpinner message="Loading dashboard..." />
-      </Layout>
-    );
-  }
+  const renderDashboardContent = () => {
+    switch (user?.role) {
+      case "Admin":
+        return <AdminDashboard />;
+      case "Project Manager":
+        return <ProjectManagerDashboard />;
+      case "Contributor":
+        return <ContributorDashboard userId={user.id} />;
+      default:
+        return <div>Loading...</div>;
+    }
+  };
 
   return (
     <Layout navigate={navigate}>
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 mb-10">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-6">
           Welcome, {user?.firstname}
         </h1>
-        <CardContainer
-          title="Projects"
-          items={projects}
-          emptyMessage="No projects found."
-          onItemClick={(item) => {
-            navigate("project-details", { projectId: item.id });
-          }}
-        />
+        {renderDashboardContent()}
       </div>
     </Layout>
   );
