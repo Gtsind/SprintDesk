@@ -6,7 +6,7 @@ import {
 
 interface StatusBadgeProps {
   status: string;
-  type: "priority" | "status" | "project-status" | "role";
+  type: "priority" | "status" | "project-status" | "role" | "user-status";
 }
 
 export function StatusBadge({ status, type }: StatusBadgeProps) {
@@ -20,6 +20,8 @@ export function StatusBadge({ status, type }: StatusBadgeProps) {
         return getProjectStatusColor(status);
       case "role":
         return getRoleColor(status);
+      case "user-status":
+        return getUserStatusColor(status);
     }
   };
 
@@ -31,6 +33,17 @@ export function StatusBadge({ status, type }: StatusBadgeProps) {
         return "bg-blue-100 text-blue-800";
       case "Contributor":
         return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getUserStatusColor = (status: string) => {
+    switch (status) {
+      case "Active":
+        return "bg-green-100 text-green-800";
+      case "Inactive":
+        return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }

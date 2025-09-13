@@ -13,6 +13,10 @@ export interface UserSummary {
   username: string;
   firstname: string;
   lastname: string;
+  email: string;
+  title?: string;
+  role: UserRole;
+  is_active?: boolean | null;
 }
 
 export interface User {
@@ -24,6 +28,7 @@ export interface User {
   title: string | null;
   role: UserRole;
   is_active: boolean;
+  created_at: string;
   projects?: {
     id: number;
     name: string;
@@ -46,7 +51,7 @@ export interface Project {
   status: ProjectStatus;
   created_at: string;
   creator: UserSummary;
-  members?: User[];
+  members?: UserSummary[];
   issues?: {
     id: number;
     title: string;
@@ -96,6 +101,27 @@ export interface UserRegistration {
   lastname: string;
   email: string;
   title: string | null;
+}
+
+export interface UserCreate {
+  firstname: string;
+  lastname: string;
+  username: string;
+  email: string;
+  title: string;
+  role: UserRole;
+  password: string;
+}
+
+export interface UserUpdate {
+  firstname?: string;
+  lastname?: string;
+  username?: string;
+  email?: string;
+  title?: string | null;
+  role?: UserRole;
+  password?: string;
+  is_active?: boolean;
 }
 
 export interface ProjectCreate {

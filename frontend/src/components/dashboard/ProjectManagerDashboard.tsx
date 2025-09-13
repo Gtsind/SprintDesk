@@ -12,115 +12,33 @@ import { useApi } from "../../hooks/useApi";
 import { getProjects, getIssues } from "../../services/api";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { getChartColor } from "../../utils/colors";
-import type { Project, Issue, User, ChartData } from "../../types";
+import {
+  createIssueStatusChart,
+  createIssuePriorityChart,
+  getAllTeamMembers,
+  createTeamWorkloadChart,
+} from "../../utils/dashboardUtils";
+import type { Project, Issue } from "../../types";
 
 export function ProjectManagerDashboard() {
   const { data: projects, loading: projectsLoading } =
     useApi<Project[]>(getProjects);
   const { data: issues, loading: issuesLoading } = useApi<Issue[]>(getIssues);
 
-  // Get all members from all my projects
-  const allMembers: User[] = [];
-  if (projects) {
-    for (const project of projects) {
-      if (project.members) {
-        for (const member of project.members) {
-          // Add member if not already in the list
-          if (!allMembers.find((m) => m.id === member.id)) {
-            allMembers.push(member);
-          }
-        }
-      }
-    }
-  }
-
   if (projectsLoading || issuesLoading) {
     return <LoadingSpinner message="Loading dashboard..." />;
   }
 
-  // Filter issues from my projects that are not closed
-  const activeIssues =
-    issues?.filter((issue) => issue.status !== "Closed") || [];
+  // Get all team members and prepare chart data using utility functions
+  const allMembers = getAllTeamMembers(projects || []);
+  const issuesByStatus = createIssueStatusChart(issues || []);
+  const issuesByPriority = createIssuePriorityChart(issues || []);
+  const teamWorkload = createTeamWorkloadChart(issues || [], allMembers);
 
-  // Issues by status data (only non-closed issues)
-  const issuesByStatus: ChartData[] = [];
-  if (activeIssues.length > 0) {
-    const statusCounts: Record<string, number> = {
-      Open: 0,
-      "In Progress": 0,
-      "Review Ready": 0,
-      Blocked: 0,
-    };
-    for (const issue of activeIssues) statusCounts[issue.status]++;
-    for (const status in statusCounts) {
-      if (statusCounts[status] > 0) {
-        issuesByStatus.push({
-          name: status,
-          value: statusCounts[status],
-        });
-      }
-    }
-  }
-
-  // Issues by priority data (only non-closed issues)
-  const issuesByPriority: ChartData[] = [];
-  if (activeIssues.length > 0) {
-    const priorityCounts: Record<string, number> = {
-      Low: 0,
-      Medium: 0,
-      High: 0,
-      Critical: 0,
-    };
-    for (const issue of activeIssues) priorityCounts[issue.priority]++;
-    for (const priority in priorityCounts) {
-      if (priorityCounts[priority] > 0) {
-        issuesByPriority.push({
-          name: priority,
-          value: priorityCounts[priority],
-        });
-      }
-    }
-  }
-
-  // Team workload data (issues per member, including 0)
-  const teamWorkload: ChartData[] = [];
-
-  // Initialize all members with 0 issues
-  const workloadCounts: Record<string, number> = {};
-  for (const member of allMembers) {
-    const memberUsername = `@${member.username}`;
-    workloadCounts[memberUsername] = 0;
-  }
-
-  // Count unassigned issues
-  let unassignedCount = 0;
-
-  // Count actual assigned issues
-  for (const issue of activeIssues) {
-    if (issue.assignee) {
-      const assigneeUsername = `@${issue.assignee.username}`;
-      if (assigneeUsername in workloadCounts)
-        workloadCounts[assigneeUsername]++;
-    } else {
-      unassignedCount++;
-    }
-  }
-
-  // Add all members to teamWorkload (even with 0 issues)
-  for (const username in workloadCounts) {
-    teamWorkload.push({
-      name: username,
-      value: workloadCounts[username],
-    });
-  }
-
-  // Add unassigned if there are any
-  if (unassignedCount > 0) {
-    teamWorkload.push({
-      name: "Unassigned",
-      value: unassignedCount,
-    });
-  }
+  // Get active issues count for summary stats
+  const activeIssues = (issues || []).filter(
+    (issue) => issue.status !== "Closed"
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 space-y-6">

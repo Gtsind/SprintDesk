@@ -5,6 +5,7 @@ import type {
   Comment,
   Label,
   UserRegistration,
+  UserUpdate,
   ProjectCreate,
   ProjectUpdate,
   IssueCreate,
@@ -121,6 +122,42 @@ export const getAllUsers = async (): Promise<User[]> => {
 
 export const getActiveUsers = async (): Promise<User[]> => {
   return request<User[]>("/users/active");
+};
+
+export const createUser = async (userData: UserRegistration): Promise<User> => {
+  return request<User>("/users/", {
+    method: "POST",
+    body: JSON.stringify(userData),
+  });
+};
+
+export const deleteUser = async (userId: number): Promise<void> => {
+  return request<void>(`/users/${userId}`, {
+    method: "DELETE",
+  });
+};
+
+export const getUser = async (userId: number): Promise<User> => {
+  return request<User>(`/users/${userId}`);
+};
+
+export const updateUser = async (userId: number, userData: UserUpdate): Promise<User> => {
+  return request<User>(`/users/${userId}`, {
+    method: "PATCH",
+    body: JSON.stringify(userData),
+  });
+};
+
+export const activateUser = async (userId: number): Promise<User> => {
+  return request<User>(`/users/${userId}/activate`, {
+    method: "PATCH",
+  });
+};
+
+export const deactivateUser = async (userId: number): Promise<User> => {
+  return request<User>(`/users/${userId}/deactivate`, {
+    method: "PATCH",
+  });
 };
 
 export const getProjects = async (): Promise<Project[]> => {

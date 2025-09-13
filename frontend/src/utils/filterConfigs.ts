@@ -45,6 +45,20 @@ export function createUserOptions(users: User[]): FilterOptionType[] {
   }));
 }
 
+export function createTitleOptions(users: User[]): FilterOptionType[] {
+  // Get unique titles from users, filtering out null/empty values
+  const titlesSet = new Set<string>();
+  users.forEach((user) => {
+    if (user.title && user.title.trim()) {
+      titlesSet.add(user.title);
+    }
+  });
+  return Array.from(titlesSet).map((title) => ({
+    value: title,
+    label: title,
+  }));
+}
+
 export function createCreatorOptions(projects: Project[]): FilterOptionType[] {
   // Get unique creators from projects
   const creatorsMap = new Map();
@@ -199,6 +213,29 @@ export function createProjectDetailsMembersFilterConfig(): FilterConfig {
   };
 }
 
+export function createUsersPageFilterConfig(users?: User[]): FilterConfig {
+  return {
+    filters: [
+      {
+        key: "role",
+        label: "Role",
+        type: "multi" as const,
+        options: USER_ROLE_OPTIONS,
+      },
+      ...(users
+        ? [
+            {
+              key: "title",
+              label: "Title",
+              type: "multi" as const,
+              options: createTitleOptions(users),
+            },
+          ]
+        : []),
+    ],
+  };
+}
+
 // Helper function to apply filters to data arrays
 export function applyFilters<T>(
   items: T[],
@@ -247,4 +284,5 @@ export const issueFilterFunctions = {
 
 export const userFilterFunctions = {
   role: (user: User, roleValue: string | number) => user.role === roleValue,
+  title: (user: User, titleValue: string | number) => user.title === titleValue,
 };

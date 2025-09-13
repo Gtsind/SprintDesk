@@ -1,13 +1,16 @@
 import type { BreadCrumb } from "../components/layout/Header";
-import type { Project, Issue } from "../types";
+import type { Project, Issue, User } from "../types";
 
 export function generateBreadcrumbs(
   page: string,
   data?: {
     projectId?: number;
     issueId?: number;
+    userId?: number;
     project?: Project;
     issue?: Issue;
+    user?: User;
+    isOwnProfile?: boolean;
   }
 ): BreadCrumb[] {
   switch (page) {
@@ -26,6 +29,31 @@ export function generateBreadcrumbs(
       return [
         { label: "My work", page: "dashboard" },
         { label: "Projects", page: "projects-list" },
+      ];
+
+    case "users-list":
+      return [
+        { label: "My work", page: "dashboard" },
+        { label: "Users", page: "users-list" },
+      ];
+
+    case "user-detail":
+      // For own profile, show "My work > Profile" instead of going through Users
+      if (data?.isOwnProfile) {
+        return [
+          { label: "My work", page: "dashboard" },
+          { label: "Profile", page: "user-detail", data: { userId: data?.userId } },
+        ];
+      }
+      // For admins viewing other users, show full path through Users
+      return [
+        { label: "My work", page: "dashboard" },
+        { label: "Users", page: "users-list" },
+        {
+          label: data?.user ? `${data.user.firstname} ${data.user.lastname}` : "User",
+          page: "user-detail",
+          data: { userId: data?.userId },
+        },
       ];
 
     case "project-details":

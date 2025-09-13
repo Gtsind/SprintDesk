@@ -7,6 +7,8 @@ import { ProjectsPage } from "./pages/ProjectsPage";
 import { ProjectDetailsPage } from "./pages/ProjectDetailsPage";
 import { IssuesPage } from "./pages/IssuesPage";
 import { IssueDetailPage } from "./pages/IssueDetailPage";
+import { UsersPage } from "./pages/UsersPage";
+import { UserDetailsPage } from "./pages/UserDetailsPage";
 
 type PageType =
   | "login"
@@ -15,7 +17,9 @@ type PageType =
   | "projects-list"
   | "project-details"
   | "issues-list"
-  | "issue-detail";
+  | "issue-detail"
+  | "users-list"
+  | "user-detail";
 
 type PageDataMap = {
   login: Record<string, never>;
@@ -25,6 +29,8 @@ type PageDataMap = {
   "project-details": { projectId: number };
   "issues-list": Record<string, never>;
   "issue-detail": { issueId: number };
+  "users-list": Record<string, never>;
+  "user-detail": { userId: number };
 };
 
 export function AppRouter() {
@@ -77,6 +83,15 @@ export function AppRouter() {
           <IssueDetailPage
             navigate={navigateWrapper}
             pageData={pageData as PageDataMap["issue-detail"]}
+          />
+        );
+      case "users-list":
+        return <UsersPage navigate={navigateWrapper} />;
+      case "user-detail":
+        return (
+          <UserDetailsPage
+            navigate={navigateWrapper}
+            pageData={pageData as PageDataMap["user-detail"]}
           />
         );
       default:

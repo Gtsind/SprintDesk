@@ -1,11 +1,14 @@
-import { Home, FolderOpen, Plus, Settings, FileCode } from "lucide-react";
+import { Home, FolderOpen, Plus, Settings, FileCode, Users } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface SideBarProps {
   navigate?: (page: string) => void;
 }
 
 export function SideBar({ navigate }: SideBarProps) {
-  const menuItems = [
+  const { user } = useAuth();
+
+  const baseMenuItems = [
     {
       id: "dashboard",
       label: "Dashboard",
@@ -27,6 +30,22 @@ export function SideBar({ navigate }: SideBarProps) {
       action: () => navigate?.("issues-list"),
       active: true,
     },
+  ];
+
+  // Add Users menu item only for Admins
+  const adminMenuItems = user?.role === "Admin" 
+    ? [{
+        id: "users",
+        label: "Users",
+        icon: Users,
+        action: () => navigate?.("users-list"),
+        active: true,
+      }]
+    : [];
+
+  const menuItems = [
+    ...baseMenuItems,
+    ...adminMenuItems,
     {
       id: "create",
       label: "Create",

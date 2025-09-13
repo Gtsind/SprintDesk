@@ -6,13 +6,14 @@ import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { ListCard } from "../components/ui/ListCard";
 import { Toolbar, type ActiveFilters } from "../components/toolbar";
 import { useApi } from "../hooks/useApi";
-import { getIssues, getProjects, getActiveUsers } from "../services/api";
-import type { Issue, Project, User } from "../types";
+import { getIssues, getProjects } from "../services/api";
+import type { Issue, Project } from "../types";
 import {
   createIssuesPageFilterConfig,
   applyFilters,
   issueFilterFunctions,
 } from "../utils/filterConfigs";
+import { getAllTeamMembers } from "../utils/dashboardUtils";
 
 interface IssuesPageProps {
   navigate: (page: string, data?: unknown) => void;
@@ -23,7 +24,6 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
   const { data: issues, loading } = useApi<Issue[]>(getIssues);
   const { data: projects } = useApi<Project[]>(getProjects);
-  const { data: users } = useApi<User[]>(getActiveUsers);
   const breadcrumbs = generateBreadcrumbs("issues-list");
 
   if (loading) {
@@ -33,6 +33,9 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
       </Layout>
     );
   }
+
+  // Extract unique project members (we will use a dashboard utility function we have already defined)
+  const projectMembers = getAllTeamMembers(projects || []);
 
   // Apply search filter first
   const searchFilteredIssues =
@@ -53,7 +56,7 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
   // Create filter configuration
   const filterConfig = createIssuesPageFilterConfig(
     projects || undefined,
-    users || undefined
+    projectMembers || undefined
   );
 
   return (

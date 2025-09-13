@@ -12,7 +12,12 @@ import { useApi } from "../../hooks/useApi";
 import { getUserIssues, getProjects } from "../../services/api";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { getChartColor } from "../../utils/colors";
-import type { Issue, Project, ChartData } from "../../types";
+import {
+  createIssueStatusChart,
+  createIssuePriorityChart,
+  createIssuesByProjectChart,
+} from "../../utils/dashboardUtils";
+import type { Issue, Project } from "../../types";
 
 interface ContributorDashboardProps {
   userId: number;
@@ -28,69 +33,18 @@ export function ContributorDashboard({ userId }: ContributorDashboardProps) {
   if (issuesLoading || projectsLoading)
     return <LoadingSpinner message="Loading dashboard..." />;
 
-  // Filter out closed issues
-  const activeIssues =
-    issues?.filter((issue) => issue.status !== "Closed") || [];
+  // Prepare chart data using utility functions
+  const issuesByStatus = createIssueStatusChart(issues || []);
+  const issuesByPriority = createIssuePriorityChart(issues || []);
+  const issuesByProject = createIssuesByProjectChart(
+    issues || [],
+    projects || []
+  );
 
-  // Issues by status data
-  const issuesByStatus: ChartData[] = [];
-  if (activeIssues.length > 0) {
-    const statusCounts: Record<string, number> = {
-      Open: 0,
-      "In Progress": 0,
-      "Review Ready": 0,
-      Blocked: 0,
-    };
-    for (const issue of activeIssues) statusCounts[issue.status]++;
-    for (const status in statusCounts) {
-      if (statusCounts[status] > 0) {
-        issuesByStatus.push({
-          name: status,
-          value: statusCounts[status],
-        });
-      }
-    }
-  }
-
-  // Issues by priority data
-  const issuesByPriority: ChartData[] = [];
-  if (activeIssues.length > 0) {
-    const priorityCounts: Record<string, number> = {
-      Low: 0,
-      Medium: 0,
-      High: 0,
-      Critical: 0,
-    };
-    for (const issue of activeIssues) priorityCounts[issue.priority]++;
-    for (const priority in priorityCounts) {
-      if (priorityCounts[priority] > 0) {
-        issuesByPriority.push({
-          name: priority,
-          value: priorityCounts[priority],
-        });
-      }
-    }
-  }
-
-  // Issues by project data
-  const issuesByProject: ChartData[] = [];
-  if (projects && projects.length > 0) {
-    const activeProjects = projects.filter((p) => p.status === "Active");
-    const projectCounts: Record<string, number> = {};
-
-    for (const project of activeProjects) projectCounts[project.name] = 0;
-    for (const issue of activeIssues) {
-      const projectName = issue.project.name;
-      if (projectName in projectCounts) projectCounts[projectName]++;
-    }
-
-    for (const projectName in projectCounts) {
-      issuesByProject.push({
-        name: projectName,
-        value: projectCounts[projectName],
-      });
-    }
-  }
+  // Get active issues count for summary stats
+  const activeIssues = (issues || []).filter(
+    (issue) => issue.status !== "Closed"
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 space-y-6">
@@ -190,7 +144,7 @@ export function ContributorDashboard({ userId }: ContributorDashboardProps) {
             </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-[250px] text-gray-500">
-              No assigned issues across projects
+              No assigned issues across active projects
             </div>
           )}
         </div>

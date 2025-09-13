@@ -34,9 +34,12 @@ export function Header({ navigate, breadcrumbs = [] }: HeaderProps) {
             </button>
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-700">
+            <button
+              onClick={() => user && navigate && navigate("user-detail", { userId: user.id })}
+              className="text-sm text-gray-700 hover:text-gray-900 cursor-pointer"
+            >
               {user?.firstname} {user?.lastname}
-            </span>
+            </button>
             <button
               onClick={handleLogout}
               className="text-gray-400 hover:text-gray-500 cursor-pointer"
