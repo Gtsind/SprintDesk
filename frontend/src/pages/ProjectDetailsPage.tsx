@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { getModalProps } from "../utils/getModalProps";
@@ -15,8 +15,13 @@ import { useApi } from "../hooks/useApi";
 import { useProjectActions } from "../hooks/useProjectActions";
 import { useTabManagement } from "../hooks/useTabManagement";
 import { useProjectFiltering } from "../hooks/useProjectFiltering";
-import { getProjectIssues, getProject, getActiveUsers } from "../services/api";
-import type { Issue, Project, User } from "../types";
+import {
+  getProjectIssues,
+  getProject,
+  getActiveUsers,
+  updateProject,
+} from "../services/api";
+import type { Issue, Project, User, ProjectUpdate } from "../types";
 import {
   createProjectDetailsIssuesFilterConfig,
   createProjectDetailsMembersFilterConfig,
@@ -42,6 +47,7 @@ export function ProjectDetailsPage({
   } = useTabManagement();
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
   const [showMemberDropdown, setShowMemberDropdown] = useState(false);
+  const [inlineEditError, setInlineEditError] = useState("");
 
   const {
     data: project,
@@ -52,6 +58,16 @@ export function ProjectDetailsPage({
     () => (projectId ? getProject(projectId) : Promise.resolve(null)),
     [projectId]
   );
+
+  // Use local state to track the current project (for optimistic updates)
+  const [currentProject, setCurrentProject] = useState<Project | null>(project);
+
+  // Sync currentProject when project from API loads
+  useEffect(() => {
+    if (project) {
+      setCurrentProject(project);
+    }
+  }, [project]);
 
   const {
     data: issues,
@@ -66,21 +82,13 @@ export function ProjectDetailsPage({
   const { data: allUsers } = useApi<User[]>(getActiveUsers);
 
   const {
-    isEditing,
     isDeleting,
-    isCompleting,
     isAddingMember,
     isRemovingMember,
     isDeletingIssue,
-    editData,
     error,
     showDeleteConfirmationModal,
     deleteContext,
-    setEditData,
-    handleEditProject,
-    handleSaveProject,
-    handleCancelEdit,
-    handleCompleteProject,
     handleIssueCreated,
     handleAddMember,
     handleDeleteProjectClick,
@@ -93,17 +101,27 @@ export function ProjectDetailsPage({
     refetchProject,
     refetchIssues,
     navigate,
-    initialName: project?.name || "",
-    initialDescription: project?.description || "",
+    initialName: currentProject?.name || "",
+    initialDescription: currentProject?.description || "",
   });
+
+  const handleProjectUpdate = async (updateData: ProjectUpdate) => {
+    if (!projectId) return;
+    try {
+      const updatedProject = await updateProject(projectId, updateData);
+      setCurrentProject(updatedProject); // Optimistic update
+    } catch (err: any) {
+      throw new Error(err.response?.data?.detail || "Failed to update project");
+    }
+  };
 
   const isLoading = issuesLoading || projectLoading;
   const breadcrumbs = generateBreadcrumbs("project-details", {
     projectId,
-    project: project || undefined,
+    project: currentProject || undefined,
   });
 
-  const members = project?.members || [];
+  const members = currentProject?.members || [];
   const modalProps = getModalProps({
     type: deleteContext.type,
     item: deleteContext.item,
@@ -115,7 +133,7 @@ export function ProjectDetailsPage({
   // Filter data using the custom hook
   const { filteredIssues, filteredMembers } = useProjectFiltering(
     issues || [],
-    members,
+    members as User[],
     searchQuery,
     activeFilters
   );
@@ -123,7 +141,7 @@ export function ProjectDetailsPage({
   // Get unique authors from current issues (cast to User type for filter compatibility)
   const uniqueAuthors = issues
     ? issues.reduce((authors: User[], issue) => {
-        if (!authors.find(author => author.id === issue.author.id)) {
+        if (!authors.find((author) => author.id === issue.author.id)) {
           authors.push(issue.author as User);
         }
         return authors;
@@ -132,7 +150,7 @@ export function ProjectDetailsPage({
 
   // Create filter configurations based on active tab
   const issuesFilterConfig = createProjectDetailsIssuesFilterConfig(
-    members, // Use project members for assignee filter
+    members as User[], // Use project members for assignee filter
     uniqueAuthors // Use unique issue authors for author filter
   );
   const membersFilterConfig = createProjectDetailsMembersFilterConfig();
@@ -159,20 +177,14 @@ export function ProjectDetailsPage({
     <Layout navigate={navigate} breadcrumbs={breadcrumbs}>
       <div>
         <ProjectHeader
-          project={project}
-          isEditing={isEditing}
-          editData={editData}
-          onEditData={setEditData}
-          onSave={handleSaveProject}
-          onCancel={handleCancelEdit}
-          onEdit={() =>
-            handleEditProject(project?.name || "", project?.description || "")
-          }
-          onComplete={handleCompleteProject}
-          onDelete={() => project && handleDeleteProjectClick(project)}
+          project={currentProject}
+          onUpdate={handleProjectUpdate}
+          onDelete={() => currentProject && handleDeleteProjectClick(currentProject)}
+          onError={setInlineEditError}
           isDeleting={isDeleting}
-          isCompleting={isCompleting}
-          error={error || projectError || issuesError || undefined}
+          error={
+            inlineEditError || error || projectError || issuesError || undefined
+          }
         />
 
         <TabNavigation
@@ -215,7 +227,10 @@ export function ProjectDetailsPage({
               searchQuery={searchQuery}
               activeFilters={activeFilters}
               onIssueClick={(issue) =>
-                navigate("issue-detail", { issueId: issue.id })
+                navigate("issue-detail", {
+                  issueId: issue.id,
+                  fromPage: "project-details",
+                })
               }
               onIssueDelete={handleDeleteIssueClick}
             />
@@ -240,7 +255,7 @@ export function ProjectDetailsPage({
           onClose={() => setIsIssueModalOpen(false)}
           onIssueCreated={handleIssueCreated}
           projectId={projectId}
-          projectMembers={members}
+          projectMembers={members as User[]}
         />
       )}
 

@@ -103,7 +103,7 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
                   type="issue"
                   item={issue}
                   onClick={(issue) =>
-                    navigate("issue-detail", { issueId: issue.id })
+                    navigate("issue-detail", { issueId: issue.id, fromPage: "issues-list" })
                   }
                 />
               ))}

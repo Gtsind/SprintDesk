@@ -1,6 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { useDropdown } from "../../../hooks/useDropdown";
-import { getStatusIcon } from "../../../utils/issueIcons";
+import { getStatusIcon } from "../../../utils/icons";
 import { closeIssue, reopenIssue, updateIssue } from "../../../services/api";
 import type { IssueStatus } from "../../../types";
 
@@ -11,9 +11,20 @@ interface StatusDropdownProps {
   disabled?: boolean;
 }
 
-const STATUS_OPTIONS: IssueStatus[] = ["Open", "In Progress", "Review Ready", "Closed", "Blocked"];
+const STATUS_OPTIONS: IssueStatus[] = [
+  "Open",
+  "In Progress",
+  "Review Ready",
+  "Closed",
+  "Blocked",
+];
 
-export function StatusDropdown({ issueId, currentStatus, onUpdate, disabled }: StatusDropdownProps) {
+export function StatusDropdown({
+  issueId,
+  currentStatus,
+  onUpdate,
+  disabled,
+}: StatusDropdownProps) {
   const { isOpen, toggle, close, dropdownRef } = useDropdown();
 
   const handleStatusSelect = async (status: IssueStatus) => {
@@ -27,7 +38,7 @@ export function StatusDropdown({ issueId, currentStatus, onUpdate, disabled }: S
         // Closing issue - use dedicated closeIssue API
         await closeIssue(issueId);
       } else if (status !== "Closed" && currentStatus === "Closed") {
-        // Reopening issue - use dedicated reopenIssue API  
+        // Reopening issue - use dedicated reopenIssue API
         await reopenIssue(issueId);
         // Then update to the specific status if not "Open"
         if (status !== "Open") {
@@ -37,7 +48,7 @@ export function StatusDropdown({ issueId, currentStatus, onUpdate, disabled }: S
         // Regular status change - use generic updateIssue API
         await updateIssue(issueId, { status });
       }
-      
+
       // Call the callback to trigger refetch or state update
       await onUpdate({ status });
       close();

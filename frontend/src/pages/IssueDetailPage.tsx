@@ -16,7 +16,7 @@ import { DisplayErrorModal } from "../components/modals/DisplayErrorModal";
 
 interface IssueDetailPageProps {
   navigate: (page: string, data?: unknown) => void;
-  pageData: { issueId?: number };
+  pageData: { issueId?: number; fromPage?: string };
 }
 
 export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
@@ -71,6 +71,7 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
   const breadcrumbs = generateBreadcrumbs("issue-detail", {
     issueId,
     issue: currentIssue || undefined,
+    fromPage: pageData.fromPage,
   });
 
   if (isLoading) {

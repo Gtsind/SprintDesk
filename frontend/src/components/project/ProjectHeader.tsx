@@ -1,97 +1,117 @@
-import { StatusBadge } from "../ui/StatusBadge";
-import { Button } from "../ui/Button";
 import { ActionButtons } from "../ui/ActionButtons";
-import type { Project } from "../../types";
+import { ProjectStatusDropdown } from "./ProjectStatusDropdown";
+import { useInlineEdit } from "../../hooks/useInlineEdit";
+import type { Project, ProjectUpdate } from "../../types";
 
 interface ProjectHeaderProps {
   project: Project | null;
-  isEditing: boolean;
-  editData: { name: string; description: string };
-  onEditData: (data: { name: string; description: string }) => void;
-  onSave: () => void;
-  onCancel: () => void;
-  onEdit: () => void;
-  onComplete: () => void;
+  onUpdate: (updateData: ProjectUpdate) => Promise<void>;
   onDelete: () => void;
+  onError: (message: string) => void;
   isDeleting: boolean;
-  isCompleting: boolean;
   error?: string;
 }
 
 export function ProjectHeader({
   project,
-  isEditing,
-  editData,
-  onEditData,
-  onSave,
-  onCancel,
-  onEdit,
-  onComplete,
+  onUpdate,
   onDelete,
+  onError,
   isDeleting,
-  isCompleting,
   error,
 }: ProjectHeaderProps) {
-  if (isEditing) {
-    return (
-      <div className="mb-8 flex justify-between items-start">
-        <div className="flex-1">
-          <div className="space-y-4">
-            <input
-              type="text"
-              value={editData.name}
-              onChange={(e) =>
-                onEditData({ ...editData, name: e.target.value })
-              }
-              className="text-2xl text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:border-gray-400"
-              placeholder="Project name"
-            />
-            <textarea
-              value={editData.description}
-              onChange={(e) =>
-                onEditData({ ...editData, description: e.target.value })
-              }
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 text-lg"
-              placeholder="Project description"
-            />
-            <div className="flex gap-2">
-              <Button onClick={onSave} className="px-4 py-2">
-                Save Changes
-              </Button>
-              <Button
-                onClick={onCancel}
-                variant="secondary"
-                className="px-4 py-2"
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-          {error && (
-            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
+  const titleEditor = useInlineEdit({
+    initialValue: project?.name || "",
+    onSave: async (newName: string) => {
+      await onUpdate({ name: newName });
+    },
+    onError,
+    validate: (value: string) => {
+      if (!value.trim()) {
+        return "Project name cannot be empty. The title has been reverted to its previous value.";
+      }
+      return null;
+    },
+  });
+
+  const descriptionEditor = useInlineEdit({
+    initialValue: project?.description || "",
+    onSave: async (newDescription: string) => {
+      await onUpdate({ description: newDescription });
+    },
+    onError,
+    placeholder: "Add a project description...",
+  });
+
+  const handleStatusChange = async (status: ProjectUpdate["status"]) => {
+    if (status) {
+      await onUpdate({ status });
+    }
+  };
 
   return (
     <div className="mb-8 flex justify-between items-start">
       <div className="flex-1">
-        <h1 className="text-3xl font-semibold text-gray-900 mb-2">
-          {project?.name || "Project"}
-        </h1>
-        {project?.description && (
-          <p className="text-gray-700 whitespace-pre-wrap text-lg mb-3">
+        {titleEditor.isEditing ? (
+          <input
+            type="text"
+            value={titleEditor.value}
+            onChange={(e) => titleEditor.setValue(e.target.value)}
+            onKeyDown={(e) => titleEditor.handleKeyDown(e)}
+            onBlur={titleEditor.handleSave}
+            className="text-3xl font-semibold text-gray-900 bg-transparent border-none px-2 py-1 w-full focus:outline-none mb-2"
+            placeholder="Project name"
+            autoFocus
+            disabled={titleEditor.isSaving}
+          />
+        ) : (
+          <h1
+            className="text-3xl font-semibold text-gray-900 mb-2 cursor-pointer hover:bg-gray-50 rounded px-2 py-1"
+            onClick={titleEditor.startEditing}
+          >
+            {project?.name || "Project"}
+          </h1>
+        )}
+
+        {descriptionEditor.isEditing ? (
+          <textarea
+            value={descriptionEditor.value}
+            onChange={(e) => descriptionEditor.setValue(e.target.value)}
+            onKeyDown={(e) => descriptionEditor.handleKeyDown(e, true)}
+            onBlur={descriptionEditor.handleSave}
+            className="w-full text-gray-700 bg-transparent p-2 focus:outline-none whitespace-pre-wrap text-lg mb-3 rounded-md"
+            placeholder="Add a project description..."
+            autoFocus
+            disabled={descriptionEditor.isSaving}
+            rows={3}
+          />
+        ) : project?.description ? (
+          <p
+            className="text-gray-700 whitespace-pre-wrap text-lg mb-3 cursor-pointer hover:bg-gray-50 rounded p-2"
+            onClick={descriptionEditor.startEditing}
+          >
             {project.description}
           </p>
+        ) : (
+          <p
+            className="text-gray-500 italic text-lg mb-3 cursor-pointer hover:bg-gray-50 rounded p-2"
+            onClick={descriptionEditor.startEditing}
+          >
+            Add a project description...
+          </p>
         )}
-        {project?.status && (
-          <StatusBadge status={project.status} type="project-status" />
-        )}
+
+        <div className="mb-3">
+          {project && (
+            <ProjectStatusDropdown
+              currentStatus={project.status}
+              onUpdate={async ({ status }) => {
+                await handleStatusChange(status);
+              }}
+            />
+          )}
+        </div>
+
         {error && (
           <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
             {error}
@@ -100,11 +120,8 @@ export function ProjectHeader({
       </div>
       <ActionButtons
         entityType="project"
-        isEditing={isEditing}
+        showEditButton={false}
         isDeleting={isDeleting}
-        isClosing={isCompleting}
-        onEdit={onEdit}
-        onClose={onComplete}
         onDelete={onDelete}
       />
     </div>

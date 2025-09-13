@@ -19,7 +19,7 @@ class ProjectBase(SQLModel):
 class IssueBase(SQLModel):
     """Base issue fields"""
     title: str = Field(min_length=1, max_length=100, index=True)
-    description: str | None = Field(default=None, max_length=255)
+    description: str | None = Field(default=None)
     status: IssueStatus = Field(default=IssueStatus.OPEN, index=True)
     priority: IssuePriority = Field(default=IssuePriority.MEDIUM, index=True)
     time_estimate: int | None = Field(default=None, description="Estimated time in hours")

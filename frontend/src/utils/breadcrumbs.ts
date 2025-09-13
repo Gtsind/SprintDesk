@@ -11,6 +11,7 @@ export function generateBreadcrumbs(
     issue?: Issue;
     user?: User;
     isOwnProfile?: boolean;
+    fromPage?: string;
   }
 ): BreadCrumb[] {
   switch (page) {
@@ -68,6 +69,19 @@ export function generateBreadcrumbs(
       ];
 
     case "issue-detail":
+      // If coming from issues-list, show Issues path
+      if (data?.fromPage === "issues-list") {
+        return [
+          { label: "My work", page: "dashboard" },
+          { label: "Issues", page: "issues-list" },
+          {
+            label: `Issue #${data?.issue?.id || data?.issueId}`,
+            page: "issue-detail",
+            data: { issueId: data?.issueId },
+          },
+        ];
+      }
+      // Default to Projects path (for project-details navigation or legacy)
       return [
         { label: "My work", page: "dashboard" },
         { label: "Projects", page: "projects-list" },

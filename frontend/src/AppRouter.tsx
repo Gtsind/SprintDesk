@@ -28,7 +28,7 @@ type PageDataMap = {
   "projects-list": Record<string, never>;
   "project-details": { projectId: number };
   "issues-list": Record<string, never>;
-  "issue-detail": { issueId: number };
+  "issue-detail": { issueId: number; fromPage?: string };
   "users-list": Record<string, never>;
   "user-detail": { userId: number };
 };

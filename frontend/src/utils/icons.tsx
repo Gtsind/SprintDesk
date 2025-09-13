@@ -8,6 +8,9 @@ import {
   SignalMedium,
   SignalHigh,
   CircleAlert,
+  Play,
+  Pause,
+  X,
 } from "lucide-react";
 
 export function getStatusIcon(status: string) {
@@ -39,5 +42,20 @@ export function getPriorityIcon(priority: string) {
       return <CircleAlert className="h-4 w-4 text-red-600" />;
     default:
       return <SignalMedium className="h-4 w-4" />;
+  }
+}
+
+export function getProjectStatusIcon(status: string) {
+  switch (status) {
+    case "Active":
+      return <Play className="h-4 w-4 text-green-500" />;
+    case "Completed":
+      return <CheckCircle className="h-4 w-4 text-blue-500" />;
+    case "On Hold":
+      return <Pause className="h-4 w-4 text-yellow-500" />;
+    case "Cancelled":
+      return <X className="h-4 w-4 text-red-500" />;
+    default:
+      return <Circle className="h-4 w-4" />;
   }
 }

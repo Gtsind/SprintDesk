@@ -1,6 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { useDropdown } from "../../../hooks/useDropdown";
-import { getPriorityIcon } from "../../../utils/issueIcons";
+import { getPriorityIcon } from "../../../utils/icons";
 import type { IssueUpdate } from "../../../types";
 
 interface PriorityDropdownProps {
@@ -11,7 +11,11 @@ interface PriorityDropdownProps {
 
 const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
 
-export function PriorityDropdown({ currentPriority, onUpdate, disabled }: PriorityDropdownProps) {
+export function PriorityDropdown({
+  currentPriority,
+  onUpdate,
+  disabled,
+}: PriorityDropdownProps) {
   const { isOpen, toggle, close, dropdownRef } = useDropdown();
 
   const handlePrioritySelect = async (priority: string) => {
