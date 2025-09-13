@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { ActiveFilters } from "../components/toolbar";
 import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { getModalProps } from "../utils/getModalProps";
@@ -21,7 +22,7 @@ import {
   getActiveUsers,
   updateProject,
 } from "../services/api";
-import type { Issue, Project, User, ProjectUpdate } from "../types";
+import type { Issue, Project, User, ProjectUpdate, ApiError } from "../types";
 import {
   createProjectDetailsIssuesFilterConfig,
   createProjectDetailsMembersFilterConfig,
@@ -29,7 +30,7 @@ import {
 
 interface ProjectDetailsPageProps {
   navigate: (page: string, data?: unknown) => void;
-  pageData: { projectId?: number };
+  pageData: { projectId?: number; filters?: ActiveFilters };
 }
 
 export function ProjectDetailsPage({
@@ -68,6 +69,13 @@ export function ProjectDetailsPage({
       setCurrentProject(project);
     }
   }, [project]);
+
+  // Apply filters from navigation when the page loads
+  useEffect(() => {
+    if (pageData?.filters) {
+      setActiveFilters(pageData.filters);
+    }
+  }, [pageData?.filters]);
 
   const {
     data: issues,
@@ -109,9 +117,15 @@ export function ProjectDetailsPage({
     if (!projectId) return;
     try {
       const updatedProject = await updateProject(projectId, updateData);
-      setCurrentProject(updatedProject); // Optimistic update
-    } catch (err: any) {
-      throw new Error(err.response?.data?.detail || "Failed to update project");
+      setCurrentProject(updatedProject);
+      setInlineEditError(""); // Clear any previous errors
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "detail" in error) {
+        setInlineEditError((error as ApiError).detail);
+      } else {
+        setInlineEditError("Failed to update project");
+      }
+      throw error;
     }
   };
 
@@ -179,7 +193,9 @@ export function ProjectDetailsPage({
         <ProjectHeader
           project={currentProject}
           onUpdate={handleProjectUpdate}
-          onDelete={() => currentProject && handleDeleteProjectClick(currentProject)}
+          onDelete={() =>
+            currentProject && handleDeleteProjectClick(currentProject)
+          }
           onError={setInlineEditError}
           isDeleting={isDeleting}
           error={

@@ -9,6 +9,7 @@ import { IssuesPage } from "./pages/IssuesPage";
 import { IssueDetailPage } from "./pages/IssueDetailPage";
 import { UsersPage } from "./pages/UsersPage";
 import { UserDetailsPage } from "./pages/UserDetailsPage";
+import type { ActiveFilters } from "./components/toolbar";
 
 type PageType =
   | "login"
@@ -25,11 +26,11 @@ type PageDataMap = {
   login: Record<string, never>;
   register: Record<string, never>;
   dashboard: Record<string, never>;
-  "projects-list": Record<string, never>;
-  "project-details": { projectId: number };
-  "issues-list": Record<string, never>;
+  "projects-list": { filters?: ActiveFilters };
+  "project-details": { projectId: number; filters?: ActiveFilters };
+  "issues-list": { filters?: ActiveFilters };
   "issue-detail": { issueId: number; fromPage?: string };
-  "users-list": Record<string, never>;
+  "users-list": { filters?: ActiveFilters };
   "user-detail": { userId: number };
 };
 
@@ -68,7 +69,7 @@ export function AppRouter() {
       case "dashboard":
         return <DashboardPage navigate={navigateWrapper} />;
       case "projects-list":
-        return <ProjectsPage navigate={navigateWrapper} />;
+        return <ProjectsPage navigate={navigateWrapper} pageData={pageData as PageDataMap["projects-list"]} />;
       case "project-details":
         return (
           <ProjectDetailsPage
@@ -77,7 +78,7 @@ export function AppRouter() {
           />
         );
       case "issues-list":
-        return <IssuesPage navigate={navigateWrapper} />;
+        return <IssuesPage navigate={navigateWrapper} pageData={pageData as PageDataMap["issues-list"]} />;
       case "issue-detail":
         return (
           <IssueDetailPage
@@ -86,7 +87,7 @@ export function AppRouter() {
           />
         );
       case "users-list":
-        return <UsersPage navigate={navigateWrapper} />;
+        return <UsersPage navigate={navigateWrapper} pageData={pageData as PageDataMap["users-list"]} />;
       case "user-detail":
         return (
           <UserDetailsPage

@@ -18,9 +18,19 @@ import {
   getAllTeamMembers,
   createTeamWorkloadChart,
 } from "../../utils/dashboardUtils";
+import {
+  createIssuesPageFilters,
+  findUserIdByUsername,
+} from "../../utils/chartNavigation";
 import type { Project, Issue } from "../../types";
 
-export function ProjectManagerDashboard() {
+interface ProjectManagerDashboardProps {
+  navigate?: (page: string, data?: unknown) => void;
+}
+
+export function ProjectManagerDashboard({
+  navigate,
+}: ProjectManagerDashboardProps) {
   const { data: projects, loading: projectsLoading } =
     useApi<Project[]>(getProjects);
   const { data: issues, loading: issuesLoading } = useApi<Issue[]>(getIssues);
@@ -39,6 +49,46 @@ export function ProjectManagerDashboard() {
   const activeIssues = (issues || []).filter(
     (issue) => issue.status !== "Closed"
   );
+
+  // Chart click handlers
+  const handleStatusChartClick = (data: { name: string; value: number }) => {
+    if (!navigate) return;
+    const filters = createIssuesPageFilters({
+      status: data.name,
+    });
+    navigate("issues-list", { filters });
+  };
+
+  const handlePriorityChartClick = (data: { name: string; value: number }) => {
+    if (!navigate) return;
+    const filters = createIssuesPageFilters({
+      priority: data.name,
+    });
+    navigate("issues-list", { filters });
+  };
+
+  const handleTeamWorkloadClick = (data: { name: string; value: number }) => {
+    if (!navigate) return;
+
+    // Handle "Unassigned" special case
+    if (data.name === "Unassigned") {
+      const filters = createIssuesPageFilters({
+        assignee: "unassigned",
+      });
+      navigate("issues-list", { filters });
+      return;
+    }
+
+    // Handle regular users
+    if (!allMembers) return;
+    const userId = findUserIdByUsername(data.name, allMembers);
+    if (userId) {
+      const filters = createIssuesPageFilters({
+        assignee: userId,
+      });
+      navigate("issues-list", { filters });
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 space-y-6">
@@ -67,7 +117,11 @@ export function ProjectManagerDashboard() {
                       key={`cell-${index}`}
                       fill={getChartColor("status", entry.name)}
                       stroke="none"
-                      style={{ outline: "none" }}
+                      style={{
+                        outline: "none",
+                        cursor: navigate ? "pointer" : "default",
+                      }}
+                      onClick={() => handleStatusChartClick(entry)}
                     />
                   ))}
                 </Pie>
@@ -104,7 +158,11 @@ export function ProjectManagerDashboard() {
                       key={`cell-${index}`}
                       fill={getChartColor("priority", entry.name)}
                       stroke="none"
-                      style={{ outline: "none" }}
+                      style={{
+                        outline: "none",
+                        cursor: navigate ? "pointer" : "default",
+                      }}
+                      onClick={() => handlePriorityChartClick(entry)}
                     />
                   ))}
                 </Pie>
@@ -135,7 +193,20 @@ export function ProjectManagerDashboard() {
                   height={60}
                 />
                 <YAxis />
-                <Bar dataKey="value" fill="#8884d8" stroke="none" />
+                <Bar
+                  dataKey="value"
+                  fill="#8884d8"
+                  stroke="none"
+                  style={{ cursor: navigate ? "pointer" : "default" }}
+                  onClick={(data) => {
+                    if (data?.payload) {
+                      handleTeamWorkloadClick({
+                        name: data.payload.name as string,
+                        value: data.payload.value as number,
+                      });
+                    }
+                  }}
+                />
               </BarChart>
             </ResponsiveContainer>
           ) : (

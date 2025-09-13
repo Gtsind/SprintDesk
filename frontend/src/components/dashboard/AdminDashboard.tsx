@@ -17,9 +17,19 @@ import {
   createProjectStatusChart,
   createOpenIssuesByProjectChart,
 } from "../../utils/dashboardUtils";
+import {
+  createUsersPageFilters,
+  createProjectsPageFilters,
+  createProjectDetailsFilters,
+  findProjectIdByName,
+} from "../../utils/chartNavigation";
 import type { User, Project, Issue } from "../../types";
 
-export function AdminDashboard() {
+interface AdminDashboardProps {
+  navigate?: (page: string, data?: unknown) => void;
+}
+
+export function AdminDashboard({ navigate }: AdminDashboardProps) {
   const { data: users, loading: usersLoading } = useApi<User[]>(getAllUsers);
   const { data: projects, loading: projectsLoading } =
     useApi<Project[]>(getProjects);
@@ -36,6 +46,32 @@ export function AdminDashboard() {
     issues || [],
     projects || []
   );
+
+  // Chart click handlers
+  const handleUserRoleClick = (data: { name: string; value: number }) => {
+    if (!navigate) return;
+    const filters = createUsersPageFilters({
+      role: data.name,
+    });
+    navigate("users-list", { filters });
+  };
+
+  const handleProjectStatusClick = (data: { name: string; value: number }) => {
+    if (!navigate) return;
+    const filters = createProjectsPageFilters({
+      status: data.name,
+    });
+    navigate("projects-list", { filters });
+  };
+
+  const handleOpenIssuesProjectClick = (data: { name: string; value: number }) => {
+    if (!navigate || !projects) return;
+    const projectId = findProjectIdByName(data.name, projects);
+    if (projectId) {
+      const filters = createProjectDetailsFilters({});
+      navigate("project-details", { projectId, filters });
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 space-y-6">
@@ -64,7 +100,8 @@ export function AdminDashboard() {
                     key={`cell-${i}`}
                     fill={getChartColor("role", entry.name)}
                     stroke="none"
-                    style={{ outline: "none" }}
+                    style={{ outline: "none", cursor: navigate ? "pointer" : "default" }}
+                    onClick={() => handleUserRoleClick(entry)}
                   />
                 ))}
               </Pie>
@@ -96,7 +133,8 @@ export function AdminDashboard() {
                     key={`cell-${i}`}
                     fill={getChartColor("projectStatus", entry.name)}
                     stroke="none"
-                    style={{ outline: "none" }}
+                    style={{ outline: "none", cursor: navigate ? "pointer" : "default" }}
+                    onClick={() => handleProjectStatusClick(entry)}
                   />
                 ))}
               </Pie>
@@ -122,7 +160,20 @@ export function AdminDashboard() {
                   height={60}
                 />
                 <YAxis />
-                <Bar dataKey="value" fill="#8884d8" stroke="none" />
+                <Bar
+                  dataKey="value"
+                  fill="#8884d8"
+                  stroke="none"
+                  style={{ cursor: navigate ? "pointer" : "default" }}
+                  onClick={(data) => {
+                    if (data?.payload) {
+                      handleOpenIssuesProjectClick({
+                        name: data.payload.name as string,
+                        value: data.payload.value as number,
+                      });
+                    }
+                  }}
+                />
               </BarChart>
             </ResponsiveContainer>
           ) : (

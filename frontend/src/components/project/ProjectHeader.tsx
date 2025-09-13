@@ -45,7 +45,11 @@ export function ProjectHeader({
 
   const handleStatusChange = async (status: ProjectUpdate["status"]) => {
     if (status) {
-      await onUpdate({ status });
+      try {
+        await onUpdate({ status });
+      } catch (error) {
+        // Error is already handled by onError callback in ProjectDetailsPage
+      }
     }
   };
 

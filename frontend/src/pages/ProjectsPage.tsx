@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
@@ -19,15 +19,23 @@ import {
 
 interface ProjectsListPageProps {
   navigate: (page: string, data?: unknown) => void;
+  pageData?: { filters?: ActiveFilters };
 }
 
-export function ProjectsPage({ navigate }: ProjectsListPageProps) {
+export function ProjectsPage({ navigate, pageData }: ProjectsListPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
   const { data: projects, loading, refetch } = useApi<Project[]>(getProjects);
   const breadcrumbs = generateBreadcrumbs("projects-list");
+
+  // Apply filters from navigation when the page loads
+  useEffect(() => {
+    if (pageData?.filters) {
+      setActiveFilters(pageData.filters);
+    }
+  }, [pageData?.filters]);
 
   const canCreateProject =
     user?.role === "Admin" || user?.role === "Project Manager";

@@ -14,11 +14,11 @@ export function DashboardPage({ navigate }: DashboardPageProps) {
   const renderDashboardContent = () => {
     switch (user?.role) {
       case "Admin":
-        return <AdminDashboard />;
+        return <AdminDashboard navigate={navigate} />;
       case "Project Manager":
-        return <ProjectManagerDashboard />;
+        return <ProjectManagerDashboard navigate={navigate} />;
       case "Contributor":
-        return <ContributorDashboard userId={user.id} />;
+        return <ContributorDashboard userId={user.id} navigate={navigate} />;
       default:
         return <div>Loading...</div>;
     }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertCircle, Plus } from "lucide-react";
 import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
@@ -22,9 +22,10 @@ import { getAllTeamMembers } from "../utils/dashboardUtils";
 
 interface IssuesPageProps {
   navigate: (page: string, data?: unknown) => void;
+  pageData?: { filters?: ActiveFilters };
 }
 
-export function IssuesPage({ navigate }: IssuesPageProps) {
+export function IssuesPage({ navigate, pageData }: IssuesPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -34,6 +35,13 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
   const { data: issues, loading, refetch } = useApi<Issue[]>(getIssues);
   const { data: projects } = useApi<Project[]>(getProjects);
   const breadcrumbs = generateBreadcrumbs("issues-list");
+
+  // Apply filters from navigation when the page loads
+  useEffect(() => {
+    if (pageData?.filters) {
+      setActiveFilters(pageData.filters);
+    }
+  }, [pageData?.filters]);
 
   const {
     handleDeleteClick,

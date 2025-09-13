@@ -33,7 +33,8 @@ export function ProjectStatusDropdown({
       await onUpdate({ status });
       close();
     } catch (error) {
-      throw error;
+      // Error is handled upstream in ProjectHeader/ProjectDetailsPage
+      close();
     }
   };
 

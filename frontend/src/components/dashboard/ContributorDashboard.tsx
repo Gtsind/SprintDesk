@@ -17,13 +17,22 @@ import {
   createIssuePriorityChart,
   createIssuesByProjectChart,
 } from "../../utils/dashboardUtils";
+import {
+  createIssuesPageFilters,
+  createProjectDetailsFilters,
+  findProjectIdByName,
+} from "../../utils/chartNavigation";
 import type { Issue, Project } from "../../types";
 
 interface ContributorDashboardProps {
   userId: number;
+  navigate?: (page: string, data?: unknown) => void;
 }
 
-export function ContributorDashboard({ userId }: ContributorDashboardProps) {
+export function ContributorDashboard({
+  userId,
+  navigate,
+}: ContributorDashboardProps) {
   const { data: issues, loading: issuesLoading } = useApi<Issue[]>(() =>
     getUserIssues(userId)
   );
@@ -46,6 +55,36 @@ export function ContributorDashboard({ userId }: ContributorDashboardProps) {
     (issue) => issue.status !== "Closed"
   );
 
+  // Chart click handlers
+  const handleStatusChartClick = (data: { name: string; value: number }) => {
+    if (!navigate) return;
+    const filters = createIssuesPageFilters({
+      status: data.name,
+      assignee: userId,
+    });
+    navigate("issues-list", { filters });
+  };
+
+  const handlePriorityChartClick = (data: { name: string; value: number }) => {
+    if (!navigate) return;
+    const filters = createIssuesPageFilters({
+      priority: data.name,
+      assignee: userId,
+    });
+    navigate("issues-list", { filters });
+  };
+
+  const handleProjectChartClick = (data: { name: string; value: number }) => {
+    if (!navigate || !projects) return;
+    const projectId = findProjectIdByName(data.name, projects);
+    if (projectId) {
+      const filters = createProjectDetailsFilters({
+        assignee: userId,
+      });
+      navigate("project-details", { projectId, filters });
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 space-y-6">
       {/* Row 1: Pie Charts */}
@@ -67,13 +106,18 @@ export function ContributorDashboard({ userId }: ContributorDashboardProps) {
                   outerRadius={80}
                   fill="#8884d8"
                   stroke="none"
+                  dataKey="value"
                 >
                   {issuesByStatus.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={getChartColor("status", entry.name)}
                       stroke="none"
-                      style={{ outline: "none" }}
+                      style={{
+                        outline: "none",
+                        cursor: navigate ? "pointer" : "default",
+                      }}
+                      onClick={() => handleStatusChartClick(entry)}
                     />
                   ))}
                 </Pie>
@@ -108,7 +152,11 @@ export function ContributorDashboard({ userId }: ContributorDashboardProps) {
                       key={`cell-${index}`}
                       fill={getChartColor("priority", entry.name)}
                       stroke="none"
-                      style={{ outline: "none" }}
+                      style={{
+                        outline: "none",
+                        cursor: navigate ? "pointer" : "default",
+                      }}
+                      onClick={() => handlePriorityChartClick(entry)}
                     />
                   ))}
                 </Pie>
@@ -139,7 +187,20 @@ export function ContributorDashboard({ userId }: ContributorDashboardProps) {
                   dataKey="name"
                 />
                 <YAxis />
-                <Bar dataKey="value" fill="#8884d8" stroke="none" />
+                <Bar
+                  dataKey="value"
+                  fill="#8884d8"
+                  stroke="none"
+                  style={{ cursor: navigate ? "pointer" : "default" }}
+                  onClick={(data) => {
+                    if (data?.payload) {
+                      handleProjectChartClick({
+                        name: data.payload.name as string,
+                        value: data.payload.value as number,
+                      });
+                    }
+                  }}
+                />
               </BarChart>
             </ResponsiveContainer>
           ) : (

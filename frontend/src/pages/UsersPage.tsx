@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
@@ -19,9 +19,10 @@ import {
 
 interface UsersPageProps {
   navigate: (page: string, data?: unknown) => void;
+  pageData?: { filters?: ActiveFilters };
 }
 
-export function UsersPage({ navigate }: UsersPageProps) {
+export function UsersPage({ navigate, pageData }: UsersPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -31,6 +32,13 @@ export function UsersPage({ navigate }: UsersPageProps) {
 
   const { data: users, loading, refetch } = useApi<User[]>(getAllUsers);
   const breadcrumbs = generateBreadcrumbs("users-list");
+
+  // Apply filters from navigation when the page loads
+  useEffect(() => {
+    if (pageData?.filters) {
+      setActiveFilters(pageData.filters);
+    }
+  }, [pageData?.filters]);
 
   const handleUserClick = (user: User) => {
     navigate("user-detail", { userId: user.id });
