@@ -1,11 +1,9 @@
 import { ChevronDown } from "lucide-react";
 import { useDropdown } from "../../../hooks/useDropdown";
 import { getStatusIcon } from "../../../utils/icons";
-import { closeIssue, reopenIssue, updateIssue } from "../../../services/api";
 import type { IssueStatus } from "../../../types";
 
 interface StatusDropdownProps {
-  issueId: number;
   currentStatus: IssueStatus;
   onUpdate: (updateData: { status: IssueStatus }) => Promise<void>;
   disabled?: boolean;
@@ -20,7 +18,6 @@ const STATUS_OPTIONS: IssueStatus[] = [
 ];
 
 export function StatusDropdown({
-  issueId,
   currentStatus,
   onUpdate,
   disabled,
@@ -34,27 +31,11 @@ export function StatusDropdown({
     }
 
     try {
-      if (status === "Closed" && currentStatus !== "Closed") {
-        // Closing issue - use dedicated closeIssue API
-        await closeIssue(issueId);
-      } else if (status !== "Closed" && currentStatus === "Closed") {
-        // Reopening issue - use dedicated reopenIssue API
-        await reopenIssue(issueId);
-        // Then update to the specific status if not "Open"
-        if (status !== "Open") {
-          await updateIssue(issueId, { status });
-        }
-      } else {
-        // Regular status change - use generic updateIssue API
-        await updateIssue(issueId, { status });
-      }
-
-      // Call the callback to trigger refetch or state update
+      // Let the parent handle all API calls and error handling
       await onUpdate({ status });
       close();
     } catch (error) {
-      // Error handling is done by parent
-      throw error;
+      // Error handling is done by parent (IssueSidebar)
     }
   };
 

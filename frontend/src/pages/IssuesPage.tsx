@@ -1,11 +1,16 @@
 import { useState } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Plus } from "lucide-react";
 import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { ListCard } from "../components/ui/ListCard";
+import { Button } from "../components/ui/Button";
+import { IssueCreateWrapperModal } from "../components/modals/IssueCreateWrapperModal";
+import { DeleteConfirmationModal } from "../components/modals/DeleteConfirmationModal";
+import { DisplayErrorModal } from "../components/modals/DisplayErrorModal";
 import { Toolbar, type ActiveFilters } from "../components/toolbar";
 import { useApi } from "../hooks/useApi";
+import { useIssueActions } from "../hooks/useIssueActions";
 import { getIssues, getProjects } from "../services/api";
 import type { Issue, Project } from "../types";
 import {
@@ -22,9 +27,30 @@ interface IssuesPageProps {
 export function IssuesPage({ navigate }: IssuesPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
-  const { data: issues, loading } = useApi<Issue[]>(getIssues);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [error, setError] = useState("");
+  const [showErrorModal, setShowErrorModal] = useState(false);
+
+  const { data: issues, loading, refetch } = useApi<Issue[]>(getIssues);
   const { data: projects } = useApi<Project[]>(getProjects);
   const breadcrumbs = generateBreadcrumbs("issues-list");
+
+  const {
+    handleDeleteClick,
+    handleConfirmDelete,
+    handleCancelDelete,
+    isDeleting,
+    showDeleteConfirmationModal,
+    issueToDelete,
+  } = useIssueActions({
+    onUpdate: () => {}, // Not used for IssuesPage
+    onError: (errorMessage) => {
+      setError(errorMessage);
+      setShowErrorModal(true);
+    },
+    navigate,
+    refetch,
+  });
 
   if (loading) {
     return (
@@ -78,6 +104,15 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
             filterConfig={filterConfig}
             activeFilters={activeFilters}
             onFiltersChange={setActiveFilters}
+            rightContent={
+              <Button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center justify-center py-2.5 px-4 gap-2 w-full md:w-auto"
+              >
+                <Plus className="h-4 w-4" />
+                New Issue
+              </Button>
+            }
           />
         </div>
 
@@ -103,8 +138,12 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
                   type="issue"
                   item={issue}
                   onClick={(issue) =>
-                    navigate("issue-detail", { issueId: issue.id, fromPage: "issues-list" })
+                    navigate("issue-detail", {
+                      issueId: issue.id,
+                      fromPage: "issues-list",
+                    })
                   }
+                  onRemove={handleDeleteClick}
                 />
               ))}
             </ul>
@@ -117,6 +156,42 @@ export function IssuesPage({ navigate }: IssuesPageProps) {
           {searchQuery && ` matching "${searchQuery}"`}
           {Object.keys(activeFilters).length > 0 && " with active filters"}
         </div>
+
+        {/* Issue Create Wrapper Modal */}
+        <IssueCreateWrapperModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          projects={projects || []}
+          onIssueCreated={() => {
+            refetch(); // Refresh issues list
+            setShowCreateModal(false);
+          }}
+        />
+
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmationModal
+          isOpen={showDeleteConfirmationModal}
+          onClose={handleCancelDelete}
+          onConfirm={handleConfirmDelete}
+          title="Delete Issue"
+          message={
+            issueToDelete
+              ? `Are you sure you want to delete "${issueToDelete.title}"?\nThis action cannot be undone.`
+              : ""
+          }
+          confirmButtonText="Delete"
+          isLoading={isDeleting}
+        />
+
+        {/* Display Error Modal */}
+        <DisplayErrorModal
+          isOpen={showErrorModal}
+          onClose={() => {
+            setShowErrorModal(false);
+            setError("");
+          }}
+          error={error}
+        />
       </div>
     </Layout>
   );

@@ -1,7 +1,7 @@
 import { ChevronDown } from "lucide-react";
 import { useDropdown } from "../../../hooks/useDropdown";
 import { getPriorityIcon } from "../../../utils/icons";
-import type { IssueUpdate } from "../../../types";
+import type { IssueUpdate, IssuePriority } from "../../../types";
 
 interface PriorityDropdownProps {
   currentPriority: string;
@@ -25,7 +25,7 @@ export function PriorityDropdown({
     }
 
     try {
-      await onUpdate({ priority: priority as any });
+      await onUpdate({ priority: priority as IssuePriority });
       close();
     } catch (error) {
       // Error handling is done by parent

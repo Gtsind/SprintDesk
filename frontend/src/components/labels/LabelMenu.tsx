@@ -7,7 +7,7 @@ import type { Label } from "../../types";
 interface LabelMenuProps {
   availableLabels: Label[];
   allLabels: Label[];
-  onAddLabel: (labelId: number) => void;
+  onAddLabel: (labelId: number) => Promise<void>;
   onCreateLabel: (name: string, colorIndex: number) => void;
   isOpen: boolean;
   onClose: () => void;
@@ -69,9 +69,13 @@ export function LabelMenu({
               return (
                 <button
                   key={label.id}
-                  onClick={() => {
-                    onAddLabel(label.id);
-                    onClose();
+                  onClick={async () => {
+                    try {
+                      await onAddLabel(label.id);
+                      onClose();
+                    } catch (error) {
+                      // Error handling is done in useLabels hook
+                    }
                   }}
                   disabled={isLoading}
                   className="hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 rounded-md transition-opacity"

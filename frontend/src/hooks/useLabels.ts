@@ -31,7 +31,8 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
       setAllLabels(labels);
       setIssueLabels(issueLabelsList);
     } catch (err: any) {
-      onError?.(err?.response?.data?.detail || "Failed to load labels");
+      const errorMessage = err?.detail || err?.response?.data?.detail || "Failed to load labels";
+      onError?.(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +49,8 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
       setAllLabels((prev) => [...prev, newLabel]);
       return newLabel;
     } catch (err: any) {
-      onError?.(err?.response?.data?.detail || "Failed to create label");
+      const errorMessage = err?.detail || err?.response?.data?.detail || "Failed to create label";
+      onError?.(errorMessage);
       throw err;
     }
   };
@@ -65,7 +67,8 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
       );
       return updatedLabel;
     } catch (err: any) {
-      onError?.(err?.response?.data?.detail || "Failed to update label");
+      const errorMessage = err?.detail || err?.response?.data?.detail || "Failed to update label";
+      onError?.(errorMessage);
       throw err;
     }
   };
@@ -77,7 +80,8 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
       setAllLabels((prev) => prev.filter((label) => label.id !== labelId));
       setIssueLabels((prev) => prev.filter((label) => label.id !== labelId));
     } catch (err: any) {
-      onError?.(err?.response?.data?.detail || "Failed to delete label");
+      const errorMessage = err?.detail || err?.response?.data?.detail || "Failed to delete label";
+      onError?.(errorMessage);
       throw err;
     }
   };
@@ -95,7 +99,8 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
         return [...prev, label];
       });
     } catch (err: any) {
-      onError?.(err?.response?.data?.detail || "Failed to add label to issue");
+      const errorMessage = err?.detail || err?.response?.data?.detail || "Failed to add label to issue";
+      onError?.(errorMessage);
       throw err;
     }
   };
@@ -106,9 +111,8 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
       await removeLabelFromIssue(issueId, labelId);
       setIssueLabels((prev) => prev.filter((label) => label.id !== labelId));
     } catch (err: any) {
-      onError?.(
-        err?.response?.data?.detail || "Failed to remove label from issue"
-      );
+      const errorMessage = err?.detail || err?.response?.data?.detail || "Failed to remove label from issue";
+      onError?.(errorMessage);
       throw err;
     }
   };

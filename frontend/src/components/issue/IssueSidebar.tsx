@@ -41,7 +41,6 @@ export function IssueSidebar({
         {/* Status */}
         <div>
           <StatusDropdown
-            issueId={issue.id}
             currentStatus={issue.status}
             onUpdate={handleUpdate}
             disabled={isUpdating}
