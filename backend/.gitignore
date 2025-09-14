@@ -4,3 +4,4 @@ venv-sprint/
 .env
 src/db/schema.txt
 __pycache__/
+.coverage
