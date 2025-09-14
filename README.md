@@ -27,8 +27,6 @@
 
 - **Dashboard Redirect**: Successful authentication automatically redirects users to the dashboard.
 
----
-
 ### 2. Role-Based Dashboard Experience
 
 - All users see a header with:
@@ -59,21 +57,15 @@
 - Personal task view: "My Issues by Status", "Workload by Priority", "My Issues by Project"
 - Overview across all projects the user is a member of
 
----
-
 ### 3. User Management Workflow (Admin Only)
 
 - **User Creation**: Admins can view, create, edit, deactivate/activate, or delete users through the **Users** page.
-
----
 
 ### 4. Project Management Workflow
 
 - **Project Creation**: Admins and Project Managers can create new projects with descriptions and initial settings.
 - **Team Assembly**: Add team members to projects with appropriate roles.
 - **Status Tracking**: Monitor project progress through updates and analytics.
-
----
 
 ### 5. Issue Management System
 
