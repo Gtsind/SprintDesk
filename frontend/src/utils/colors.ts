@@ -85,6 +85,7 @@ const CHART_PRIORITY_COLORS = {
 const ROLE_CHART_COLORS = {
   Admin: "#8884d8", // blue
   "Project Manager": "#82ca9d", // green
+  Manager: "#82ca9d", // green (same as Project Manager for display)
   Contributor: "#ffc658", // yellow
 };
 

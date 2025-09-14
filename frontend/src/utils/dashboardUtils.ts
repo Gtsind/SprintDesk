@@ -85,7 +85,9 @@ export function createUserRoleChart(users: User[]): ChartData[] {
   for (const role in roleCounts) {
     const key = role as UserRole;
     if (roleCounts[key] > 0) {
-      chartData.push({ name: key, value: roleCounts[key] });
+      // Rename "Project Manager" to "Manager" for display purposes
+      const displayName = key === "Project Manager" ? "Manager" : key;
+      chartData.push({ name: displayName, value: roleCounts[key] });
     }
   }
 

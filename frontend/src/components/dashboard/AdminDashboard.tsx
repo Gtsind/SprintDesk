@@ -7,6 +7,7 @@ import {
   XAxis,
   YAxis,
   ResponsiveContainer,
+  Tooltip,
 } from "recharts";
 import { useApi } from "../../hooks/useApi";
 import { getAllUsers, getProjects, getIssues } from "../../services/api";
@@ -50,8 +51,10 @@ export function AdminDashboard({ navigate }: AdminDashboardProps) {
   // Chart click handlers
   const handleUserRoleClick = (data: { name: string; value: number }) => {
     if (!navigate) return;
+    // Map display name back to actual role name for filtering
+    const actualRole = data.name === "Manager" ? "Project Manager" : data.name;
     const filters = createUsersPageFilters({
-      role: data.name,
+      role: actualRole,
     });
     navigate("users-list", { filters });
   };
@@ -64,7 +67,10 @@ export function AdminDashboard({ navigate }: AdminDashboardProps) {
     navigate("projects-list", { filters });
   };
 
-  const handleOpenIssuesProjectClick = (data: { name: string; value: number }) => {
+  const handleOpenIssuesProjectClick = (data: {
+    name: string;
+    value: number;
+  }) => {
     if (!navigate || !projects) return;
     const projectId = findProjectIdByName(data.name, projects);
     if (projectId) {
@@ -100,7 +106,10 @@ export function AdminDashboard({ navigate }: AdminDashboardProps) {
                     key={`cell-${i}`}
                     fill={getChartColor("role", entry.name)}
                     stroke="none"
-                    style={{ outline: "none", cursor: navigate ? "pointer" : "default" }}
+                    style={{
+                      outline: "none",
+                      cursor: navigate ? "pointer" : "default",
+                    }}
                     onClick={() => handleUserRoleClick(entry)}
                   />
                 ))}
@@ -133,7 +142,10 @@ export function AdminDashboard({ navigate }: AdminDashboardProps) {
                     key={`cell-${i}`}
                     fill={getChartColor("projectStatus", entry.name)}
                     stroke="none"
-                    style={{ outline: "none", cursor: navigate ? "pointer" : "default" }}
+                    style={{
+                      outline: "none",
+                      cursor: navigate ? "pointer" : "default",
+                    }}
                     onClick={() => handleProjectStatusClick(entry)}
                   />
                 ))}
@@ -153,13 +165,12 @@ export function AdminDashboard({ navigate }: AdminDashboardProps) {
           {openIssuesByProject.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={openIssuesByProject}>
-                <XAxis
-                  dataKey="name"
-                  angle={-30}
-                  textAnchor="end"
-                  height={60}
-                />
+                <XAxis dataKey="name" tick={false} axisLine={true} />
                 <YAxis />
+                <Tooltip
+                  formatter={(value) => [value, "Open Issues"]}
+                  labelFormatter={(label) => `Project: ${label}`}
+                />
                 <Bar
                   dataKey="value"
                   fill="#8884d8"
