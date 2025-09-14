@@ -134,7 +134,7 @@ cd backend
 # On Windows:
 copy .env.example .env
 #On macOS/Linus:
-cp src/.env.example .env
+cp .env.example .env
 
 # Edit the .env file with your specific values
 # Ensure SECRET_KEY is long and random for production use
