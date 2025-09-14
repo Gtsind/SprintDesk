@@ -13,6 +13,7 @@ import type {
   LabelCreate,
   LabelUpdate,
   ApiError,
+  ValidationErrorItem,
 } from "../types";
 
 const BASE_URL = "http://localhost:8000/api/v1";
@@ -67,7 +68,7 @@ const request = async <T>(
       // Handle validation errors from FastAPI
       if (errorData.detail && Array.isArray(errorData.detail)) {
         const validationMessages = errorData.detail
-          .map((e: any) => e.msg)
+          .map((e: ValidationErrorItem) => e.msg)
           .join(", ");
         throw {
           detail: validationMessages,
@@ -84,7 +85,7 @@ const request = async <T>(
     }
 
     return isJson ? await response.json() : (null as T);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Re-throw if it's already our formatted error
     if (error && typeof error === "object" && "detail" in error) {
       throw error;
@@ -141,7 +142,10 @@ export const getUser = async (userId: number): Promise<User> => {
   return request<User>(`/users/${userId}`);
 };
 
-export const updateUser = async (userId: number, userData: UserUpdate): Promise<User> => {
+export const updateUser = async (
+  userId: number,
+  userData: UserUpdate
+): Promise<User> => {
   return request<User>(`/users/${userId}`, {
     method: "PATCH",
     body: JSON.stringify(userData),

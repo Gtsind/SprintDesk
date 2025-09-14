@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   getLabels,
   getIssueLabels,
@@ -8,6 +8,7 @@ import {
   addLabelToIssue,
   removeLabelFromIssue,
 } from "../services/api";
+import { extractErrorMessage } from "../utils/errorHandling";
 import type { Label, LabelCreate, LabelUpdate } from "../types";
 
 interface UseLabelsProps {
@@ -21,7 +22,7 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   // Fetch all labels and issue labels
-  const fetchLabels = async () => {
+  const fetchLabels = useCallback(async () => {
     try {
       setIsLoading(true);
       const [labels, issueLabelsList] = await Promise.all([
@@ -30,17 +31,17 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
       ]);
       setAllLabels(labels);
       setIssueLabels(issueLabelsList);
-    } catch (err: any) {
-      const errorMessage = err?.detail || err?.response?.data?.detail || "Failed to load labels";
+    } catch (err: unknown) {
+      const errorMessage = extractErrorMessage(err) || "Failed to load labels";
       onError?.(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [issueId, onError]);
 
   useEffect(() => {
     fetchLabels();
-  }, [issueId]);
+  }, [fetchLabels]);
 
   // Create new label
   const handleCreateLabel = async (labelData: LabelCreate) => {
@@ -48,8 +49,8 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
       const newLabel = await createLabel(labelData);
       setAllLabels((prev) => [...prev, newLabel]);
       return newLabel;
-    } catch (err: any) {
-      const errorMessage = err?.detail || err?.response?.data?.detail || "Failed to create label";
+    } catch (err: unknown) {
+      const errorMessage = extractErrorMessage(err) || "Failed to create label";
       onError?.(errorMessage);
       throw err;
     }
@@ -66,8 +67,8 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
         prev.map((label) => (label.id === labelId ? updatedLabel : label))
       );
       return updatedLabel;
-    } catch (err: any) {
-      const errorMessage = err?.detail || err?.response?.data?.detail || "Failed to update label";
+    } catch (err: unknown) {
+      const errorMessage = extractErrorMessage(err) || "Failed to update label";
       onError?.(errorMessage);
       throw err;
     }
@@ -79,8 +80,8 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
       await deleteLabel(labelId);
       setAllLabels((prev) => prev.filter((label) => label.id !== labelId));
       setIssueLabels((prev) => prev.filter((label) => label.id !== labelId));
-    } catch (err: any) {
-      const errorMessage = err?.detail || err?.response?.data?.detail || "Failed to delete label";
+    } catch (err: unknown) {
+      const errorMessage = extractErrorMessage(err) || "Failed to delete label";
       onError?.(errorMessage);
       throw err;
     }
@@ -98,8 +99,8 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
         if (prev.some((l) => l.id === labelId)) return prev;
         return [...prev, label];
       });
-    } catch (err: any) {
-      const errorMessage = err?.detail || err?.response?.data?.detail || "Failed to add label to issue";
+    } catch (err: unknown) {
+      const errorMessage = extractErrorMessage(err) || "Failed to add label to issue";
       onError?.(errorMessage);
       throw err;
     }
@@ -110,8 +111,8 @@ export function useLabels({ issueId, onError }: UseLabelsProps) {
     try {
       await removeLabelFromIssue(issueId, labelId);
       setIssueLabels((prev) => prev.filter((label) => label.id !== labelId));
-    } catch (err: any) {
-      const errorMessage = err?.detail || err?.response?.data?.detail || "Failed to remove label from issue";
+    } catch (err: unknown) {
+      const errorMessage = extractErrorMessage(err) || "Failed to remove label from issue";
       onError?.(errorMessage);
       throw err;
     }

@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import {
   PieChart,
   Pie,
@@ -33,9 +34,8 @@ export function ContributorDashboard({
   userId,
   navigate,
 }: ContributorDashboardProps) {
-  const { data: issues, loading: issuesLoading } = useApi<Issue[]>(() =>
-    getUserIssues(userId)
-  );
+  const getUserIssuesData = useCallback(() => getUserIssues(userId), [userId]);
+  const { data: issues, loading: issuesLoading } = useApi<Issue[]>(getUserIssuesData);
   const { data: projects, loading: projectsLoading } =
     useApi<Project[]>(getProjects);
 

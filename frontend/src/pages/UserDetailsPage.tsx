@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   AlertCircle,
   User as UserIcon,
@@ -17,7 +17,7 @@ import { StatusBadge } from "../components/ui/StatusBadge";
 import { useInlineEdit } from "../hooks/useInlineEdit";
 import { DeleteConfirmationModal } from "../components/modals/DeleteConfirmationModal";
 import { useApi } from "../hooks/useApi";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import {
   getUser,
   updateUser,
@@ -25,7 +25,8 @@ import {
   activateUser,
   deactivateUser,
 } from "../services/api";
-import type { User, UserUpdate, UserRole, ApiError } from "../types";
+import { extractErrorMessage } from "../utils/errorHandling";
+import type { User, UserUpdate, UserRole } from "../types";
 
 interface UserDetailsPageProps {
   navigate: (page: string, data?: unknown) => void;
@@ -40,10 +41,8 @@ export function UserDetailsPage({ navigate, pageData }: UserDetailsPageProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
 
-  const { data: user, loading: isLoading } = useApi<User>(
-    () => (userId ? getUser(userId) : Promise.reject(new Error("No user ID"))),
-    [userId]
-  );
+  const getUserData = useCallback(() => getUser(userId!), [userId]);
+  const { data: user, loading: isLoading } = useApi<User>(getUserData);
 
   // Use local state to track the current user (for optimistic updates)
   const [currentUserData, setCurrentUserData] = useState<User | null>(user);
@@ -71,12 +70,8 @@ export function UserDetailsPage({ navigate, pageData }: UserDetailsPageProps) {
       const updatedUser = await updateUser(currentUserData.id, updateData);
       setCurrentUserData(updatedUser);
     } catch (error: unknown) {
-      const apiError = error as ApiError | undefined;
-      if (apiError?.detail) {
-        setError(apiError.detail);
-      } else {
-        setError("Failed to update user");
-      }
+      const errorMessage = extractErrorMessage(error) || "Failed to update user";
+      setError(errorMessage);
       throw error; // Re-throw for useInlineEdit to handle
     }
   };
@@ -89,8 +84,9 @@ export function UserDetailsPage({ navigate, pageData }: UserDetailsPageProps) {
     try {
       await deleteUser(currentUserData.id);
       navigate("users-list");
-    } catch (error) {
-      setError("Failed to delete user");
+    } catch (error: unknown) {
+      const errorMessage = extractErrorMessage(error) || "Failed to delete user";
+      setError(errorMessage);
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);
@@ -108,12 +104,8 @@ export function UserDetailsPage({ navigate, pageData }: UserDetailsPageProps) {
         : await activateUser(currentUserData.id);
       setCurrentUserData(updatedUser);
     } catch (error: unknown) {
-      const apiError = error as ApiError | undefined;
-      if (apiError?.detail) {
-        setError(apiError.detail);
-      } else {
-        setError("Failed to update user status");
-      }
+      const errorMessage = extractErrorMessage(error) || "Failed to update user status";
+      setError(errorMessage);
     } finally {
       setIsToggling(false);
     }
@@ -185,16 +177,7 @@ export function UserDetailsPage({ navigate, pageData }: UserDetailsPageProps) {
     placeholder: "No title set",
   });
 
-  // Update editors when user data changes
-  useEffect(() => {
-    if (currentUserData) {
-      firstnameEditor.setValue(currentUserData.firstname);
-      lastnameEditor.setValue(currentUserData.lastname);
-      usernameEditor.setValue(currentUserData.username);
-      emailEditor.setValue(currentUserData.email);
-      titleEditor.setValue(currentUserData.title ?? "");
-    }
-  }, [currentUserData]);
+  // Editors automatically sync with currentUserData changes via useInlineEdit
 
   const breadcrumbs = generateBreadcrumbs("user-detail", {
     userId,

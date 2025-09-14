@@ -7,7 +7,7 @@ import { ListCard } from "../components/ui/ListCard";
 import { Toolbar, type ActiveFilters } from "../components/toolbar";
 import { ProjectCreateModal } from "../components/modals/ProjectCreateModal";
 import { useApi } from "../hooks/useApi";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { getProjects } from "../services/api";
 import type { Project } from "../types";
 import { Button } from "../components/ui/Button";

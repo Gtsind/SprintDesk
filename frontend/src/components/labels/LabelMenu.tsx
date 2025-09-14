@@ -44,12 +44,8 @@ export function LabelMenu({
   if (!isOpen) return null;
 
   const handleCreateSubmit = async (name: string, colorIndex: number) => {
-    try {
-      await onCreateLabel(name, colorIndex);
-      setShowCreateForm(false);
-    } catch (error) {
-      // Error handling is done in the parent component
-    }
+    await onCreateLabel(name, colorIndex);
+    setShowCreateForm(false);
   };
 
   const existingNames = allLabels.map((label) => label.name);
@@ -70,12 +66,8 @@ export function LabelMenu({
                 <button
                   key={label.id}
                   onClick={async () => {
-                    try {
-                      await onAddLabel(label.id);
-                      onClose();
-                    } catch (error) {
-                      // Error handling is done in useLabels hook
-                    }
+                    await onAddLabel(label.id);
+                    onClose();
                   }}
                   disabled={isLoading}
                   className="hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 rounded-md transition-opacity"

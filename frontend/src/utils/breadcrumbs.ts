@@ -43,7 +43,11 @@ export function generateBreadcrumbs(
       if (data?.isOwnProfile) {
         return [
           { label: "My work", page: "dashboard" },
-          { label: "Profile", page: "user-detail", data: { userId: data?.userId } },
+          {
+            label: "Profile",
+            page: "user-detail",
+            data: { userId: data?.userId },
+          },
         ];
       }
       // For admins viewing other users, show full path through Users
@@ -51,7 +55,9 @@ export function generateBreadcrumbs(
         { label: "My work", page: "dashboard" },
         { label: "Users", page: "users-list" },
         {
-          label: data?.user ? `${data.user.firstname} ${data.user.lastname}` : "User",
+          label: data?.user
+            ? `${data.user.firstname} ${data.user.lastname}`
+            : "User",
           page: "user-detail",
           data: { userId: data?.userId },
         },
@@ -81,7 +87,7 @@ export function generateBreadcrumbs(
           },
         ];
       }
-      // Default to Projects path (for project-details navigation or legacy)
+      // Default to Projects path (for project-details navigation)
       return [
         { label: "My work", page: "dashboard" },
         { label: "Projects", page: "projects-list" },

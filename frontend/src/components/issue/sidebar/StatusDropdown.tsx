@@ -30,13 +30,9 @@ export function StatusDropdown({
       return;
     }
 
-    try {
-      // Let the parent handle all API calls and error handling
-      await onUpdate({ status });
-      close();
-    } catch (error) {
-      // Error handling is done by parent (IssueSidebar)
-    }
+    // Let the parent handle all API calls and error handling
+    await onUpdate({ status });
+    close();
   };
 
   return (

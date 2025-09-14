@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Edit3, Trash2 } from "lucide-react";
 import { getLabelColor } from "../../utils/colors";
+import { extractErrorMessage } from "../../utils/errorHandling";
 import type { Label } from "../../types";
 
 interface LabelBadgeProps {
@@ -59,8 +60,8 @@ export function LabelBadge({
       setIsEditing(false);
       setShowMenu(false);
       setError("");
-    } catch (err) {
-      setError("Failed to update label");
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err) || "Failed to update label");
     }
   };
 

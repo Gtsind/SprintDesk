@@ -5,7 +5,7 @@ import { Button } from "../ui/Button";
 import { StatusBadge } from "../ui/StatusBadge";
 import { LoadingIcon } from "../ui/LoadingIcon";
 import { createIssue } from "../../services/api";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import type { IssueCreate, Issue, ApiError, User } from "../../types";
 
 interface IssueCreateModalProps {

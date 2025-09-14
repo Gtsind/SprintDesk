@@ -16,7 +16,7 @@ export function getModalProps({
   isDeletingIssue,
 }: GetModalPropsParams) {
   switch (type) {
-    case "project":
+    case "project": {
       const project = item as Project;
       return {
         title: "Delete Project",
@@ -24,8 +24,9 @@ export function getModalProps({
         confirmButtonText: "Delete",
         isLoading: isDeleting,
       };
+    }
 
-    case "member":
+    case "member": {
       const member = item as User;
       return {
         title: "Remove Member",
@@ -33,8 +34,9 @@ export function getModalProps({
         confirmButtonText: "Remove",
         isLoading: isRemovingMember,
       };
+    }
 
-    case "issue":
+    case "issue": {
       const issue = item as Issue;
       return {
         title: "Delete Issue",
@@ -42,6 +44,7 @@ export function getModalProps({
         confirmButtonText: "Delete",
         isLoading: isDeletingIssue,
       };
+    }
 
     default:
       return {

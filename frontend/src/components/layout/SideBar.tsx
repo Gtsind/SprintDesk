@@ -1,5 +1,5 @@
-import { Home, FolderOpen, Plus, Settings, FileCode, Users } from "lucide-react";
-import { useAuth } from "../../contexts/AuthContext";
+import { Home, FolderOpen, Settings, FileCode, Users } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 
 interface SideBarProps {
   navigate?: (page: string) => void;
@@ -33,27 +33,20 @@ export function SideBar({ navigate }: SideBarProps) {
   ];
 
   // Add Users menu item only for Admins
-  const adminMenuItems = user?.role === "Admin" 
-    ? [{
-        id: "users",
-        label: "Users",
-        icon: Users,
-        action: () => navigate?.("users-list"),
-        active: true,
-      }]
-    : [];
+  const adminMenuItems =
+    user?.role === "Admin"
+      ? [
+          {
+            id: "users",
+            label: "Users",
+            icon: Users,
+            action: () => navigate?.("users-list"),
+            active: true,
+          },
+        ]
+      : [];
 
-  const menuItems = [
-    ...baseMenuItems,
-    ...adminMenuItems,
-    {
-      id: "create",
-      label: "Create",
-      icon: Plus,
-      action: () => {},
-      active: false,
-    },
-  ];
+  const menuItems = [...baseMenuItems, ...adminMenuItems];
 
   return (
     <div className="fixed left-0 w-64 h-[calc(100vh-84px)] flex-col hidden md:flex ">

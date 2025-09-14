@@ -1,5 +1,5 @@
 import { LogOut } from "lucide-react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { BreadCrumbs } from "./BreadCrumbs";
 
 export interface BreadCrumb {

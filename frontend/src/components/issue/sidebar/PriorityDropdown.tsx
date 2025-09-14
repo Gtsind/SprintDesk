@@ -24,12 +24,8 @@ export function PriorityDropdown({
       return;
     }
 
-    try {
-      await onUpdate({ priority: priority as IssuePriority });
-      close();
-    } catch (error) {
-      // Error handling is done by parent
-    }
+    await onUpdate({ priority: priority as IssuePriority });
+    close();
   };
 
   return (

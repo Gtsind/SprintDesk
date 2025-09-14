@@ -29,13 +29,8 @@ export function ProjectStatusDropdown({
       return;
     }
 
-    try {
-      await onUpdate({ status });
-      close();
-    } catch (error) {
-      // Error is handled upstream in ProjectHeader/ProjectDetailsPage
-      close();
-    }
+    await onUpdate({ status });
+    close();
   };
 
   return (

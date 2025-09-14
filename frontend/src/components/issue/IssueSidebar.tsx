@@ -5,6 +5,7 @@ import { AssigneeDropdown } from "./sidebar/AssigneeDropdown";
 import { TimeEstimateEditor } from "./sidebar/TimeEstimateEditor";
 import { IssueMetadata } from "./sidebar/IssueMetadata";
 import { LabelsSection } from "../labels/LabelsSection";
+import { extractErrorMessage } from "../../utils/errorHandling";
 import type { Issue, IssueUpdate, User } from "../../types";
 
 interface IssueSidebarProps {
@@ -27,9 +28,9 @@ export function IssueSidebar({
     try {
       setIsUpdating(true);
       await onUpdate(updateData);
-    } catch (err: any) {
-      onError?.(err?.detail || "Failed to update issue");
-      throw err; // Re-throw for component-specific handling
+    } catch (err: unknown) {
+      onError?.(extractErrorMessage(err) || "Failed to update issue");
+      throw err;
     } finally {
       setIsUpdating(false);
     }

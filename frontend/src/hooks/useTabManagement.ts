@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { ActiveFilters } from "../components/toolbar";
 
 export function useTabManagement() {
@@ -6,19 +6,19 @@ export function useTabManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
 
-  const switchTab = (tab: "issues" | "members") => {
+  const switchTab = useCallback((tab: "issues" | "members") => {
     setActiveTab(tab);
     // Clear search and filters when switching tabs
     setSearchQuery("");
     setActiveFilters({});
-  };
+  }, []);
 
   return {
     activeTab,
     searchQuery,
     activeFilters,
-    setSearchQuery,
-    setActiveFilters,
+    setSearchQuery, // useState setters are already stable
+    setActiveFilters, // useState setters are already stable
     switchTab,
   };
 }

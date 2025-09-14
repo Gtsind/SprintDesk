@@ -19,8 +19,6 @@ export function useCommentActions(issueId: number) {
       const comment = await createComment(issueId, content);
       onSuccess(comment);
       onClear();
-    } catch (error) {
-      // Error handling can be added by parent component
     } finally {
       setSubmittingComment(false);
     }
@@ -40,13 +38,9 @@ export function useCommentActions(issueId: number) {
   ) => {
     if (!editingComment) return;
 
-    try {
-      const updatedComment = await updateComment(editingComment.id, newContent);
-      onSuccess(updatedComment);
-      setEditingComment(null);
-    } catch (error) {
-      // Error handling can be added by parent component
-    }
+    const updatedComment = await updateComment(editingComment.id, newContent);
+    onSuccess(updatedComment);
+    setEditingComment(null);
   };
 
   const startDelete = (commentId: number) => {
@@ -60,13 +54,9 @@ export function useCommentActions(issueId: number) {
   const handleDeleteConfirm = async (onSuccess: (deletedId: number) => void) => {
     if (!deletingCommentById) return;
 
-    try {
-      await deleteComment(deletingCommentById);
-      onSuccess(deletingCommentById);
-      setDeletingCommentById(null);
-    } catch (error) {
-      // Error handling can be added by parent component
-    }
+    await deleteComment(deletingCommentById);
+    onSuccess(deletingCommentById);
+    setDeletingCommentById(null);
   };
 
   return {

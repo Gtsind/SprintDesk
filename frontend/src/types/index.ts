@@ -178,6 +178,13 @@ export interface ApiError {
   detail: string;
 }
 
+// Types for FastAPI validation errors
+export interface ValidationErrorItem {
+  loc: (string | number)[];
+  msg: string;
+  type: string;
+}
+
 export interface ChartData {
   name: string;
   value: number;

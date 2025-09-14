@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { updateIssue, deleteIssue, closeIssue, reopenIssue } from "../services/api";
-import type { Issue, IssueUpdate, ApiError } from "../types";
+import { extractErrorMessage } from "../utils/errorHandling";
+import type { Issue, IssueUpdate } from "../types";
 
 interface UseIssueActionsProps {
   issue?: Issue; // Make optional for IssuesPage usage
@@ -22,12 +23,7 @@ export function useIssueActions({
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false);
   const [issueToDelete, setIssueToDelete] = useState<Issue | null>(null);
 
-  // Utility function to format errors
-  const extractErrorMessage = (err: unknown) => {
-    return err && typeof err === "object" && "detail" in err
-      ? (err as ApiError).detail
-      : "An unexpected error occurred.";
-  };
+  // Utility function to format errors is now imported from utils
 
   const handleUpdate = async (updateData: IssueUpdate): Promise<void> => {
     if (!issue) return;
@@ -59,7 +55,7 @@ export function useIssueActions({
       }
       
       onUpdate(updatedIssue); // Pass the updated issue instead of refetching
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage = extractErrorMessage(err);
       onError(errorMessage);
       throw err; // Re-throw so calling component can handle reversion
@@ -73,7 +69,7 @@ export function useIssueActions({
       setIsClosing(true);
       const updatedIssue = await closeIssue(issue.id);
       onUpdate(updatedIssue);
-    } catch (err: any) {
+    } catch (err: unknown) {
       onError(extractErrorMessage(err));
     } finally {
       setIsClosing(false);
@@ -97,7 +93,7 @@ export function useIssueActions({
         // Otherwise navigate to project details (IssueDetailPage usage)
         navigate("project-details", { projectId: issueToProcess.project.id });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       onError(extractErrorMessage(err));
       setIsDeleting(false);
     }

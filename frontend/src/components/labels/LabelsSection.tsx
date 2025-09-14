@@ -25,17 +25,13 @@ export function LabelsSection({ issueId, onError }: LabelsSectionProps) {
   } = useLabels({ issueId, onError });
 
   const handleCreateAndAdd = async (name: string, colorIndex: number) => {
-    try {
-      const newLabel = await handleCreateLabel({
-        name,
-        color_hash: colorIndex,
-      });
-      // Add to issue labels immediately, passing the label object to avoid state timing issues
-      await handleAddLabelToIssue(newLabel.id, newLabel);
-      setShowMenu(false);
-    } catch (error) {
-      // Error already handled in useLabels hook
-    }
+    const newLabel = await handleCreateLabel({
+      name,
+      color_hash: colorIndex,
+    });
+    // Add to issue labels immediately, passing the label object to avoid state timing issues
+    await handleAddLabelToIssue(newLabel.id, newLabel);
+    setShowMenu(false);
   };
 
   if (isLoading) {

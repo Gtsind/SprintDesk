@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { ActiveFilters } from "../components/toolbar";
 import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
@@ -50,15 +50,13 @@ export function ProjectDetailsPage({
   const [showMemberDropdown, setShowMemberDropdown] = useState(false);
   const [inlineEditError, setInlineEditError] = useState("");
 
+  const getProjectData = useCallback(() => getProject(projectId!), [projectId]);
   const {
     data: project,
     loading: projectLoading,
     refetch: refetchProject,
     error: projectError,
-  } = useApi<Project | null>(
-    () => (projectId ? getProject(projectId) : Promise.resolve(null)),
-    [projectId]
-  );
+  } = useApi<Project>(getProjectData);
 
   // Use local state to track the current project (for optimistic updates)
   const [currentProject, setCurrentProject] = useState<Project | null>(project);
@@ -75,17 +73,15 @@ export function ProjectDetailsPage({
     if (pageData?.filters) {
       setActiveFilters(pageData.filters);
     }
-  }, [pageData?.filters]);
+  }, [pageData?.filters]); // eslint-disable-line react-hooks/exhaustive-deps -- setActiveFilters is stable useState setter
 
+  const getProjectIssuesData = useCallback(() => getProjectIssues(projectId!), [projectId]);
   const {
     data: issues,
     loading: issuesLoading,
     refetch: refetchIssues,
     error: issuesError,
-  } = useApi<Issue[]>(
-    () => (projectId ? getProjectIssues(projectId) : Promise.resolve([])),
-    [projectId]
-  );
+  } = useApi<Issue[]>(getProjectIssuesData);
 
   const { data: allUsers } = useApi<User[]>(getActiveUsers);
 

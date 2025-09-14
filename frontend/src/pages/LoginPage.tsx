@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { FormInput } from "../components/ui/FormInput";
 import { Button } from "../components/ui/Button";
 import type { ApiError } from "../types";

@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useCallback, type FormEvent } from "react";
 import { MessageSquareText, ArrowUp, Edit2, Trash2, X, Check } from "lucide-react";
 import { useApi } from "../../hooks/useApi";
 import { useCommentActions } from "../../hooks/useCommentActions";
@@ -27,10 +27,8 @@ export function CommentSection({ issueId }: CommentSectionProps) {
     handleDeleteConfirm,
   } = useCommentActions(issueId);
 
-  const { data: commentsData, loading } = useApi<Comment[]>(
-    () => getIssueComments(issueId),
-    [issueId]
-  );
+  const getCommentsData = useCallback(() => getIssueComments(issueId), [issueId]);
+  const { data: commentsData, loading } = useApi<Comment[]>(getCommentsData);
 
   // Update comments when data loads
   useEffect(() => {

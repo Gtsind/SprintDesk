@@ -1,5 +1,5 @@
 import { Layout } from "../components/layout/Layout";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { AdminDashboard } from "../components/dashboard/AdminDashboard";
 import { ProjectManagerDashboard } from "../components/dashboard/ProjectManagerDashboard";
 import { ContributorDashboard } from "../components/dashboard/ContributorDashboard";

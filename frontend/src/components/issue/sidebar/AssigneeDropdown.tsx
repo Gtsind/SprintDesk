@@ -23,12 +23,8 @@ export function AssigneeDropdown({
       return;
     }
 
-    try {
-      await onUpdate({ assignee_id: assigneeId ?? undefined });
-      close();
-    } catch (error) {
-      // Error handling is done by parent
-    }
+    await onUpdate({ assignee_id: assigneeId ?? undefined });
+    close();
   };
 
   const displayText = currentAssignee

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AlertCircle } from "lucide-react";
 import { Layout } from "../components/layout/Layout";
 import { generateBreadcrumbs } from "../utils/breadcrumbs";
@@ -23,15 +23,13 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
   const issueId = pageData.issueId;
   const [error, setError] = useState("");
   const [showErrorModal, setShowErrorModal] = useState(false);
+
+  const getIssueData = useCallback(() => getIssue(issueId!), [issueId]);
   const {
     data: issue,
     loading: isLoading,
     refetch,
-  } = useApi<Issue>(
-    () =>
-      issueId ? getIssue(issueId) : Promise.reject(new Error("No issue ID")),
-    [issueId]
-  );
+  } = useApi<Issue>(getIssueData);
 
   // Use local state to track the current issue (for optimistic updates)
   const [currentIssue, setCurrentIssue] = useState<Issue | null>(issue);
@@ -43,13 +41,18 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
     }
   }, [issue]);
 
-  const { data: projectMembers = [] } = useApi<User[]>(
-    () =>
-      issue?.project.id
-        ? getProjectMembers(issue.project.id)
-        : Promise.resolve([]),
+  const getProjectMembersData = useCallback(() =>
+    issue?.project.id
+      ? getProjectMembers(issue.project.id)
+      : Promise.resolve([]),
     [issue?.project.id]
   );
+  const { data: projectMembers = [] } = useApi<User[]>(getProjectMembersData);
+
+  const handleErrorMessage = useCallback((errorMessage: string) => {
+    setError(errorMessage);
+    setShowErrorModal(true);
+  }, []);
 
   const { handleUpdate, handleClose, handleDelete, isClosing, isDeleting } =
     useIssueActions({
@@ -61,10 +64,7 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
           refetch();
         }
       },
-      onError: (errorMessage) => {
-        setError(errorMessage);
-        setShowErrorModal(true);
-      },
+      onError: handleErrorMessage,
       navigate,
     });
 
@@ -108,10 +108,7 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
         onUpdate={handleUpdate}
         onClose={handleClose}
         onDelete={handleDelete}
-        onError={(errorMessage) => {
-          setError(errorMessage);
-          setShowErrorModal(true);
-        }}
+        onError={handleErrorMessage}
         isClosing={isClosing}
         isDeleting={isDeleting}
       />
@@ -120,10 +117,7 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
           <IssueDescription
             issue={currentIssue}
             onUpdate={handleUpdate}
-            onError={(errorMessage) => {
-              setError(errorMessage);
-              setShowErrorModal(true);
-            }}
+            onError={handleErrorMessage}
           />
 
           <CommentSection issueId={currentIssue.id} />
@@ -133,10 +127,7 @@ export function IssueDetailPage({ navigate, pageData }: IssueDetailPageProps) {
             issue={currentIssue}
             projectMembers={projectMembers || []}
             onUpdate={handleUpdate}
-            onError={(errorMessage) => {
-              setError(errorMessage);
-              setShowErrorModal(true);
-            }}
+            onError={handleErrorMessage}
           />
         </div>
       </div>

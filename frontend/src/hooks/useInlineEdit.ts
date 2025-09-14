@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from "react";
+import { useState, useEffect, type KeyboardEvent } from "react";
 
 interface UseInlineEditProps {
   initialValue: string | null;
@@ -18,6 +18,13 @@ export function useInlineEdit({
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(initialValue || "");
   const [isSaving, setIsSaving] = useState(false);
+
+  // Sync internal state when initialValue changes
+  useEffect(() => {
+    if (!isEditing) {
+      setValue(initialValue || "");
+    }
+  }, [initialValue, isEditing]);
 
   const startEditing = () => {
     setIsEditing(true);
@@ -54,7 +61,7 @@ export function useInlineEdit({
       setIsSaving(true);
       await onSave(value.trim());
       setIsEditing(false);
-    } catch (error) {
+    } catch {
       // Revert to original value on error
       setValue(initialValue || "");
       // Error is handled by the onSave function and passed to parent
