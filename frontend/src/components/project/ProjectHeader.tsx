@@ -7,25 +7,20 @@ interface ProjectHeaderProps {
   project: Project | null;
   onUpdate: (updateData: ProjectUpdate) => Promise<void>;
   onDelete: () => void;
-  onError: (message: string) => void;
   isDeleting: boolean;
-  error?: string;
 }
 
 export function ProjectHeader({
   project,
   onUpdate,
   onDelete,
-  onError,
   isDeleting,
-  error,
 }: ProjectHeaderProps) {
   const titleEditor = useInlineEdit({
     initialValue: project?.name || "",
     onSave: async (newName: string) => {
       await onUpdate({ name: newName });
     },
-    onError,
     validate: (value: string) => {
       if (!value.trim()) {
         return "Project name cannot be empty. The title has been reverted to its previous value.";
@@ -39,7 +34,6 @@ export function ProjectHeader({
     onSave: async (newDescription: string) => {
       await onUpdate({ description: newDescription });
     },
-    onError,
     placeholder: "Add a project description...",
   });
 
@@ -112,11 +106,6 @@ export function ProjectHeader({
           )}
         </div>
 
-        {error && (
-          <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
-        )}
       </div>
       <ActionButtons
         entityType="project"

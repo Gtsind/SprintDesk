@@ -6,6 +6,7 @@ import { getModalProps } from "../utils/getModalProps";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { IssueCreateModal } from "../components/modals/IssueCreateModal";
 import { DeleteConfirmationModal } from "../components/modals/DeleteConfirmationModal";
+import { DisplayErrorModal } from "../components/modals/DisplayErrorModal";
 import { Toolbar } from "../components/toolbar";
 import { ProjectHeader } from "../components/project/ProjectHeader";
 import { TabNavigation } from "../components/project/TabNavigation";
@@ -48,7 +49,8 @@ export function ProjectDetailsPage({
   } = useTabManagement();
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
   const [showMemberDropdown, setShowMemberDropdown] = useState(false);
-  const [inlineEditError, setInlineEditError] = useState("");
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const getProjectData = useCallback(() => getProject(projectId!), [projectId]);
   const {
@@ -109,18 +111,42 @@ export function ProjectDetailsPage({
     initialDescription: currentProject?.description || "",
   });
 
+  // Show errors from useProjectActions in the modal
+  useEffect(() => {
+    if (error) {
+      setErrorMessage(error);
+      setShowErrorModal(true);
+    }
+  }, [error]);
+
+  // Show API loading errors in the modal
+  useEffect(() => {
+    if (projectError) {
+      setErrorMessage(projectError);
+      setShowErrorModal(true);
+    }
+  }, [projectError]);
+
+  useEffect(() => {
+    if (issuesError) {
+      setErrorMessage(issuesError);
+      setShowErrorModal(true);
+    }
+  }, [issuesError]);
+
   const handleProjectUpdate = async (updateData: ProjectUpdate) => {
     if (!projectId) return;
     try {
       const updatedProject = await updateProject(projectId, updateData);
       setCurrentProject(updatedProject);
-      setInlineEditError(""); // Clear any previous errors
+      setErrorMessage(""); // Clear any previous errors
     } catch (error: unknown) {
       if (error && typeof error === "object" && "detail" in error) {
-        setInlineEditError((error as ApiError).detail);
+        setErrorMessage((error as ApiError).detail);
       } else {
-        setInlineEditError("Failed to update project");
+        setErrorMessage("Failed to update project");
       }
+      setShowErrorModal(true);
       throw error;
     }
   };
@@ -192,11 +218,7 @@ export function ProjectDetailsPage({
           onDelete={() =>
             currentProject && handleDeleteProjectClick(currentProject)
           }
-          onError={setInlineEditError}
           isDeleting={isDeleting}
-          error={
-            inlineEditError || error || projectError || issuesError || undefined
-          }
         />
 
         <TabNavigation
@@ -277,6 +299,13 @@ export function ProjectDetailsPage({
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
         {...modalProps}
+      />
+
+      {/* Error Display Modal */}
+      <DisplayErrorModal
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        error={errorMessage}
       />
     </Layout>
   );

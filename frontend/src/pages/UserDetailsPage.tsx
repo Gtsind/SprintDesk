@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import {
   AlertCircle,
   User as UserIcon,
-  Mail,
-  Briefcase,
   Shield,
   Calendar,
   ToggleLeft,
@@ -14,8 +12,8 @@ import { generateBreadcrumbs } from "../utils/breadcrumbs";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { Button } from "../components/ui/Button";
 import { StatusBadge } from "../components/ui/StatusBadge";
-import { useInlineEdit } from "../hooks/useInlineEdit";
 import { DeleteConfirmationModal } from "../components/modals/DeleteConfirmationModal";
+import { EditableField } from "../components/user/EditableField";
 import { useApi } from "../hooks/useApi";
 import { useAuth } from "../hooks/useAuth";
 import {
@@ -26,6 +24,7 @@ import {
   deactivateUser,
 } from "../services/api";
 import { extractErrorMessage } from "../utils/errorHandling";
+import { createUserFieldsConfig } from "../utils/userConfig.tsx";
 import type { User, UserUpdate, UserRole } from "../types";
 
 interface UserDetailsPageProps {
@@ -61,6 +60,9 @@ export function UserDetailsPage({ navigate, pageData }: UserDetailsPageProps) {
   const canEditRole = isAdmin && !isOwnProfile;
   const canDelete = isAdmin && !isOwnProfile;
   const canToggleStatus = isAdmin && !isOwnProfile;
+
+  // User fields configuration
+  const userFields = createUserFieldsConfig(canEditBasic, canEditRole);
 
   // Handle user update
   const handleUpdate = async (updateData: UserUpdate) => {
@@ -111,73 +113,6 @@ export function UserDetailsPage({ navigate, pageData }: UserDetailsPageProps) {
     }
   };
 
-  // Inline editors for editable fields
-  const firstnameEditor = useInlineEdit({
-    initialValue: currentUserData?.firstname || "",
-    onSave: async (value: string) => {
-      await handleUpdate({ firstname: value });
-    },
-    onError: (message) => setError(message),
-    validate: (value: string) => {
-      if (!value.trim()) {
-        return "First name cannot be empty";
-      }
-      return null;
-    },
-  });
-
-  const lastnameEditor = useInlineEdit({
-    initialValue: currentUserData?.lastname || "",
-    onSave: async (value: string) => {
-      await handleUpdate({ lastname: value });
-    },
-    onError: (message) => setError(message),
-    validate: (value: string) => {
-      if (!value.trim()) {
-        return "Last name cannot be empty";
-      }
-      return null;
-    },
-  });
-
-  const usernameEditor = useInlineEdit({
-    initialValue: currentUserData?.username || "",
-    onSave: async (value: string) => {
-      await handleUpdate({ username: value });
-    },
-    onError: (message) => setError(message),
-    validate: (value: string) => {
-      if (!value.trim()) {
-        return "Username cannot be empty";
-      }
-      return null;
-    },
-  });
-
-  const emailEditor = useInlineEdit({
-    initialValue: currentUserData?.email || "",
-    onSave: async (value: string) => {
-      await handleUpdate({ email: value });
-    },
-    onError: (message) => setError(message),
-    validate: (value: string) => {
-      if (!value.trim()) {
-        return "Email cannot be empty";
-      }
-      return null;
-    },
-  });
-
-  const titleEditor = useInlineEdit({
-    initialValue: currentUserData?.title ?? "",
-    onSave: async (value: string) => {
-      await handleUpdate({ title: value || null });
-    },
-    onError: (message) => setError(message),
-    placeholder: "No title set",
-  });
-
-  // Editors automatically sync with currentUserData changes via useInlineEdit
 
   const breadcrumbs = generateBreadcrumbs("user-detail", {
     userId,
@@ -294,170 +229,15 @@ export function UserDetailsPage({ navigate, pageData }: UserDetailsPageProps) {
           {/* User Information */}
           <div className="px-6 py-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* First Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name
-                </label>
-                {firstnameEditor.isEditing && canEditBasic ? (
-                  <input
-                    type="text"
-                    value={firstnameEditor.value}
-                    onChange={(e) => firstnameEditor.setValue(e.target.value)}
-                    onKeyDown={(e) => firstnameEditor.handleKeyDown(e)}
-                    onBlur={firstnameEditor.handleSave}
-                    className="w-full py-2 border-none focus:outline-none"
-                    autoFocus
-                    disabled={firstnameEditor.isSaving}
-                  />
-                ) : (
-                  <p
-                    className={`text-gray-900 py-2 ${
-                      canEditBasic
-                        ? "cursor-pointer hover:bg-gray-50 rounded"
-                        : ""
-                    }`}
-                    onClick={
-                      canEditBasic ? firstnameEditor.startEditing : undefined
-                    }
-                  >
-                    {currentUserData.firstname}
-                  </p>
-                )}
-              </div>
-
-              {/* Last Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name
-                </label>
-                {lastnameEditor.isEditing && canEditBasic ? (
-                  <input
-                    type="text"
-                    value={lastnameEditor.value}
-                    onChange={(e) => lastnameEditor.setValue(e.target.value)}
-                    onKeyDown={(e) => lastnameEditor.handleKeyDown(e)}
-                    onBlur={lastnameEditor.handleSave}
-                    className="w-full py-2 border-none focus:outline-none"
-                    autoFocus
-                    disabled={lastnameEditor.isSaving}
-                  />
-                ) : (
-                  <p
-                    className={`text-gray-900 py-2 ${
-                      canEditBasic
-                        ? "cursor-pointer hover:bg-gray-50 rounded"
-                        : ""
-                    }`}
-                    onClick={
-                      canEditBasic ? lastnameEditor.startEditing : undefined
-                    }
-                  >
-                    {currentUserData.lastname}
-                  </p>
-                )}
-              </div>
-
-              {/* Username */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Username
-                </label>
-                {usernameEditor.isEditing && canEditBasic ? (
-                  <input
-                    type="text"
-                    value={usernameEditor.value}
-                    onChange={(e) => usernameEditor.setValue(e.target.value)}
-                    onKeyDown={(e) => usernameEditor.handleKeyDown(e)}
-                    onBlur={usernameEditor.handleSave}
-                    className="w-full py-2 border-none focus:outline-none"
-                    autoFocus
-                    disabled={usernameEditor.isSaving}
-                  />
-                ) : (
-                  <p
-                    className={`text-gray-900 py-2 ${
-                      canEditBasic
-                        ? "cursor-pointer hover:bg-gray-50 rounded"
-                        : ""
-                    }`}
-                    onClick={
-                      canEditBasic ? usernameEditor.startEditing : undefined
-                    }
-                  >
-                    @{currentUserData.username}
-                  </p>
-                )}
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Mail className="inline h-4 w-4 mr-1" />
-                  Email
-                </label>
-                {emailEditor.isEditing && canEditBasic ? (
-                  <input
-                    type="email"
-                    value={emailEditor.value}
-                    onChange={(e) => emailEditor.setValue(e.target.value)}
-                    onKeyDown={(e) => emailEditor.handleKeyDown(e)}
-                    onBlur={emailEditor.handleSave}
-                    className="w-full py-2 border-none focus:outline-none"
-                    autoFocus
-                    disabled={emailEditor.isSaving}
-                  />
-                ) : (
-                  <p
-                    className={`text-gray-900 py-2 ${
-                      canEditBasic
-                        ? "cursor-pointer hover:bg-gray-50 rounded"
-                        : ""
-                    }`}
-                    onClick={
-                      canEditBasic ? emailEditor.startEditing : undefined
-                    }
-                  >
-                    {currentUserData.email}
-                  </p>
-                )}
-              </div>
-
-              {/* Title */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Briefcase className="inline h-4 w-4 mr-1" />
-                  Title
-                </label>
-                {titleEditor.isEditing && canEditRole ? (
-                  <input
-                    type="text"
-                    value={titleEditor.value}
-                    onChange={(e) => titleEditor.setValue(e.target.value)}
-                    onKeyDown={(e) => titleEditor.handleKeyDown(e)}
-                    onBlur={titleEditor.handleSave}
-                    className="w-full py-2 border-none focus:outline-none"
-                    placeholder="Enter title"
-                    autoFocus
-                    disabled={titleEditor.isSaving}
-                  />
-                ) : (
-                  <p
-                    className={`py-2 ${
-                      currentUserData.title
-                        ? "text-gray-900"
-                        : "text-gray-500 italic"
-                    } ${
-                      canEditRole
-                        ? "cursor-pointer hover:bg-gray-50 rounded"
-                        : ""
-                    }`}
-                    onClick={canEditRole ? titleEditor.startEditing : undefined}
-                  >
-                    {currentUserData.title || "No title set"}
-                  </p>
-                )}
-              </div>
+              {userFields.map((field) => (
+                <EditableField
+                  key={field.key}
+                  field={field}
+                  user={currentUserData}
+                  onUpdate={handleUpdate}
+                  onError={setError}
+                />
+              ))}
 
               {/* Role */}
               <div>

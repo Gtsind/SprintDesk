@@ -52,7 +52,7 @@ export function ProjectStatusDropdown({
           {STATUS_OPTIONS.map((status) => (
             <button
               key={status}
-              onClick={() => handleStatusSelect(status)}
+              onClick={() => handleStatusSelect(status).catch(() => {})}
               disabled={disabled}
               className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 focus:outline-none focus:bg-gray-100 disabled:opacity-50 flex items-center gap-2"
             >
