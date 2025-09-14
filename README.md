@@ -112,11 +112,20 @@ cd SprintDesk
 # On macOS: brew services start postgresql
 # On Linux: sudo systemctl start postgresql
 
-# Create database and user
+# Connect to postgresql (You will be prompted for your password)
+# On Windows:
+psql -U postgres
+# On macOS/Linux:
 sudo -u postgres psql
+
+# Create database and user
 CREATE DATABASE sprintdesk_db;
 CREATE USER sprintdesk_admin WITH ENCRYPTED PASSWORD 'your_secure_password';
 GRANT ALL PRIVILEGES ON DATABASE sprintdesk_db TO sprintdesk_admin;
+
+# Connect to the database and grant schema permissions
+\c sprintdesk_db
+GRANT ALL ON SCHEMA public TO sprintdesk_admin;
 \q
 ```
 
@@ -183,7 +192,7 @@ npm run build
 
 ```bash
 # Terminal 1: Start Backend (from backend directory, activate virtual environment if not already active)
-python src/main.py
+python -m src.main
 # Backend will be available at http://localhost:8000
 
 # Terminal 2: Start Frontend (from frontend directory)
@@ -204,9 +213,9 @@ python create_demo_users.py
 
 This creates three users:
 
-- **Admin** - Username: `admin`, Password: `admin12345` (full system access)
-- **Project Manager** - Username: `manager`, Password: `manager12345` (can create/manage projects)
-- **Contributor** - Username: `contributor`, Password: `contributor12345` (can work on assigned issues)
+- **Admin** - Username: `admin`, Password: `12345678` (full system access)
+- **Project Manager** - Username: `manager`, Password: `12345678` (can create/manage projects)
+- **Contributor** - Username: `contributor`, Password: `12345678` (can work on assigned issues)
 
 #### 7. Initial Run & Verification
 

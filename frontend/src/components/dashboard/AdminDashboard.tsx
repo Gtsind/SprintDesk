@@ -123,35 +123,41 @@ export function AdminDashboard({ navigate }: AdminDashboardProps) {
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Projects by Status
           </h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={projectsByStatus}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, value }) => `${name}: ${value}`}
-                outerRadius={80}
-                fill="#82ca9d"
-                stroke="none"
-              >
-                {projectsByStatus.map((entry, i) => (
-                  <Cell
-                    key={`cell-${i}`}
-                    fill={getChartColor("projectStatus", entry.name)}
-                    stroke="none"
-                    style={{
-                      outline: "none",
-                      cursor: navigate ? "pointer" : "default",
-                    }}
-                    onClick={() => handleProjectStatusClick(entry)}
-                  />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+          {projectsByStatus.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={projectsByStatus}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  outerRadius={80}
+                  fill="#82ca9d"
+                  stroke="none"
+                >
+                  {projectsByStatus.map((entry, i) => (
+                    <Cell
+                      key={`cell-${i}`}
+                      fill={getChartColor("projectStatus", entry.name)}
+                      stroke="none"
+                      style={{
+                        outline: "none",
+                        cursor: navigate ? "pointer" : "default",
+                      }}
+                      onClick={() => handleProjectStatusClick(entry)}
+                    />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[250px] text-gray-500">
+              No projects available
+            </div>
+          )}
         </div>
       </div>
 
@@ -189,7 +195,9 @@ export function AdminDashboard({ navigate }: AdminDashboardProps) {
             </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-[250px] text-gray-500">
-              No open issues in active projects
+              {(projects || []).filter((p) => p.status === "Active").length === 0
+                ? "There are no active projects"
+                : "No open issues in active projects"}
             </div>
           )}
         </div>

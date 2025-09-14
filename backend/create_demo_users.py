@@ -33,7 +33,7 @@ def create_demo_users():
             "email": "admin@sprintdesk.com",
             "firstname": "Admin",
             "lastname": "User",
-            "password": "admin12345",  # 9 characters
+            "password": "12345678",
             "role": UserRole.ADMIN,
             "title": "System Administrator"
         },
@@ -42,7 +42,7 @@ def create_demo_users():
             "email": "manager@sprintdesk.com",
             "firstname": "Project",
             "lastname": "Manager",
-            "password": "manager12345",  # 11 characters
+            "password": "12345678",
             "role": UserRole.PROJECT_MANAGER,
             "title": "Senior Project Manager"
         },
@@ -51,7 +51,7 @@ def create_demo_users():
             "email": "contributor@sprintdesk.com",
             "firstname": "John",
             "lastname": "Developer",
-            "password": "contributor12345",  # 15 characters
+            "password": "12345678",
             "role": UserRole.CONTRIBUTOR,
             "title": "Software Developer"
         }
