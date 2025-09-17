@@ -32,7 +32,7 @@
 - All users see a header with:
 
   - **SprintDesk** button (always redirects to the dashboard)
-  - Navigation breadcrumbs
+  - Breadcrumbs
   - Their name (clicking shows profile) and **Logout** button
 
 - Sidebar navigation:
@@ -230,8 +230,6 @@ This creates three users:
 
 The tests directory contains comprehensive API tests for the SprintDesk backend using pytest, SQLite in-memory database, and FastAPI's TestClient.
 
-### Test Features
-
 ### Database Setup
 
 - Uses SQLite in-memory database for each test
@@ -325,6 +323,9 @@ Future work may add Jest, React Testing Library, and Cypress/Playwright for auto
    - Confirm data accuracy across views
 
 ## File Structure
+
+<details>
+<summary><strong>Click to expand/collapse the detailed file structure</strong></summary>
 
 ```
 SprintDesk/
@@ -523,6 +524,8 @@ SprintDesk/
 ├── .gitignore
 └── README.md
 ```
+
+</details>
 
 ## Tech Stack
 
